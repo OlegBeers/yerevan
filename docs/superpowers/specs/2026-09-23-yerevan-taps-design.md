@@ -103,11 +103,8 @@ Dargett Brewpub в списке 4.3 нет: у него есть меню чер
 
 **Yerevan City (4.6).**
 - **Список, 1 запрос.** `POST https://apishopv2.yerevan-city.am/api/Product/GetByCategory`, тело `{"categoryId":119,"parentId":119,"count":1000,"page":1}`. Приходит вся категория: около 243 товаров, поля `id`, `name` (по-армянски), `price`, `discountedPrice`, `categoryName`. Признака наличия нет: закончившийся товар просто исчезает из списка.
-- **Латинские названия и бренд, 1 запрос.** `POST .../api/Product/Search`, тело `{"search":"գարեջուր","count":500,"page":1,"countries":[],"categories":[],"tags":[],"brands":[],"isDiscounted":false,"sortBy":3}`. Отдаёт `products[]` с `nameEn`, `nameRu`, `brandId` и `searchBrands[]` с названиями брендов.
-- **Как определяем бренд, по порядку:**
-  1. название из `searchBrands` по `brandId`;
-  2. если `brandId` пустой, текст в кавычках из `nameEn` (`Beer "Stella Artois" …`);
-  3. иначе «» в армянском названии через таблицу армянских написаний.
+- **Латинские названия и бренд, 1 запрос.** `POST .../api/Product/Search`, тело `{"search":"գարեջուր","count":500,"page":1,"countries":[],"categories":[],"tags":[],"brands":[],"isDiscounted":false,"sortBy":3}`. Отдаёт `products[]` с `nameEn`, `nameRu`, `brandId` и `searchBrands[]`. Названия брендов в `searchBrands` армянские, поэтому для стоп-листа не годятся.
+- **Бренд:** текст в кавычках из `nameEn` (`Beer "Kilikia" 1l` → Kilikia). Если кавычек нет, первое слово `nameEn` после «Beer». Если товара нет в ответе Search, берём «» из армянского названия через таблицу армянских написаний брендов из стоп-листа.
 - **Прогон не засчитывается**, если `success != true`, список пустой, в нём меньше `itemCount` позиций или не удался запрос Search.
 - **Ссылка на товар:** `https://yerevan-city.am/shop/product-details/{id}`. Фото не копируем: права на контент сайта принадлежат магазину.
 
