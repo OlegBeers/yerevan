@@ -133,3 +133,20 @@ def test_local_match_finds_plain_draught_by_name_alone():
     other = KnownBeer(untappd_id=1199, name="Guinness Foreign Extra Stout", brewery="Guinness")
     found = local_match("Guinness", "Draught, dark", [draught, other])
     assert found is draught
+
+
+def test_local_match_rejects_variant_the_shop_does_not_name():
+    """A candidate's alcohol-free or barrel-aged variant is a different beer unless the shop says so."""
+    kromb_na = KnownBeer(untappd_id=84799, name="Krombacher Weizen Alkoholfrei", brewery="Krombacher Gruppe")
+    stout_ba = KnownBeer(untappd_id=2508041, name="Armenian Imperial Stout (Brandy Barrel Aged)", brewery="Dargett Brewery")
+    assert local_match("Krombacher", "Weizen", [kromb_na]) is None
+    assert local_match("Բիթեր Ռիվեր ՍՊԸ", "Dargett Imperial Stout dark", [stout_ba]) is None
+    assert local_match("Krombacher", "Weizen Alkoholfrei", [kromb_na]) == kromb_na
+
+
+def test_local_match_variant_candidate_still_makes_a_plain_name_ambiguous():
+    """'Dargett Stout' could be the oatmeal stout or the imperial one: a skipped variant still counts."""
+    oatmeal = KnownBeer(untappd_id=1533350, name="Oatmeal Stout", brewery="Dargett Brewery")
+    stout_ba = KnownBeer(untappd_id=2508041, name="Armenian Imperial Stout (Brandy Barrel Aged)", brewery="Dargett Brewery")
+    assert local_match("Dargett", "Stout", [oatmeal, stout_ba]) is None
+    assert local_match("Dargett", "Oatmeal Stout", [oatmeal, stout_ba]) == oatmeal

@@ -58,6 +58,9 @@ class KnownBeer:
 
 
 _LATIN_RE = re.compile("[a-z]", re.IGNORECASE)
+# Words that mark a distinct edition of a base beer; a shop title must name them to match it
+_VARIANT_TOKENS = {"alkoholfrei", "alcoholfree", "non", "free", "zero", "0", "barrel", "aged", "ba", "bourbon",
+                   "brandy", "cognac", "rum", "whisky", "whiskey", "wine"}
 
 
 def _shop_tokens(text: str) -> list[str]:
@@ -77,7 +80,7 @@ def _is_latin(text: str) -> bool:
 
 
 def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candidate: KnownBeer) -> str | None:
-    """"exact", "loose" or None for how well `candidate` fits -- used to break ties when several
+    """"exact", "loose", "variant" (never chosen, but makes the name ambiguous) or None for how well `candidate` fits -- used to break ties when several
     candidates pass (local_match prefers an exact token-set match).
 
     Brewery compatibility: a shop brewery token appears in the candidate's own brewery or name
@@ -101,6 +104,8 @@ def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candida
     remaining = {t for t in shop_name_tokens if t not in consumed}
     if not remaining or not remaining <= candidate_name_tokens:
         return None
+    if (candidate_name_tokens & _VARIANT_TOKENS) - set(shop_name_tokens):
+        return "variant"   # an alcohol-free/barrel-aged edition the title doesn't name: another beer, yet a rival
     return "exact" if remaining == candidate_name_tokens else "loose"
 
 
@@ -112,6 +117,6 @@ def local_match(shop_brewery: str | None, shop_name: str, candidates: Sequence[K
     passing = [(c, _evaluate(shop_brewery, shop_name_tokens, c)) for c in candidates]
     passing = [(c, grade) for c, grade in passing if grade is not None]
     if len(passing) == 1:
-        return passing[0][0]
+        return passing[0][0] if passing[0][1] != "variant" else None
     exact = [c for c, grade in passing if grade == "exact"]
     return exact[0] if len(exact) == 1 else None
