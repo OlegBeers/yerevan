@@ -152,6 +152,40 @@ def test_shop_checkin_goes_to_the_shops_block():
     assert "БАРЫ</b>" not in d.html
 
 
+def test_bar_and_shop_checkins_dont_interleave_blocks():
+    """I-2: a manual entry at a bar + a shop check-in (Houl) + a bar check-in + a shop item must not
+    interleave БАРЫ/МАГАЗИНЫ — all bars first, then all shops, each header exactly once."""
+    s = new_state(pairs={
+        "tap-station": {"n:379 hazy pale": pair(yv(24, 14), kind="manual", brewery="379", name="Hazy Pale",
+                                                manual_by="Аня")},
+        "houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving="Bottle",
+                             checkin_at=iso(yv(24, 9)))},
+        "dors": {"u:8": pair(yv(22, 20), kind="checkin", brewery="Dors", name="Smoked Porter",
+                             serving="Draft", checkin_at=iso(yv(22, 20)))},
+        "beer-city": {"n:x": pair(yv(24, 10), kind="shop", name="X")},
+    })
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert d.html.count("БАРЫ</b>") == 1
+    assert d.html.count("МАГАЗИНЫ</b>") == 1
+    bars_pos, shops_pos = d.html.index("БАРЫ</b>"), d.html.index("МАГАЗИНЫ</b>")
+    assert bars_pos < shops_pos
+    assert d.html.index("Stout") > shops_pos
+    assert d.html.index("X") > shops_pos
+    assert d.html.index("Smoked Porter") < shops_pos
+    assert d.html.index("Hazy Pale") < shops_pos
+
+
+@pytest.mark.parametrize("serving, ru", [
+    ("Bottle", "бутылка"), ("Can", "банка"), ("Taster", "дегустационный"), ("Cask", "из бочки"),
+])
+def test_serving_ru_translates_container_types(serving, ru):
+    """M-2: a shop's own check-ins (e.g. Houl) report a container, not "разлив"."""
+    s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving=serving,
+                                              checkin_at=iso(yv(24, 9)))}})
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert f"в Houl, {ru}, видели" in d.html
+
+
 def test_to_admin_false_after_preview_digests():
     s = full_state()
     s.digest.sent_count = 2

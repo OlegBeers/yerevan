@@ -14,7 +14,8 @@ MONTHS = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", 
 DAY_START, DAY_END = time(9, 0), time(23, 0)
 MIN_GAP_HOURS = 20
 CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег", "draft": "разлив"}
-SERVING_RU = {"Draft": "разлив", None: "подача неизвестна"}
+SERVING_RU = {"Draft": "разлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
+             "Cask": "из бочки", None: "подача неизвестна"}
 BREWERY_NEW_NOTE = "новый сорт в Untappd, где наливают — пока неизвестно"
 
 esc = html.escape
@@ -191,6 +192,9 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
 
     if not entries:
         return None
+    # v1.1: bars and shops can interleave within a section (e.g. a shop's own check-ins, §I-2) --
+    # stable-sort so all bars come first, then all shops, before capping and building headers.
+    entries.sort(key=lambda e: e[0] != "bars")
     shown = entries[:settings.digest_max_lines]
     hidden = len(entries) - len(shown)
 
