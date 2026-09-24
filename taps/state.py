@@ -32,6 +32,12 @@ class PairRec:
 class BeerRec:
     first_seen_city: str
     n_key: str | None = None
+    # v1.1 §2: cache for beers seen only in check-ins, filled from the beer's own Untappd page
+    rating: float | None = None
+    style: str | None = None
+    abv: float | None = None
+    ibu: int | None = None
+    rating_at: str | None = None
 
 
 @dataclass
@@ -198,7 +204,10 @@ def _merge_pair(a: PairRec, b: PairRec) -> PairRec:
 
 
 def _merge_beer(a: BeerRec, b: BeerRec) -> BeerRec:
-    return BeerRec(first_seen_city=_earliest(a.first_seen_city, b.first_seen_city), n_key=a.n_key or b.n_key)
+    # the freshest cached rating wins, so an alias merge never resurrects a stale one
+    newer = b if (b.rating_at and (not a.rating_at or parse_iso(b.rating_at) > parse_iso(a.rating_at))) else a
+    return BeerRec(first_seen_city=_earliest(a.first_seen_city, b.first_seen_city), n_key=a.n_key or b.n_key,
+                  rating=newer.rating, style=newer.style, abv=newer.abv, ibu=newer.ibu, rating_at=newer.rating_at)
 
 
 def _merge_brewery_new(a: BreweryNewRec, b: BreweryNewRec) -> BreweryNewRec:

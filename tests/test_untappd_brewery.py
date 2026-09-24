@@ -75,7 +75,8 @@ def test_checkin_sighting_fields():
     assert (cherry.place_id, cherry.beer_key, cherry.untappd_beer_id, cherry.name, cherry.brewery) == (
         "dargett-brewpub", "u:1559917", 1559917, "Cherry Ale (Morello)", "Dargett Brewery")
     assert (cherry.serving, cherry.seen_at, cherry.url, cherry.at_home) == (
-        None, datetime(2025, 11, 15, 15, 13, 4, tzinfo=timezone.utc), "https://untappd.com/beer/1559917", False)
+        None, datetime(2025, 11, 15, 15, 13, 4, tzinfo=timezone.utc),
+        "https://untappd.com/b/dargett-brewery-cherry-ale-morello/1559917", False)
     assert (cherry.rating, cherry.style, cherry.abv) == (None, None, None)   # never a personal rating
     # serving is passed through as is: rules.py decides which servings count
     assert [(by_id[i].beer_key, by_id[i].serving) for i in (1528689976, 1528688333, 1528638060)] == [

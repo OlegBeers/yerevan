@@ -465,6 +465,34 @@ def test_checkin_backfills_style_and_abv_from_a_menu_pair_with_the_same_key():
     assert info["style"] == "Porter" and info["abv"] == 5.5
 
 
+def test_checkin_backfills_from_the_beers_cache_when_no_menu_pair_exists():
+    """v1.1 §2: a beer seen only in check-ins borrows rating/style/abv/ibu from state.beers, filled by
+    run.fetch_beer_ratings from the beer's own Untappd page -- no menu pair to borrow from here."""
+    state = ready("untappd_checkins:tap-station")
+    state.beers["u:9"] = BeerRec(first_seen_city=iso(NOW - DAY), rating=3.82, style="Fruit Beer", abv=6.2, ibu=18,
+                                 rating_at=iso(NOW))
+    out = merge(state, venue_checkins(checkin(9)))
+    assert out.events == [("tap-station", "u:9")]
+    info = state.pairs["tap-station"]["u:9"].info
+    assert (info["rating"], info["style"], info["abv"], info["ibu"]) == (3.82, "Fruit Beer", 6.2, 18)
+
+
+def test_checkin_backfill_prefers_a_menu_pair_over_the_cache():
+    state = ready("untappd_menu:gargoyle", "untappd_brewery:441775", "untappd_checkins:dors")
+    merge(state, menu(beer(5, style="Porter", abv=5.5)), now=NOW - 12 * H)
+    state.beers["u:5"].rating, state.beers["u:5"].style = 4.5, "Stale Cache Style"
+    out = merge(state, brewery_checkins(checkin(5, "dors", serving=None, brewery=None)))
+    assert out.events == [("dors", "u:5")]
+    assert state.pairs["dors"]["u:5"].info["style"] == "Porter"   # the menu pair wins, not the cache
+
+
+def test_checkin_backfill_from_the_cache_does_not_overwrite_known_fields():
+    state = ready("untappd_checkins:tap-station")
+    state.beers["u:9"] = BeerRec(first_seen_city=iso(NOW - DAY), rating=3.82, style="Fruit Beer")
+    merge(state, venue_checkins(checkin(9, style="Sour")))
+    assert state.pairs["tap-station"]["u:9"].info["style"] == "Sour"   # the sighting's own value wins
+
+
 # --- manual ------------------------------------------------------------------
 
 def test_manual_entry_is_an_event_within_three_days_and_once_per_entry_id():

@@ -211,7 +211,9 @@ class _Merger:
         rec.info.pop("hidden", None)      # set again by _drop while hidden or filtered
 
     def _backfill_checkin(self, rec: PairRec, key: str) -> None:
-        """A check-in poured without menu details borrows style/abv/ibu/rating from a menu pair of the same beer."""
+        """A check-in poured without menu details borrows style/abv/ibu/rating from a menu pair of the
+        same beer, else (v1.1 §2) from the state.beers cache filled by fetch_beer_ratings for beers
+        seen only in check-ins."""
         missing = [f for f in CHECKIN_BACKFILL_FIELDS if rec.info.get(f) is None]
         if not missing:
             return
@@ -223,6 +225,13 @@ class _Merger:
                     if value is not None:
                         rec.info[f] = value
                 return
+        beer = self.state.beers.get(key)
+        if beer is None:
+            return
+        for f in missing:
+            value = getattr(beer, f, None)
+            if value is not None:
+                rec.info[f] = value
 
     def _suppressed(self, s: Sighting, place: Place, nk: str | None) -> bool:
         if s.kind == "manual":

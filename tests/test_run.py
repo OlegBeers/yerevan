@@ -9,13 +9,13 @@ import pytest
 
 from taps import run as run_mod
 from taps.config import Config, ConfigError, Settings
-from taps.fetch import FetchError, HttpResponse
+from taps.fetch import FetchError, HttpResponse, UntappdClient
 from taps.gitsync import CheckoutError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome
 from taps.run import Deps, main, run, update_alerts
 from taps.sources.parma import fetch_parma as real_fetch_parma
-from taps.state import VenueRec, empty_state, load_state, save_state
+from taps.state import BeerRec, PairRec, UntappdRec, VenueRec, empty_state, load_state, save_state
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import iso
 from tests.helpers import fixture_json, fixture_text
@@ -552,6 +552,116 @@ def test_city_check_respects_the_untappd_budget(world):
     rec = world.state().venues["54321"]
     assert rec.location_checked_at is None
     assert world.untappd.urls == [GARGOYLE]   # the one page the budget allowed; nothing after it
+
+
+# --- v1.1 §2: beer ratings for beers seen only in check-ins ------------------
+
+BEER_URL = "https://untappd.com/b/dargett-brewery-cherry-ale-morello/1559917"
+BEER_PAGE_HTML = fixture_text("untappd/beer_page.html")
+
+
+def _checkin_pair(checkin_at, url="https://untappd.com/b/x/1", **extra):
+    return PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                   info={"kind": "checkin", "checkin_at": checkin_at, "url": url, **extra})
+
+
+def _untappd_client(pages, daily_pages=30, untappd=None):
+    def fetch_page(url):
+        return HttpResponse(200, {}, pages[url]) if url in pages else HttpResponse(404, {}, "")
+    return UntappdClient(untappd or UntappdRec(), daily_pages, NOW, fetch_page, sleep=lambda s: None)
+
+
+def test_beer_rating_candidates_excludes_beers_also_seen_on_a_menu():
+    state = empty_state(NOW)
+    state.pairs = {
+        "tap-station": {"u:1": _checkin_pair(iso(NOW - timedelta(days=5)), url="https://untappd.com/b/a/1"),
+                        "u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/b/2")},
+        "gargoyle": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu"})},
+    }
+    assert run_mod._beer_rating_candidates(state, NOW) == [("u:2", "https://untappd.com/b/b/2")]
+
+
+def test_beer_rating_candidates_most_recently_seen_first_capped_at_five():
+    state = empty_state(NOW)
+    state.pairs = {"t": {f"u:{i}": _checkin_pair(iso(NOW - timedelta(days=i)), url=f"https://untappd.com/b/x/{i}")
+                        for i in range(1, 8)}}
+    candidates = run_mod._beer_rating_candidates(state, NOW)
+    assert [key for key, _ in candidates] == ["u:1", "u:2", "u:3", "u:4", "u:5"]
+
+
+def test_beer_rating_candidates_excludes_checkins_older_than_21_days():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=22)))}}
+    assert run_mod._beer_rating_candidates(state, NOW) == []
+
+
+def test_beer_rating_candidates_skips_a_fresh_cached_rating():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)))}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=10)))
+    assert run_mod._beer_rating_candidates(state, NOW) == []
+
+
+def test_beer_rating_candidates_refetches_a_stale_cached_rating():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=31)))
+    assert run_mod._beer_rating_candidates(state, NOW) == [("u:1", "https://untappd.com/b/x/1")]
+
+
+def test_beer_rating_candidates_skips_pairs_without_a_url():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url=None)}}
+    assert run_mod._beer_rating_candidates(state, NOW) == []
+
+
+def test_fetch_beer_ratings_caches_parsed_fields():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
+    client = _untappd_client({BEER_URL: BEER_PAGE_HTML})
+    run_mod.fetch_beer_ratings(state, client, NOW)
+    beer = state.beers["u:1559917"]
+    assert (beer.rating, beer.style, beer.abv, beer.ibu, beer.rating_at) == (3.82, "Fruit Beer", 6.2, 18, iso(NOW))
+
+
+def test_fetch_beer_ratings_stops_on_budget_error_without_consuming_the_others():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1"),
+                        "u:2": _checkin_pair(iso(NOW - timedelta(days=2)), url="https://untappd.com/b/y/2")}}
+    client = _untappd_client({}, daily_pages=0)   # no budget at all
+    run_mod.fetch_beer_ratings(state, client, NOW)
+    assert state.beers == {}
+
+
+def test_fetch_beer_ratings_dumps_debug_html_on_a_page_that_does_not_parse(monkeypatch, tmp_path):
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
+    client = _untappd_client({BEER_URL: "<html><body>login wall</body></html>"})
+
+    run_mod.fetch_beer_ratings(state, client, NOW)
+
+    written = (debug_dir / "untappd_beer_1559917.html").read_text(encoding="utf-8")
+    assert written.splitlines()[0] == f"<!-- {BEER_URL} -->"
+    beer = state.beers["u:1559917"]
+    assert beer.rating is None and beer.rating_at == iso(NOW)   # stamped, so it isn't retried every run
+
+
+def test_fetch_beer_ratings_survives_a_parse_crash_and_continues(monkeypatch):
+    """I-1, unit-level: a parse error must fail only that beer -- it is stamped checked, and the loop
+    continues to the next candidate instead of crashing the run."""
+    state = empty_state(NOW)
+    state.pairs = {"t": {
+        "u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/a/1"),
+        "u:2": _checkin_pair(iso(NOW - timedelta(days=2)), url="https://untappd.com/b/b/2"),
+    }}
+    client = _untappd_client({"https://untappd.com/b/a/1": "<html></html>", "https://untappd.com/b/b/2": "<html></html>"})
+    monkeypatch.setattr(run_mod, "parse_beer_page", lambda html: (_ for _ in ()).throw(ValueError("boom")))
+
+    run_mod.fetch_beer_ratings(state, client, NOW)
+
+    assert state.beers["u:1"].rating_at == iso(NOW) and state.beers["u:2"].rating_at == iso(NOW)
 
 
 def test_discovery_report_pluralizes_checkins_correctly(world):

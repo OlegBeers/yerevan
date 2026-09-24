@@ -81,6 +81,15 @@ def test_checkin_row_visible_21_days_after_checkin():
     assert rows["u:20"]["badge"] == "checkin"
 
 
+def test_checkin_row_shows_a_rating_cached_via_backfill():
+    """v1.1 §2: rules._backfill_checkin writes rating/style/abv/ibu into a check-in pair's own info
+    (from a menu pair or the state.beers cache); site_data passes it through like any other row."""
+    st = state({"dors": {"u:9": pair("untappd_checkins", info={
+        "checkin_at": ago(1), "serving": "Draft", "rating": 3.82, "style": "Fruit Beer", "abv": 6.2, "ibu": 18})}})
+    row = build(st)["rows"][0]
+    assert (row["rating"], row["style"], row["abv"], row["ibu"]) == (3.82, "Fruit Beer", 6.2, 18)
+
+
 def test_manual_row_visible_14_days_from_date():
     st = state({"gargoyle": {
         "n:379 hazy pale": pair("manual", info={"manual_date": "2026-09-27", "manual_by": "Аня"}),

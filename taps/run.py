@@ -21,19 +21,20 @@ from taps.fetch import (
 )
 from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
-from taps.rules import MergeOutcome, merge_results
+from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import build_site_data, write_site_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
+from taps.sources.untappd_beer import parse_beer_page
 from taps.sources.untappd_brewery import fetch_brewery_checkins, fetch_brewery_list
 from taps.sources.untappd_checkins import (
     fetch_venue_checkins, is_armenia_location, is_yerevan_city, parse_venue_location, parse_venue_meta,
 )
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.yerevan_city import fetch_yerevan_city
-from taps.state import VENUE_KEEP_DAYS, State, apply_aliases, load_state, prune, record_venues, save_state
+from taps.state import VENUE_KEEP_DAYS, BeerRec, State, apply_aliases, load_state, prune, record_venues, save_state
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
@@ -56,6 +57,8 @@ DISCOVERY_MAX_VENUES = 20    # cap on lines in the weekly report, besides the MA
 LOCATION_CANDIDATES_PER_RUN = 3   # v1.1 city check (§4): at most this many untracked venue pages per run
 LOCATION_MIN_CHECKINS = 2         # below this, not worth spending a page on
 LOCATION_RECHECK_DAYS = 90        # a failed/unknown check is retried after this many days
+BEER_RATING_CANDIDATES_PER_RUN = 5   # v1.1 §2: beer pages fetched per run for check-in-only ratings
+BEER_RATING_MAX_AGE_DAYS = 30        # a cached rating older than this is refreshed
 
 
 @dataclass
@@ -124,6 +127,7 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
             _maybe_dump_debug(result, client)   # client.last_html/url still belong to this job
             results.append(result)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
+        fetch_beer_ratings(state, client, now)                 # v1.1 §2: check-in-only beer ratings
     finally:
         close()
     if client.responded:
@@ -208,6 +212,58 @@ def discover_venue_locations(state: State, config: Config, client: UntappdClient
         except Exception:
             pass
         rec.location_checked_at = iso(now)
+
+
+# --- v1.1 §2: beer ratings for beers seen only in check-ins ------------------
+
+def _beer_rating_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """(key, url) of check-in-only beers (no menu pair anywhere) visible on the site in the last
+    CHECKIN_KEEP_DAYS days whose cached rating is missing or older than BEER_RATING_MAX_AGE_DAYS,
+    most recently seen first, capped at BEER_RATING_CANDIDATES_PER_RUN. Candidates come from state as
+    it stood before this run's merge, same as the venue-location candidates above."""
+    menu_keys = {key for pairs in state.pairs.values() for key, rec in pairs.items()
+                if rec.info.get("kind") == "menu"}
+    best: dict[str, tuple[str, str]] = {}   # key -> (checkin_at, url)
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            if not key.startswith("u:") or key in menu_keys or rec.info.get("kind") != "checkin":
+                continue
+            checkin_at, url = rec.info.get("checkin_at"), rec.info.get("url")
+            if not checkin_at or not url or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
+                continue
+            beer = state.beers.get(key)
+            if (beer and beer.rating is not None and beer.rating_at
+                    and age_days(parse_iso(beer.rating_at), now) <= BEER_RATING_MAX_AGE_DAYS):
+                continue
+            if key not in best or checkin_at > best[key][0]:
+                best[key] = (checkin_at, url)
+    ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
+    return [(key, url) for key, (_, url) in ordered[:BEER_RATING_CANDIDATES_PER_RUN]]
+
+
+def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> None:
+    """Fetch up to BEER_RATING_CANDIDATES_PER_RUN beer pages to fill state.beers rating/style/abv/ibu
+    for beers seen only in check-ins (v1.1 §2), so rules._backfill_checkin can use them; a budget or
+    Cloudflare error stops this step only, same client/pauses as the other Untappd sources. A page
+    that doesn't come back parseable as a beer page is dumped for debugging (TAPS_DEBUG_DIR) --
+    the cache is still stamped as checked, so it isn't refetched every run."""
+    for key, url in _beer_rating_candidates(state, now):
+        try:
+            html = client.get(url)
+        except FetchError:
+            break
+        try:
+            data = parse_beer_page(html)   # I-1: an unexpected page must fail this one beer, not the run
+        except Exception:
+            data = None
+        if not data or all(v is None for v in data.values()):
+            dump_debug_html(f"untappd_beer_{key.removeprefix('u:')}", client)
+        beer = state.beers.setdefault(key, BeerRec(first_seen_city=iso(now)))
+        if data:
+            for field in ("rating", "style", "abv", "ibu"):
+                if data[field] is not None:
+                    setattr(beer, field, data[field])
+        beer.rating_at = iso(now)
 
 
 # --- alerts ------------------------------------------------------------------

@@ -142,6 +142,16 @@ def test_checkin_seen_ago_uses_correct_russian_plural(days_ago, expected):
     assert expected in d.html
 
 
+@pytest.mark.parametrize("rating, expected", [(4.12, "🔥4.12"), (3.75, "🔥3.75"), (3.5, "3.50")])
+def test_checkin_shows_a_cached_rating_with_the_hot_threshold(rating, expected):
+    """v1.1 §2: a check-in row with a rating backfilled from state.beers (menu or the beer-page cache)
+    shows it exactly like a menu row -- 🔥 only at/above hot_rating, else a plain number."""
+    s = new_state(pairs={"dors": {"u:8": pair(yv(22, 20), kind="checkin", name="Smoked Porter", serving="Draft",
+                                              checkin_at=iso(yv(22, 20)), rating=rating)}})
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert f"Smoked Porter · {expected} · в Dors" in d.html
+
+
 def test_shop_checkin_goes_to_the_shops_block():
     """v1.1: a check-in at a shop (e.g. Houl) belongs in МАГАЗИНЫ, not БАРЫ."""
     s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving="Bottle",

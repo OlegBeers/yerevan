@@ -29,6 +29,7 @@ class Checkin:
     at_home: bool
     created_at: datetime
     venue_url: str | None = None
+    beer_url: str | None = None   # canonical /b/<slug>/<id> link from the check-in's own beer href
 
 
 def _text(tag: Tag | None) -> str:
@@ -63,7 +64,7 @@ def _parse_item(item: Tag) -> Checkin | None:
     for a in text.find_all("a", href=True):   # user, beer, brewery, venue - in this order
         if beer is None:
             if m := BEER_HREF_RE.match(a["href"]):
-                beer = (int(m.group(1)), _text(a))
+                beer = (int(m.group(1)), _text(a), a["href"])
         elif m := VENUE_HREF_RE.match(a["href"]):
             venue = (int(m.group(1)), _text(a), a["href"])
         elif brewery is None:
@@ -82,6 +83,7 @@ def _parse_item(item: Tag) -> Checkin | None:
         at_home=venue is not None and AT_HOME in venue[1].lower(),
         created_at=created_at,
         venue_url=f"https://untappd.com{venue[2]}" if venue else None,
+        beer_url=f"https://untappd.com{beer[2]}",
     )
 
 
@@ -207,7 +209,7 @@ def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, 
             place_id=place.id, source=source, beer_key=u_key(c.beer_id),
             title=f"{c.brewery} {c.beer_name}".strip(), name=c.beer_name, seen_at=c.created_at,
             brewery=c.brewery or None, untappd_beer_id=c.beer_id, serving=c.serving,
-            url=f"https://untappd.com/beer/{c.beer_id}", checkin_id=c.checkin_id, at_home=c.at_home,
+            url=c.beer_url or f"https://untappd.com/beer/{c.beer_id}", checkin_id=c.checkin_id, at_home=c.at_home,
         ))
     return out
 

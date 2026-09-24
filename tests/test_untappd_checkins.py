@@ -71,6 +71,7 @@ def test_craft_story_checkin_fields():
         brewery="Omnipollo", venue_id=12281551, venue_name="Craft Story", serving="Can",
         at_home=False, created_at=datetime(2024, 10, 31, 15, 50, 9, tzinfo=timezone.utc),
         venue_url="https://untappd.com/v/craft-story/12281551",
+        beer_url="https://untappd.com/b/omnipollo-black-is-beautiful-vol-2-ipa/5698328",
     )
 
 
@@ -148,8 +149,15 @@ def test_checkins_to_sightings():
     assert (s.name, s.title, s.brewery, s.untappd_beer_id) == (
         "Black Is Beautiful Volume 2", "Omnipollo Black Is Beautiful Volume 2", "Omnipollo", 5698328)
     assert s.seen_at == datetime(2024, 10, 31, 15, 50, 9, tzinfo=timezone.utc)   # check-in time, not now
-    assert (s.serving, s.at_home, s.url) == ("Can", False, "https://untappd.com/beer/5698328")
+    assert (s.serving, s.at_home, s.url) == (
+        "Can", False, "https://untappd.com/b/omnipollo-black-is-beautiful-vol-2-ipa/5698328")
     assert (s.rating, s.style, s.abv, s.brewery_id) == (None, None, None, None)  # personal ratings never used
+
+
+def test_checkins_to_sightings_url_falls_back_to_short_form_without_a_beer_href():
+    no_href = Checkin(1, 2, "X", "Y", 12281551, "Craft Story", None, False, NOW)   # beer_url unset
+    [s] = checkins_to_sightings([no_href], CONFIG, "untappd_checkins", NOW, {})
+    assert s.url == "https://untappd.com/beer/2"
 
 
 def test_checkins_to_sightings_source_and_at_home_passthrough():

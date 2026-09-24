@@ -168,8 +168,8 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
         if section == "checkin":
             serving = info.get("serving")
             where = f"в {esc(place.name)}, {esc(SERVING_RU.get(serving, serving))}, {_seen(info, rec, now)}"
-        else:
-            where = f"в {esc(place.name)} (от {esc(info.get('manual_by') or '?')})"
+            return [_style_abv(info), _rating(info, settings), where]
+        where = f"в {esc(place.name)} (от {esc(info.get('manual_by') or '?')})"
         return [_style_abv(info), where]
 
     group_header = {"checkin": "👀 <b>Похоже, появилось</b>", "manual": "✍️ <b>Со слов</b>"}

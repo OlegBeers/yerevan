@@ -76,7 +76,8 @@ def test_to_dict_is_plain_json_data():
     d = full_state().to_dict()
     assert d["pairs"]["gargoyle"]["u:3539672"]["notified_at"] == ago(1)
     assert d["pairs"]["yerevan-city"]["n:kilikia"]["info"]["hidden"] is True
-    assert d["beers"]["u:3539672"] == {"first_seen_city": ago(2), "n_key": "n:zagovor black sails"}
+    assert d["beers"]["u:3539672"] == {"first_seen_city": ago(2), "n_key": "n:zagovor black sails",
+                                       "rating": None, "style": None, "abv": None, "ibu": None, "rating_at": None}
     assert d["brewery_new"]["u:6000001"]["brewery_id"] == 265165
     assert d["sources"]["untappd_menu:gargoyle"]["last_trip_keys"] == ["u:1", "u:2"]
     assert d["untappd"]["pages_today"] == 12
@@ -277,6 +278,26 @@ def test_apply_aliases_merges_beers_keeping_earliest_first_seen_city():
     apply_aliases(s, {"n:konix bronx": "u:3539672", "n:lonely": "u:77"})
     assert s.beers == {"u:3539672": BeerRec(first_seen_city=ago(20), n_key="n:konix cassis ruby"),
                        "u:77": BeerRec(first_seen_city=ago(1))}
+
+
+def test_apply_aliases_merges_beers_keeping_the_freshest_cached_rating():
+    s = empty_state(NOW)
+    s.beers = {
+        "n:x": BeerRec(first_seen_city=ago(20), rating=3.5, style="Stout", abv=6.0, ibu=30, rating_at=ago(40)),
+        "u:1": BeerRec(first_seen_city=ago(5), rating=4.1, style="IPA", abv=6.5, ibu=45, rating_at=ago(2)),
+    }
+    apply_aliases(s, {"n:x": "u:1"})
+    assert s.beers["u:1"] == BeerRec(first_seen_city=ago(20), rating=4.1, style="IPA", abv=6.5, ibu=45,
+                                     rating_at=ago(2))
+
+
+def test_apply_aliases_merges_beers_using_the_only_available_rating():
+    s = empty_state(NOW)
+    s.beers = {"n:x": BeerRec(first_seen_city=ago(20), rating=3.5, style="Stout", abv=6.0, ibu=30, rating_at=ago(40)),
+               "u:1": BeerRec(first_seen_city=ago(5))}   # no cached rating yet
+    apply_aliases(s, {"n:x": "u:1"})
+    assert s.beers["u:1"] == BeerRec(first_seen_city=ago(20), rating=3.5, style="Stout", abv=6.0, ibu=30,
+                                     rating_at=ago(40))
 
 
 def test_apply_aliases_merges_brewery_new():
