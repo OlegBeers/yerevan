@@ -22346,9 +22346,9 @@
  "started_at": "2026-09-24T10:17:40+00:00",
  "untappd": {
   "brewery_list_cursor": 0,
-  "last_attempt": "2026-09-24T10:00:00+00:00",
+  "last_attempt": null,
   "pages_date": "2026-09-24",
-  "pages_today": 22
+  "pages_today": 0
  },
  "venues": {
   "10274653": {
