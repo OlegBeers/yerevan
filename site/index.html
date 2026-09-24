@@ -88,7 +88,7 @@
   .place {
     display: flex; flex-direction: column; align-items: flex-start; max-width: 100%;
     font: inherit; font-size: .8rem; line-height: 1.3; text-align: left; cursor: pointer;
-    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--surface); color: var(--muted);
   }
   @media (max-width: 699px) {
@@ -98,7 +98,7 @@
     }
     .place { flex: 0 0 auto; scroll-snap-align: start; padding: 6px 10px; font-size: .76rem; }
   }
-  .place b { font-size: .95rem; color: var(--text); font-weight: 700; }
+  .place b { font-size: .85rem; color: var(--text); font-weight: 600; white-space: nowrap; }
   .place .warn { color: var(--danger); }
   .place[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
   .place-head, .where-head { display: inline-flex; align-items: center; gap: 6px; }
@@ -411,10 +411,16 @@ function renderPlaces() {
   };
   $("places").replaceChildren(
     chip(null, el("b", null, "Все места")),
-    ...ui.data.places.filter((p) => p.section === ui.section).map((p) => chip(p.id,
-      el("span", { class: "place-head" }, logoNode(p.name, p.logo, 24), el("b", null, p.name), p.verified ? verifiedBadge() : null),
-      ...placeStatus(p, now).map((line) => el("span", { class: line.warn ? "warn" : null },
-        line.icon ? iconSpan(line.icon) : null, line.text)))));
+    ...ui.data.places.filter((p) => p.section === ui.section).map((p) => {
+      // compact chip: one line; status goes to the tooltip, only a warning stays visible
+      const status = placeStatus(p, now);
+      const warn = status.some((line) => line.warn);
+      const button = chip(p.id,
+        el("span", { class: "place-head" }, logoNode(p.name, p.logo, 20), el("b", null, p.name),
+          p.verified ? verifiedBadge() : null, warn ? el("span", { class: "warn" }, iconSpan("⚠️")) : null));
+      button.title = status.map((line) => line.text).join(" · ");
+      return button;
+    }));
 }
 function venueNode(v) {
   const place = { name: v.name, logo: v.logo, verified: v.verified, untappd_url: v.url };
