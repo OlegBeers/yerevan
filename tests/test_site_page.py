@@ -173,6 +173,15 @@ def test_places_scroll_horizontally_on_narrow_screens():
     assert "scroll-snap" in block
 
 
+def test_tabs_dont_wrap_on_narrow_screens():
+    """The three tab labels (e.g. "Магазины") must not wrap letter-by-letter at 360-375px."""
+    css = _css(_soup())
+    idx = css.find("max-width: 400px")
+    assert idx != -1, "no narrow-screen media query found for .tab"
+    block = css[idx:idx + 200]
+    assert "white-space: nowrap" in block
+
+
 def test_colours_are_custom_properties_with_dark_variant():
     css = _css(_soup())
     root = re.search(r":root\s*\{([^}]*)\}", css).group(1)

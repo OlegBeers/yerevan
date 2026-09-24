@@ -71,6 +71,10 @@
     background: var(--surface); color: var(--text);
   }
   .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  @media (max-width: 400px) {
+    .tabs { overflow-x: auto; }
+    .tab { white-space: nowrap; font-size: .84rem; padding: 9px 8px; }
+  }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 16px; }
   #search, select {
     font: inherit; color: var(--text); background: var(--surface);
@@ -176,7 +180,7 @@
     <h2>Значки</h2>
     <ul class="legend">
       <li>✅ — в меню бара (Untappd или buy.am)</li>
-      <li>👀 — видели в чекинах Untappd: разлив в этом месте</li>
+      <li>👀 — видели в чекинах Untappd в этом месте (в барах — разлив)</li>
       <li>✍️ — со слов: кто-то из друзей видел сам</li>
       <li>🛒 — в онлайн-ассортименте магазина (сети, а не конкретного филиала)</li>
       <li>🆕 — появилось за последние 7 дней</li>
