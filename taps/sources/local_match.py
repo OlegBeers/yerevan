@@ -55,6 +55,10 @@ class KnownBeer:
     untappd_id: int
     name: str
     brewery: str
+    rating: float | None = None
+    style: str | None = None
+    abv: float | None = None
+    logo: str | None = None
 
 
 _LATIN_RE = re.compile("[a-z]", re.IGNORECASE)

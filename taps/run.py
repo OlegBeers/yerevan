@@ -309,7 +309,9 @@ def known_untappd_beers(state: State) -> list[KnownBeer]:
             beer_id = int(key[2:])
             name, brewery = rec.info.get("name"), rec.info.get("brewery")
             if beer_id not in out and name and brewery:
-                out[beer_id] = KnownBeer(untappd_id=beer_id, name=name, brewery=brewery)
+                out[beer_id] = KnownBeer(untappd_id=beer_id, name=name, brewery=brewery,
+                                         rating=rec.info.get("rating"), style=rec.info.get("style"),
+                                         abv=rec.info.get("abv"), logo=rec.info.get("logo"))
     return list(out.values())
 
 
@@ -317,14 +319,17 @@ def match_shop_beers_locally(state: State, now: datetime) -> None:
     """Before Untappd search: match every shop/menu/manual candidate against beers already known
     from a bar's own menu (zero extra pages). A miss is not cached (unlike search's "no_match") --
     it costs nothing to retry every run, and a bar might reveal the match later. A hit is recorded
-    exactly like a search match (state.shop_matches), marked via="local", so search skips it too."""
+    exactly like a search match (state.shop_matches), marked via="local", so search skips it too.
+    The matched beer's rating/style/abv/logo are already known too, copied straight in with
+    checked_at stamped now, so refresh_shop_matches doesn't spend a page re-fetching them."""
     candidates = known_untappd_beers(state)
     for key, brand, name in _shop_match_candidates(state, now, limit=None):
         found = local_match(brand, name, candidates)
         if found is not None:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.untappd_id, url=f"https://untappd.com/beer/{found.untappd_id}",
-                name=found.name, brewery=found.brewery, matched_at=iso(now), via="local")
+                rating=found.rating, style=found.style, abv=found.abv, logo=found.logo,
+                name=found.name, brewery=found.brewery, matched_at=iso(now), checked_at=iso(now), via="local")
 
 
 # --- v1.1 §3: match shop beers to Untappd via search --------------------------
@@ -336,7 +341,10 @@ def _shop_match_candidates(state: State, now: datetime,
     SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a corrections.yaml
     alias starts with "u:", not "n:", so it needs no search (apply_aliases runs before collect_untappd).
     "menu"/"manual" (v1.2 beer identity: Dargett Brewpub via buyam, a friend's manual sighting) are
-    candidates too -- an Untappd-native "u:"-keyed menu pair is already excluded by the key check."""
+    candidates too -- an Untappd-native "u:"-keyed menu pair is already excluded by the key check.
+    limit=None (only match_shop_beers_locally) also ignores a search "no_match" record's retry-days
+    wait: local matching is free, so it need not wait on search's own throttle -- but a corrections.yaml
+    same_as untappd_id: null override (via="manual") still blocks it, same as search."""
     best: dict[str, tuple[str, str, str]] = {}   # key -> (last_seen, brand, name)
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
@@ -345,9 +353,14 @@ def _shop_match_candidates(state: State, now: datetime,
             if rec.info.get("hidden") or rec.in_stock is False or not rec.last_in_result:
                 continue   # not shown on the site (mass brand, hidden, out of stock): don't spend pages on it
             match = state.shop_matches.get(key)
-            if match is not None and (match.untappd_beer_id is not None
-                                      or age_days(parse_iso(match.matched_at), now) <= SHOP_MATCH_RETRY_DAYS):
+            if match is not None and match.untappd_beer_id is not None:
                 continue
+            if match is not None:
+                if limit is None:
+                    if match.via == "manual":
+                        continue
+                elif age_days(parse_iso(match.matched_at), now) <= SHOP_MATCH_RETRY_DAYS:
+                    continue
             brand, name = rec.info.get("brewery"), rec.info.get("name")
             if not brand or not name:
                 continue

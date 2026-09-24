@@ -762,6 +762,24 @@ def test_shop_match_candidates_skips_a_fresh_no_match():
     assert run_mod._shop_match_candidates(state, NOW) == []
 
 
+def test_shop_match_candidates_ignores_a_fresh_search_no_match_when_limit_is_none():
+    """Local matching costs zero Untappd pages, so a fresh search "no_match" record must not block
+    it -- only match_shop_beers_locally ever calls with limit=None (v1.2 beer identity)."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=1)))
+    assert run_mod._shop_match_candidates(state, NOW, limit=None) == [("n:kilikia", "Kilikia", "Kilikia")]
+
+
+def test_shop_match_candidates_still_skips_a_manual_block_when_limit_is_none():
+    """Unlike a search no_match, a corrections.yaml same_as untappd_id: null override ("не то же",
+    via="manual") must keep blocking local matching too."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(via="manual", matched_at=iso(NOW))
+    assert run_mod._shop_match_candidates(state, NOW, limit=None) == []
+
+
 def test_shop_match_candidates_skips_pairs_without_brand_or_name():
     state = empty_state(NOW)
     state.pairs = {"parma": {
@@ -843,6 +861,21 @@ def test_match_shop_beers_locally_records_a_local_match():
         1674726, "local", "Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
     assert match.url == "https://untappd.com/beer/1674726"
     assert match.matched_at == iso(NOW)
+
+
+def test_match_shop_beers_locally_copies_rating_style_abv_logo_and_sets_checked_at():
+    """A local match is already a known, previously-fetched Untappd beer -- copy its cached display
+    fields too, and stamp checked_at so refresh_shop_matches doesn't spend a page re-fetching it."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1674726": _u_pair("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery",
+                                         rating=4.02, style="Fruit Beer", abv=5.5, logo="https://x/logo.jpg")},
+        "beer-city": {"n:dargett apricot ale": _shop_pair("Dargett", "Dargett apricot ale")},
+    }
+    run_mod.match_shop_beers_locally(state, NOW)
+    match = state.shop_matches["n:dargett apricot ale"]
+    assert (match.rating, match.style, match.abv, match.logo) == (4.02, "Fruit Beer", 5.5, "https://x/logo.jpg")
+    assert match.checked_at == iso(NOW)
 
 
 def test_match_shop_beers_locally_leaves_no_match_when_nothing_qualifies():
