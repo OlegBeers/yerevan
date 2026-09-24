@@ -81,6 +81,7 @@ class Config:
     places: Mapping[str, Place]  # enabled places only, in file order
     breweries: tuple[Brewery, ...]
     settings: Settings
+    known_venue_ids: frozenset[int] = frozenset()   # every place's venue id, enabled or disabled (v1.1 discovery)
 
     def place_by_venue(self, venue_id: int) -> Place | None:
         return next((p for p in self.places.values() if p.venue_id == venue_id), None)
@@ -207,4 +208,5 @@ def load_config(path: Path) -> Config:
         places={p.id: p for p in places if p.enabled},
         breweries=breweries,
         settings=_settings(root.get("settings") or {}),
+        known_venue_ids=frozenset(p.venue_id for p in places if p.venue_id is not None),
     )

@@ -91,6 +91,13 @@ def test_place_by_venue(cfg):
     assert cfg.place_by_venue(1) is None
 
 
+def test_known_venue_ids_includes_disabled_places(tmp_path):
+    """I-2: a disabled place's venue must still count as known, so it is not reported as a new place."""
+    cfg = load_config(write(tmp_path, MINIMAL))
+    assert cfg.known_venue_ids == frozenset({12252462, 11284746})
+    assert "tuf" not in cfg.places                     # disabled: excluded from places (tracked flag) as before
+
+
 def test_source_keys(cfg):
     assert cfg.places["gargoyle"].source_keys() == ["untappd_menu:gargoyle"]
     assert cfg.places["dors"].source_keys() == ["untappd_checkins:dors"]
