@@ -288,6 +288,8 @@ def _shop_match_candidates(state: State, now: datetime) -> list[tuple[str, str, 
         for key, rec in pairs.items():
             if not key.startswith("n:") or rec.info.get("kind") != "shop":
                 continue
+            if rec.info.get("hidden") or rec.in_stock is False or not rec.last_in_result:
+                continue   # not shown on the site (mass brand, hidden, out of stock): don't spend pages on it
             match = state.shop_matches.get(key)
             if match is not None and (match.untappd_beer_id is not None
                                       or age_days(parse_iso(match.matched_at), now) <= SHOP_MATCH_RETRY_DAYS):

@@ -395,3 +395,20 @@ def test_fetch_other_venue_is_bad_response():
     config = Config(places={"craft-story": moved}, breweries=(), settings=Settings())
     result = fetch_venue_checkins(FakeClient(fixture_text("untappd/craftstory_checkins.html")), moved, config, NOW, {})
     assert (result.ok, result.error, result.sightings) == (False, "bad_response", [])
+
+
+def test_checkin_time_prefers_data_gregtime_over_relative_text():
+    """Live pages (2026-09) rewrite fresh check-in times to e.g. '3 hours ago'; the exact time stays in
+    data-gregtime. Without it, a busy brewery page parsed to zero check-ins."""
+    from taps.sources.untappd_checkins import parse_checkins
+    html = """<div class="item " data-checkin-id="1603604272"><div class="">
+      <div class="checkin"><div class="top">
+      <p class="text"><a href="/user/anon" class="user">User</a> is drinking an
+        <a href="/b/dargett-brewery-india-pale-ale-vertigo/1518447">India Pale Ale (Vertigo)</a> by
+        <a href="/Dargett">Dargett Brewery</a> at <a href="/v/dargett-craft-brewery/4640403">Dargett Craft Brewery</a></p>
+      <p class="serving"><span>Draft</span></p></div>
+      <div class="bottom"><a href="/user/anon/checkin/1603604272" class="time timezoner"
+        data-gregtime="Thu, 24 Sep 2026 11:24:43 +0000">3 hours ago</a></div></div></div></div>"""
+    [c] = parse_checkins(html)
+    assert c.checkin_id == 1603604272 and c.venue_id == 4640403 and c.serving == "Draft"
+    assert c.created_at.isoformat() == "2026-09-24T11:24:43+00:00"

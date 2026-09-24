@@ -58,7 +58,11 @@ def _parse_item(item: Tag) -> Checkin | None:
 
     Only links inside p.text count: p.purchased also holds a /v/ link (where it was bought)."""
     text = item.select_one("p.text")
-    created_at = _created_at(_text(item.select_one("a.time")))
+    time_link = item.select_one("a.time")
+    # data-gregtime keeps the exact server time even after the page script rewrote the link text
+    # (to '31 Oct 24', or to '3 hours ago' for fresh check-ins, which _created_at cannot read)
+    created_at = _created_at(time_link.get("data-gregtime", "")) if time_link is not None else None
+    created_at = created_at or _created_at(_text(time_link))
     if text is None or created_at is None:
         return None
     beer = venue = brewery = None

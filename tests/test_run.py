@@ -1429,3 +1429,18 @@ def test_main_parses_args_and_env(monkeypatch, tmp_path):
     assert calls[1][0] == Path(".") and calls[1][4:] == (False, False)
     with pytest.raises(SystemExit):
         main([])
+
+
+def test_shop_match_candidates_skip_beers_not_shown_on_the_site():
+    """Mass brands (filtered -> info hidden), out-of-stock items and items gone from the last listing
+    are not on the site, so searching Untappd for them only burns the page budget."""
+    state = empty_state(NOW)
+    hidden = _shop_pair("Baltika", "Baltika 3")
+    hidden.info["hidden"] = True
+    oos = _shop_pair("Konix", "Bronx")
+    oos.in_stock = False
+    gone = _shop_pair("Gletcher", "Pale")
+    gone.last_in_result = False
+    state.pairs = {"parma": {"n:baltika 3": hidden, "n:bronx": oos, "n:pale": gone,
+                             "n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia")]
