@@ -51,7 +51,9 @@ def test_tabs_are_toggle_buttons_with_bars_selected():
     soup = _soup()
     bars, shops, venues = soup.find(id="tab-bars"), soup.find(id="tab-shops"), soup.find(id="tab-venues")
     assert bars.name == shops.name == venues.name == "button"
-    assert "🍻 Бары" in bars.get_text() and "🛒 Магазины" in shops.get_text() and "📍 Все места" in venues.get_text()
+    assert "🍻" in bars.get_text() and "Бары" in bars.get_text()
+    assert "🛒" in shops.get_text() and "Магазины" in shops.get_text()
+    assert "📍" in venues.get_text() and "Все места" in venues.get_text()
     assert (bars["data-section"], shops["data-section"], venues["data-section"]) == ("bars", "shops", "venues")
     assert (bars["aria-pressed"], shops["aria-pressed"], venues["aria-pressed"]) == ("true", "false", "false")
 
@@ -127,14 +129,40 @@ def test_script_texts_and_rules():
     assert "Asia/Yerevan" in js
     assert re.search(r"STALE_HOURS\s*=\s*36\b", js)
     assert "min-width: 700px" in js
-    for text in ("✅ меню", "👀 видели", "✍️ со слов", "🛒 в магазине", "🔥", "⭐", "🆕",
-                 "меню обновлено", "проверено", "⚠️ не удалось проверить", "обновлено",
+    for text in ("✅", "меню", "👀", "видели", "✍️", "со слов", "🛒", "в магазине", "🔥", "⭐", "🆕",
+                 "меню обновлено", "проверено", "не удалось проверить", "обновлено",
                  "ч назад", "Данные устарели", "с тех пор, как следим, с ",
-                 "Появилось", "чекинов за 30 дней", "в списке", "Верифицирован в Untappd", "no-referrer"):
+                 "Появилось", "за 30 дней", "в списке", "Верифицирован в Untappd", "no-referrer"):
         assert text in js, text
     assert "Замечено" not in js
     for word in ("день", "дня", "дней"):
         assert f'"{word}"' in js, word
+    for word in ("чекин", "чекина", "чекинов"):
+        assert f'"{word}"' in js, word
+
+
+def test_icons_have_a_spacing_class_separate_from_text():
+    """Every leading emoji/badge icon is its own element with a CSS gap, not glued text."""
+    soup = _soup()
+    css = _css(soup)
+    js = _js(soup)
+    assert re.search(r"\.ico\s*\{[^}]*margin-right", css)
+    for tab_id in ("tab-bars", "tab-shops", "tab-venues"):
+        ico = soup.find(id=tab_id).find("span", class_="ico")
+        assert ico is not None, tab_id
+    toggle_ico = soup.find(id="only-new").find_next_sibling("span", class_="ico")
+    assert toggle_ico is not None
+    assert "iconSpan" in js or "class: \"ico\"" in js
+
+
+def test_places_scroll_horizontally_on_narrow_screens():
+    css = _css(_soup())
+    idx = css.find("max-width: 699px")
+    assert idx != -1, "no <700px media query found for .places"
+    block = css[idx:idx + 400]
+    assert "overflow-x: auto" in block
+    assert "flex-wrap: nowrap" in block
+    assert "scroll-snap" in block
 
 
 def test_colours_are_custom_properties_with_dark_variant():
