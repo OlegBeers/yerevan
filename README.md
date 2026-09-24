@@ -2,8 +2,6 @@
 
 Живой список крафтового пива в барах и магазинах Еревана на одной странице и одна тихая сводка новинок в день в Telegram-чат друзей. Бесплатно: GitHub Actions собирает данные, GitHub Pages показывает сайт.
 
-Основа — проект знакомого для Валенсии [hopsandshot](https://github.com/hopandshot/hopsandshot) (Python + Playwright + BeautifulSoup, одна страница на GitHub Pages). Автор разрешил взять код. Лицензии в его репозитории нет, поэтому источник указан здесь и в подвале сайта. Спасибо!
-
 ## Как это работает
 
 Два раза в день, в 10:17 и 18:17 по Еревану, GitHub запускает `python -m taps run`. Прогон:
@@ -168,3 +166,7 @@ tests/              тесты; fixtures/ — сохранённые насто�
   tests.yml         тесты на каждый push
 docs/superpowers/specs/   дизайн
 ```
+
+## Спасибо и обратная связь
+
+Спасибо Ивану за идею (проект [hopandshot](https://github.com/hopandshot/hopsandshot) для Валенсии). Проект делает и поддерживает Олег — Telegram [@oleg_sorokin](https://t.me/oleg_sorokin); пожелания и ошибки — туда.
