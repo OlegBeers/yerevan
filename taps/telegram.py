@@ -36,7 +36,8 @@ def _post_once(post: Callable[..., Any], url: str, payload: dict, timeout: float
     try:
         resp = post(url, json=payload, timeout=timeout)
     except requests.RequestException as e:
-        return SendOutcome("unknown", f"{type(e).__name__}: {e}")
+        # the message may embed the request URL, which contains the bot token: the type name only
+        return SendOutcome("unknown", type(e).__name__)
     if resp.status_code >= 500:
         return SendOutcome("unknown", f"HTTP {resp.status_code}")
     try:
@@ -117,13 +118,15 @@ class Alerter:
             text += line
         return text
 
-    def flush(self, send: Callable[[str], SendOutcome]) -> None:
+    def flush(self, send: Callable[[str], SendOutcome]) -> SendOutcome | None:
+        """Send the queue as one message; None when there was nothing to send."""
         text = self.pending_text()
         if text is None:
-            return
+            return None
         outcome = send(text)
         if outcome.status == "rejected":
             # The admin surely did not get it: forget the hashes so the next run tries again.
             for key in self.queue:
                 self.state.alerts.pop(key, None)
         self.queue.clear()
+        return outcome

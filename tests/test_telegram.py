@@ -135,6 +135,14 @@ def test_timeout_is_unknown():
     assert "Timeout" in outcome.description
 
 
+def test_exception_text_with_the_bot_token_never_reaches_the_outcome():
+    leaky = requests.ConnectionError("HTTPSConnectionPool: Max retries with url: /bot123456:SECRET/sendMessage")
+    outcome = send(FakePost(leaky))
+    assert outcome.status == "unknown"
+    assert "SECRET" not in outcome.description and "123456" not in outcome.description
+    assert outcome.description == "ConnectionError"
+
+
 def test_connection_error_is_unknown():
     assert send(FakePost(requests.ConnectionError("reset"))).status == "unknown"
 
@@ -251,8 +259,15 @@ def test_flush_sends_once_and_clears_queue():
 
 def test_flush_with_nothing_queued_does_not_send():
     fake = FakeSend()
-    Alerter(empty_state(NOW)).flush(fake)
+    assert Alerter(empty_state(NOW)).flush(fake) is None
     assert fake.texts == []
+
+
+def test_flush_returns_the_send_outcome():
+    for status in ("sent", "rejected", "unknown"):
+        alerter = Alerter(empty_state(NOW))
+        alerter.alert("a", "первое")
+        assert alerter.flush(FakeSend(status)).status == status
 
 
 def test_rejected_flush_forgets_hashes_so_next_run_retries():
