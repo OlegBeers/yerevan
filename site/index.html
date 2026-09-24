@@ -135,8 +135,9 @@
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
   .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .card .meta { color: var(--muted); font-size: .85rem; margin-top: 2px; }
-  .card .where { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .85rem; margin-top: 6px; }
-  .card .where .meta-inline { color: var(--muted); }
+  .where { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .85rem; margin-top: 6px; }
+  .where .meta-inline { color: var(--muted); }
+  .wherelist { display: flex; flex-direction: column; gap: 6px; }
   footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
   footer h2 { font-size: .95rem; color: var(--text); margin: 20px 0 6px; font-weight: 700; }
   footer p { margin: 4px 0; }
@@ -338,15 +339,40 @@ function cmpDesc(a, b) {  // descending, empty values last
   if (a == null || b == null) return (a == null) - (b == null);
   return a < b ? 1 : a > b ? -1 : 0;
 }
-function visibleRows() {
+function filteredRows() {
   const q = $("search").value.trim().toLowerCase();
   const onlyNew = $("only-new").checked;
+  return ui.data.rows.filter((r) => r.section === ui.section
+    && (!onlyNew || r.new)
+    && (!ui.place || r.place_id === ui.place)
+    && (!q || [r.name, r.style, r.brewery].some((s) => s && String(s).toLowerCase().includes(q))));
+}
+function bestOf(rows, field) {   // highest non-null value, for sorting/display of a beer group
+  let best = null;
+  for (const r of rows) { const v = r[field]; if (v != null && (best == null || v > best)) best = v; }
+  return best;
+}
+function groupBeers(rows) {   // one beer can be on the menu at several places; group after filtering
+  const map = new Map();
+  for (const r of rows) {
+    const key = r.beer_key || `n:${(r.brewery || "").toLowerCase()}|${(r.name || "").toLowerCase()}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(r);
+  }
+  return [...map.values()].map((group) => {
+    const r0 = group[0];
+    return {
+      rows: group,
+      name: r0.name, brewery: r0.brewery, style: r0.style, ibu: r0.ibu, url: r0.url, beer_logo: r0.beer_logo,
+      abv: bestOf(group, "abv"), rating: bestOf(group, "rating"),
+      since: group.map((r) => r.since).sort()[0],
+      new: group.some((r) => r.new), star: group.some((r) => r.star),
+    };
+  });
+}
+function visibleGroups() {
   const key = $("sort").value;
-  return ui.data.rows
-    .filter((r) => r.section === ui.section
-      && (!onlyNew || r.new)
-      && (!ui.place || r.place_id === ui.place)
-      && (!q || [r.name, r.style, r.brewery].some((s) => s && String(s).toLowerCase().includes(q))))
+  return groupBeers(filteredRows())
     .sort((a, b) => cmpDesc(a[key], b[key]) || cmpDesc(a.since, b.since)
       || String(a.name).localeCompare(String(b.name), "ru"));
 }
@@ -358,21 +384,35 @@ function placeCell(r) {
     el("span", { class: "small" }, ...badgeNodes(r)),
   ];
 }
-function table(rows) {
+function placeLines(rows) {   // one line per place a grouped beer is available at
+  return rows.map((r) => {
+    const place = placeObj(r.place_id);
+    const extra = dot([priceText(r), volumeText(r)]);
+    return el("div", { class: "where" },
+      logoNode(place.name, place.logo, 20),
+      placeNameNode(place),
+      el("span", { class: "meta-inline" }, ...badgeNodes(r)),
+      extra ? el("span", { class: "meta-inline" }, extra) : null,
+      shopLinkNode(r));
+  });
+}
+function table(groups) {
   const heads = ["Пиво", "Стиль", "Крепость", "IBU", "Рейтинг", "Цена", "Где", "Появилось"];
   const numeric = new Set(["Крепость", "IBU", "Рейтинг", "Цена"]);
   const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: numeric.has(h) ? "num" : null }, h)));
-  const body = rows.map((r) => el("tr", null,
+  const body = groups.map((g) => el("tr", null,
     el("td", null,
-      el("span", { class: "beer-head" }, ...flagNodes(r), beerLogoNode(r.beer_logo), nameNode(r)),
-      r.brewery ? el("span", { class: "small" }, r.brewery) : null, shopLinkNode(r)),
-    el("td", null, r.style || ""),
-    el("td", { class: "num" }, abvText(r)),
-    el("td", { class: "num" }, r.ibu ?? ""),
-    el("td", { class: "num" }, ratingNode(r)),
-    el("td", { class: "num" }, priceText(r), volumeText(r) ? el("span", { class: "small" }, volumeText(r)) : null),
-    el("td", null, ...placeCell(r)),
-    el("td", { class: "nowrap" }, sinceText(r.since))));
+      el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)),
+      g.brewery ? el("span", { class: "small" }, g.brewery) : null,
+      g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null),
+    el("td", null, g.style || ""),
+    el("td", { class: "num" }, abvText(g)),
+    el("td", { class: "num" }, g.ibu ?? ""),
+    el("td", { class: "num" }, ratingNode(g)),
+    el("td", { class: "num" }, ...(g.rows.length === 1 ? [priceText(g.rows[0]),
+      volumeText(g.rows[0]) ? el("span", { class: "small" }, volumeText(g.rows[0])) : null] : [])),
+    el("td", null, ...(g.rows.length === 1 ? placeCell(g.rows[0]) : [el("div", { class: "wherelist" }, ...placeLines(g.rows))])),
+    el("td", { class: "nowrap" }, sinceText(g.since))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
 }
 function cardWhere(r) {
@@ -382,27 +422,27 @@ function cardWhere(r) {
     placeNameNode(place),
     el("span", { class: "meta-inline" }, ...badgeNodes(r)));
 }
-function cards(rows) {
+function cards(groups) {
   const line = (cls, text) => (text ? el("div", { class: cls }, text) : null);
-  return el("ul", { class: "cards" }, ...rows.map((r) => el("li", { class: "card" },
+  return el("ul", { class: "cards" }, ...groups.map((g) => el("li", { class: "card" },
     el("div", { class: "top" },
-      el("span", { class: "beer-head" }, ...flagNodes(r), beerLogoNode(r.beer_logo), nameNode(r)), ratingNode(r)),
-    line("meta", dot([r.brewery, r.style, abvText(r), ibuText(r)])),
-    line("meta", dot([volumeText(r), priceText(r)])),
-    shopLinkNode(r),
-    cardWhere(r),
-    sinceText(r.since) ? el("div", { class: "meta" }, `Появилось ${sinceText(r.since)}`) : null)));
+      el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)), ratingNode(g)),
+    line("meta", dot([g.brewery, g.style, abvText(g), ibuText(g)])),
+    g.rows.length === 1 ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
+    g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
+    g.rows.length === 1 ? cardWhere(g.rows[0]) : el("div", { class: "wherelist" }, ...placeLines(g.rows)),
+    sinceText(g.since) ? el("div", { class: "meta" }, `Появилось ${sinceText(g.since)}`) : null)));
 }
 function render() {
   if (!ui.data) return;
-  const rows = visibleRows();
-  const total = ui.data.rows.filter((r) => r.section === ui.section).length;
-  $("count").textContent = rows.length === total ? `Позиций: ${total}` : `Показано ${rows.length} из ${total}`;
-  if (!rows.length) {
+  const groups = visibleGroups();
+  const total = groupBeers(ui.data.rows.filter((r) => r.section === ui.section)).length;
+  $("count").textContent = groups.length === total ? `Позиций: ${total}` : `Показано ${groups.length} из ${total}`;
+  if (!groups.length) {
     $("rows").replaceChildren(el("p", { class: "empty" }, total ? "Ничего не нашлось — попробуйте другой запрос или фильтр." : "Пока пусто."));
     return;
   }
-  $("rows").replaceChildren(wide.matches ? table(rows) : cards(rows));
+  $("rows").replaceChildren(wide.matches ? table(groups) : cards(groups));
 }
 
 function placeStatus(p, now) {

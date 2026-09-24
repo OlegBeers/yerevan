@@ -7,7 +7,7 @@ PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
-              "beer_logo", "shop_url")
+              "beer_logo", "shop_url", "beer_key")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url", "addresses")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
@@ -196,6 +196,55 @@ def test_table_headers_use_new_since_label():
     js = _js(_soup())
     assert '"Появилось"' in js
     assert '"Замечено"' not in js
+
+
+def test_rows_are_filtered_before_being_grouped_by_beer():
+    """Search/place/new filters apply to raw rows first; grouping by beer happens after."""
+    js = _js(_soup())
+    assert re.search(r"function groupBeers\(rows\)", js)
+    assert re.search(r"groupBeers\(\s*filteredRows\(\)\s*\)", js)
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "beer_key" in group_fn
+
+
+def test_beer_group_key_falls_back_to_normalized_brewery_and_name():
+    js = _js(_soup())
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "r.beer_key" in group_fn
+    assert "brewery" in group_fn and "toLowerCase" in group_fn
+
+
+def test_group_since_is_earliest_and_rating_abv_use_best_value():
+    js = _js(_soup())
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "sort()[0]" in group_fn  # earliest "since" among the grouped rows
+    assert re.search(r'bestOf\(group,\s*"rating"\)', group_fn)
+    assert re.search(r'bestOf\(group,\s*"abv"\)', group_fn)
+    assert re.search(r"group\.some\(.*\.new\)", group_fn)
+    assert re.search(r"group\.some\(.*\.star\)", group_fn)
+
+
+def test_multi_place_beers_list_every_place_with_its_own_price_and_link():
+    js = _js(_soup())
+    assert re.search(r"function placeLines\(rows\)", js)
+    place_lines_fn = re.search(r"function placeLines\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "badgeNodes" in place_lines_fn
+    assert "priceText" in place_lines_fn and "volumeText" in place_lines_fn
+    assert "shopLinkNode" in place_lines_fn
+    # a beer with more than one place uses placeLines; a single-place beer keeps the old layout
+    assert re.search(r"g\.rows\.length === 1", js) or re.search(r"g\.rows\.length !== 1", js)
+
+
+def test_single_place_beers_keep_todays_layout():
+    """Beers found at only one place still render through the pre-grouping helpers unchanged."""
+    js = _js(_soup())
+    assert "function placeCell(r)" in js
+    assert "function cardWhere(r)" in js
+
+
+def test_wherelist_css_stacks_multiple_place_lines():
+    css = _css(_soup())
+    assert re.search(r"\.wherelist\s*\{[^}]*flex-direction:\s*column", css)
 
 
 def test_footer_sources_legend_and_credits():
