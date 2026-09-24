@@ -14,6 +14,7 @@ from taps.gitsync import CheckoutError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome
 from taps.run import Deps, main, run, update_alerts
+from taps.sources.local_match import KnownBeer
 from taps.sources.parma import fetch_parma as real_fetch_parma
 from taps.state import BeerRec, PairRec, ShopMatchRec, UntappdRec, VenueRec, empty_state, load_state, save_state
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
@@ -768,6 +769,85 @@ def test_shop_match_candidates_skips_pairs_without_brand_or_name():
         "n:b": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "brewery": "B"}),
     }}
     assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def _u_pair(name, brewery, last_seen=None, **extra):
+    return PairRec(first_seen=iso(NOW), last_seen=last_seen or iso(NOW),
+                   info={"kind": "menu", "source": "untappd_menu", "name": name, "brewery": brewery, **extra})
+
+
+def test_known_untappd_beers_from_pairs_deduped_and_requires_name_and_brewery():
+    """v1.2 beer identity: every "u:"-keyed pair across all places/bars is a known Untappd beer for
+    local matching, deduped by id; a pair missing name or brewery (incomplete data) is skipped."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1674726": _u_pair("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")},
+        "gargoyle": {
+            "u:1674726": _u_pair("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery"),   # same beer, another bar
+            "u:2": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu", "name": "No Brewery"}),
+            "n:kilikia": _shop_pair("Kilikia", "Kilikia"),   # not an Untappd-native key
+        },
+    }
+    assert run_mod.known_untappd_beers(state) == [
+        KnownBeer(untappd_id=1674726, name="Apricot Ale (Prunus Armeniaca)", brewery="Dargett Brewery"),
+    ]
+
+
+def test_match_shop_beers_locally_records_a_local_match():
+    """v1.2 beer identity: before any Untappd search, a shop beer already known from a bar's own
+    menu is matched for free and marked via="local", with the Untappd beer's own name/brewery."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1674726": _u_pair("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")},
+        "beer-city": {"n:dargett apricot ale": _shop_pair("Dargett", "Dargett apricot ale")},
+    }
+    run_mod.match_shop_beers_locally(state, run_mod.Corrections(), NOW)
+    match = state.shop_matches["n:dargett apricot ale"]
+    assert (match.untappd_beer_id, match.via, match.name, match.brewery) == (
+        1674726, "local", "Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
+    assert match.url == "https://untappd.com/beer/1674726"
+    assert match.matched_at == iso(NOW)
+
+
+def test_match_shop_beers_locally_leaves_no_match_when_nothing_qualifies():
+    """No caching of a local miss (unlike search's no_match): it's free to retry every run."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1": _u_pair("Hell", "Dahook")},
+        "parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Beer")},
+    }
+    run_mod.match_shop_beers_locally(state, run_mod.Corrections(), NOW)
+    assert state.shop_matches == {}
+
+
+def test_match_shop_beers_locally_skips_already_matched_keys():
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1674726": _u_pair("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")},
+        "beer-city": {"n:dargett apricot ale": _shop_pair("Dargett", "Dargett apricot ale")},
+    }
+    state.shop_matches["n:dargett apricot ale"] = ShopMatchRec(untappd_beer_id=999, via="search", matched_at=iso(NOW))
+    run_mod.match_shop_beers_locally(state, run_mod.Corrections(), NOW)
+    assert state.shop_matches["n:dargett apricot ale"].untappd_beer_id == 999   # untouched
+
+
+def test_shop_match_candidates_includes_buyam_menu_and_manual_kinds():
+    """v1.2 beer identity: Dargett Brewpub (buyam, kind "menu") and a friend's sighting (kind
+    "manual") are candidates too, not only shop kind -- an Untappd-native "u:" menu pair still is not."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "dargett-brewpub": {"n:apricot ale": PairRec(
+            first_seen=iso(NOW), last_seen=iso(NOW),
+            info={"kind": "menu", "source": "buyam", "brewery": "Dargett", "name": "Apricot Ale"})},
+        "gargoyle": {"u:1": PairRec(
+            first_seen=iso(NOW), last_seen=iso(NOW),
+            info={"kind": "menu", "source": "untappd_menu", "brewery": "X", "name": "Y"})},
+        "tap-station": {"n:hazy pale": PairRec(
+            first_seen=iso(NOW), last_seen=iso(NOW),
+            info={"kind": "manual", "source": "manual", "brewery": "379", "name": "Hazy Pale"})},
+    }
+    candidates = {key for key, _, _ in run_mod._shop_match_candidates(state, NOW)}
+    assert candidates == {"n:apricot ale", "n:hazy pale"}
 
 
 def test_shop_match_candidates_most_recently_seen_first_capped_at_eight():

@@ -25,6 +25,7 @@ from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import build_site_data, write_site_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
+from taps.sources.local_match import KnownBeer, clean_query, local_match
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
 from taps.sources.untappd_beer import parse_beer_page
@@ -279,18 +280,51 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
         beer.rating_at = iso(now)
 
 
+# --- v1.2 beer identity: match shop/menu/manual beers to Untappd, zero pages or search --------
+
+def known_untappd_beers(state: State) -> list[KnownBeer]:
+    """Every Untappd beer already known from a bar's own menu/check-ins/brewery page ("u:"-keyed
+    pairs, wherever seen), deduped by id. A pair missing name or brewery is incomplete and skipped."""
+    out: dict[int, KnownBeer] = {}
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            if not key.startswith("u:"):
+                continue
+            beer_id = int(key[2:])
+            name, brewery = rec.info.get("name"), rec.info.get("brewery")
+            if beer_id not in out and name and brewery:
+                out[beer_id] = KnownBeer(untappd_id=beer_id, name=name, brewery=brewery)
+    return list(out.values())
+
+
+def match_shop_beers_locally(state: State, corrections: Corrections, now: datetime) -> None:
+    """Before Untappd search: match every shop/menu/manual candidate against beers already known
+    from a bar's own menu (zero extra pages). A miss is not cached (unlike search's "no_match") --
+    it costs nothing to retry every run, and a bar might reveal the match later. A hit is recorded
+    exactly like a search match (state.shop_matches), marked via="local", so search skips it too."""
+    candidates = known_untappd_beers(state)
+    for key, brand, name in _shop_match_candidates(state, now, limit=None):
+        found = local_match(brand, name, candidates, corrections.brewery_aliases)
+        if found is not None:
+            state.shop_matches[key] = ShopMatchRec(
+                untappd_beer_id=found.untappd_id, url=f"https://untappd.com/beer/{found.untappd_id}",
+                name=found.name, brewery=found.brewery, matched_at=iso(now), via="local")
+
+
 # --- v1.1 §3: match shop beers to Untappd via search --------------------------
 
 def _shop_match_candidates(state: State, now: datetime,
-                           limit: int = SHOP_SEARCH_CANDIDATES_PER_RUN) -> list[tuple[str, str, str]]:
-    """(key, brand, name) of shop beers with no successful match yet -- never searched, or a failed
-    search ("no_match") old enough to retry -- most recently seen first, capped at
+                           limit: int | None = SHOP_SEARCH_CANDIDATES_PER_RUN) -> list[tuple[str, str, str]]:
+    """(key, brand, name) of shop/menu/manual beers with no successful match yet -- never searched,
+    or a failed search ("no_match") old enough to retry -- most recently seen first, capped at
     SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a corrections.yaml
-    alias starts with "u:", not "n:", so it needs no search (apply_aliases runs before collect_untappd)."""
+    alias starts with "u:", not "n:", so it needs no search (apply_aliases runs before collect_untappd).
+    "menu"/"manual" (v1.2 beer identity: Dargett Brewpub via buyam, a friend's manual sighting) are
+    candidates too -- an Untappd-native "u:"-keyed menu pair is already excluded by the key check."""
     best: dict[str, tuple[str, str, str]] = {}   # key -> (last_seen, brand, name)
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
-            if not key.startswith("n:") or rec.info.get("kind") != "shop":
+            if not key.startswith("n:") or rec.info.get("kind") not in ("shop", "menu", "manual"):
                 continue
             if rec.info.get("hidden") or rec.in_stock is False or not rec.last_in_result:
                 continue   # not shown on the site (mass brand, hidden, out of stock): don't spend pages on it
