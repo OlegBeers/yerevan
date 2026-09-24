@@ -374,7 +374,8 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     map.get(key).push(r);
   }
   return [...map.values()].map((group) => {
-    const r0 = group[0];
+    // v1.2 beer identity: prefer the bar's own Untappd sighting over a matched shop row's cached copy
+    const r0 = group.find((r) => r.beer_key && r.beer_key.startsWith("u:")) || group[0];
     return {
       rows: group,
       name: r0.name, brewery: r0.brewery, style: r0.style, ibu: r0.ibu, url: r0.url, beer_logo: r0.beer_logo,

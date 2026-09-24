@@ -270,6 +270,14 @@ def test_footer_sources_legend_and_credits():
         assert host in hrefs, host
 
 
+def test_group_fields_prefer_the_untappd_native_row():
+    """v1.2 beer identity: a group's display name/brewery/style/logo come from a row whose own
+    beer_key starts with "u:" (a bar's own Untappd sighting) when one exists in the group, since a
+    matched shop row's cached copy can lag it; otherwise any row in the group (today's behaviour)."""
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", _js(_soup()), re.S).group(1)
+    assert re.search(r'r\.beer_key(?:\s*&&\s*r\.beer_key)?\.startsWith\(\s*["\']u:["\']\s*\)', group_fn)
+
+
 def test_beers_group_by_group_key_before_beer_key():
     group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", _js(_soup()), re.S).group(1)
     assert group_fn.index("r.group_key") < group_fn.index("r.beer_key")
