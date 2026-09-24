@@ -1,16 +1,18 @@
 """state.json: the bot's memory. Load/save, alias merging, pruning."""
 import copy
 import json
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+from taps.model import SourceResult
 from taps.timeutil import age_days, iso, parse_iso
 
 PAIR_KEEP_DAYS = 180      # pairs not seen for longer are pruned...
 SOURCE_OK_DAYS = 30       # ...but only if a source of their place succeeded this recently
 ALIAS_MAX_HOPS = 5
+VENUE_KEEP_DAYS = 30      # v1.1: check-ins older than this are pruned from state.venues
 MARKERS = ("baseline", "suppressed")   # notified_at values that are not timestamps
 
 
@@ -72,6 +74,23 @@ class DigestRec:
 
 
 @dataclass
+class VenueRec:
+    """v1.1: every venue seen in Untappd check-ins, tracked or not (§4/§8 "venues" list)."""
+    name: str
+    url: str
+    logo: str | None = None
+    verified: bool = False
+    checkins: list[dict] = field(default_factory=list)   # [{"id": int, "at": iso}], deduped by id
+
+
+@dataclass
+class DiscoveryRec:
+    """v1.1: the weekly admin DM about untracked venues with enough check-ins."""
+    last_report_date: str | None = None   # Yerevan date of the last weekly check, sent or not
+    reported: list[int] = field(default_factory=list)   # venue ids already mentioned once
+
+
+@dataclass
 class State:
     started_at: str
     pairs: dict[str, dict[str, PairRec]] = field(default_factory=dict)
@@ -84,6 +103,8 @@ class State:
     alerts: dict[str, str] = field(default_factory=dict)
     corrections_snapshot: dict | None = None
     announced_manual: list[str] = field(default_factory=list)
+    venues: dict[str, VenueRec] = field(default_factory=dict)
+    discovery: DiscoveryRec = field(default_factory=DiscoveryRec)
 
     def source(self, key: str) -> SourceRec:
         return self.sources.setdefault(key, SourceRec())
@@ -109,6 +130,8 @@ class State:
             alerts=d.get("alerts", {}),
             corrections_snapshot=d.get("corrections_snapshot"),
             announced_manual=d.get("announced_manual", []),
+            venues={k: VenueRec(**r) for k, r in d.get("venues", {}).items()},
+            discovery=DiscoveryRec(**d.get("discovery", {})),
         )
 
 
@@ -222,3 +245,20 @@ def prune(state: State, now: datetime) -> int:
             del recs[key]
             removed += 1
     return removed
+
+
+def record_venues(state: State, results: Sequence[SourceResult], now: datetime) -> None:
+    """v1.1: state.venues from every fetch's venue_meta (own venue: logo/verified) and venue_checkins
+    (every venue seen in check-ins, tracked or not); check-ins deduped by id, pruned to 30 days."""
+    for result in results:
+        if result.venue_meta:
+            m = result.venue_meta
+            rec = state.venues.setdefault(str(m["venue_id"]), VenueRec(name=m["name"], url=m["url"]))
+            rec.name, rec.url, rec.logo, rec.verified = m["name"], m["url"], m["logo"], m["verified"]
+        for vc in result.venue_checkins:
+            rec = state.venues.setdefault(str(vc.venue_id), VenueRec(name=vc.venue_name, url=vc.venue_url))
+            rec.name, rec.url = vc.venue_name, vc.venue_url
+            if vc.checkin_id not in {c["id"] for c in rec.checkins}:
+                rec.checkins.append({"id": vc.checkin_id, "at": iso(vc.at)})
+    for rec in state.venues.values():
+        rec.checkins = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]

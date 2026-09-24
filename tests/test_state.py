@@ -3,9 +3,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from taps.model import SourceResult, VenueCheckin
 from taps.state import (
-    BeerRec, BreweryNewRec, DigestRec, PairRec, SourceRec, State, UntappdRec,
-    apply_aliases, empty_state, load_state, prune, resolve_alias, save_state,
+    BeerRec, BreweryNewRec, DigestRec, DiscoveryRec, PairRec, SourceRec, State, UntappdRec, VenueRec,
+    apply_aliases, empty_state, load_state, prune, record_venues, resolve_alias, save_state,
 )
 from taps.timeutil import iso
 
@@ -44,6 +45,10 @@ def full_state() -> State:
     s.alerts = {"failed:parma:parma": "0123456789ab"}
     s.corrections_snapshot = {"sightings": [{"place": "tap-station", "by": "Аня"}], "not_craft": ["Kilikia"]}
     s.announced_manual = ["tap-station|2026-09-22|Аня"]
+    s.venues = {"12252462": VenueRec(name="Gargoyle Bar", url="https://untappd.com/v/gargoyle-bar/12252462",
+                                     logo="https://x/logo.jpg", verified=True,
+                                     checkins=[{"id": 1, "at": ago(1)}])}
+    s.discovery = DiscoveryRec(last_report_date="2026-09-22", reported=[13968261])
     return s
 
 
@@ -57,10 +62,14 @@ def test_empty_state():
     assert s.digest == DigestRec(last_sent_date=None, last_sent_at=None, sent_count=0)
     assert s.corrections_snapshot is None
     assert s.announced_manual == []
+    assert s.venues == {}
+    assert s.discovery == DiscoveryRec(last_report_date=None, reported=[])
     other = empty_state(NOW)
     other.pairs["x"] = {}
     other.untappd.pages_today = 5
+    other.venues["x"] = VenueRec(name="X", url="u")
     assert s.pairs == {} and s.untappd.pages_today == 0      # no shared mutable defaults
+    assert s.venues == {}
 
 
 def test_to_dict_is_plain_json_data():
@@ -73,6 +82,8 @@ def test_to_dict_is_plain_json_data():
     assert d["untappd"]["pages_today"] == 12
     assert d["digest"]["sent_count"] == 2
     assert d["shop_items"] == {"yerevan-city": {"8811": "n:kilikia"}}
+    assert d["venues"]["12252462"]["verified"] is True
+    assert d["discovery"]["reported"] == [13968261]
     assert json.loads(json.dumps(d)) == d
 
 
@@ -85,6 +96,7 @@ def test_to_dict_from_dict_round_trip_every_record_type():
     assert isinstance(back.brewery_new["u:6000001"], BreweryNewRec)
     assert isinstance(back.sources["untappd_menu:gargoyle"], SourceRec)
     assert isinstance(back.untappd, UntappdRec) and isinstance(back.digest, DigestRec)
+    assert isinstance(back.venues["12252462"], VenueRec) and isinstance(back.discovery, DiscoveryRec)
 
 
 def test_from_dict_does_not_share_input_objects():
@@ -346,3 +358,56 @@ def test_prune_returns_total_count_over_places():
     s.sources["parma:parma"] = SourceRec(last_ok=ago(0))
     assert prune(s, NOW) == 3
     assert s.pairs["parma"] == {}
+
+
+# --- record_venues (v1.1 discovery) ---------------------------------------------------
+
+def test_record_venues_stores_meta_and_checkins():
+    s = empty_state(NOW)
+    result = SourceResult(
+        key="untappd_checkins:gargoyle", source="untappd_checkins", ok=True, place_id="gargoyle",
+        venue_meta={"venue_id": 12252462, "name": "Gargoyle Bar",
+                   "url": "https://untappd.com/v/gargoyle-bar/12252462", "logo": "https://x/logo.jpg",
+                   "verified": True},
+        venue_checkins=[VenueCheckin(venue_id=12252462, venue_name="Gargoyle Bar",
+                                     venue_url="https://untappd.com/v/gargoyle-bar/12252462",
+                                     checkin_id=1, at=NOW - timedelta(days=1))],
+    )
+    record_venues(s, [result], NOW)
+    rec = s.venues["12252462"]
+    assert (rec.name, rec.url, rec.logo, rec.verified) == (
+        "Gargoyle Bar", "https://untappd.com/v/gargoyle-bar/12252462", "https://x/logo.jpg", True)
+    assert rec.checkins == [{"id": 1, "at": ago(1)}]
+
+
+def test_record_venues_adds_untracked_venue_from_checkins_only():
+    s = empty_state(NOW)
+    result = SourceResult(
+        key="untappd_brewery:265165", source="untappd_brewery", ok=True,
+        venue_checkins=[VenueCheckin(venue_id=645961, venue_name="Caffe Napoli",
+                                     venue_url="https://untappd.com/v/caffe-napoli/645961",
+                                     checkin_id=99, at=NOW)],
+    )
+    record_venues(s, [result], NOW)
+    rec = s.venues["645961"]
+    assert (rec.name, rec.url, rec.logo, rec.verified) == ("Caffe Napoli", "https://untappd.com/v/caffe-napoli/645961", None, False)
+    assert rec.checkins == [{"id": 99, "at": iso(NOW)}]
+
+
+def test_record_venues_dedupes_by_checkin_id_and_prunes_old_ones():
+    s = empty_state(NOW)
+    s.venues["1"] = VenueRec(name="Bar", url="u", checkins=[
+        {"id": 1, "at": ago(1)}, {"id": 2, "at": ago(40)}])   # 2 is older than 30 days
+    result = SourceResult(
+        key="untappd_checkins:bar", source="untappd_checkins", ok=True,
+        venue_checkins=[VenueCheckin(venue_id=1, venue_name="Bar", venue_url="u", checkin_id=1, at=NOW - timedelta(days=1)),
+                        VenueCheckin(venue_id=1, venue_name="Bar", venue_url="u", checkin_id=3, at=NOW)],
+    )
+    record_venues(s, [result], NOW)
+    assert s.venues["1"].checkins == [{"id": 1, "at": ago(1)}, {"id": 3, "at": iso(NOW)}]
+
+
+def test_record_venues_ignores_results_without_venue_data():
+    s = empty_state(NOW)
+    record_venues(s, [SourceResult(key="parma:parma", source="parma", ok=True)], NOW)
+    assert s.venues == {}
