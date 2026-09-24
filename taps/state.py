@@ -41,6 +41,20 @@ class BeerRec:
 
 
 @dataclass
+class ShopMatchRec:
+    """v1.1 §3: a shop beer's match to Untappd (search), one record per shop beer key. untappd_beer_id
+    is None for a "no_match" record -- only matched_at is set, so the search is retried after 30 days."""
+    untappd_beer_id: int | None = None
+    url: str | None = None
+    rating: float | None = None
+    style: str | None = None
+    abv: float | None = None
+    logo: str | None = None
+    matched_at: str | None = None   # iso; last search attempt, matched or not
+    checked_at: str | None = None   # iso; last rating refresh of a matched beer
+
+
+@dataclass
 class BreweryNewRec:
     brewery_id: int
     found_at: str
@@ -115,6 +129,7 @@ class State:
     announced_manual: list[str] = field(default_factory=list)
     venues: dict[str, VenueRec] = field(default_factory=dict)
     discovery: DiscoveryRec = field(default_factory=DiscoveryRec)
+    shop_matches: dict[str, ShopMatchRec] = field(default_factory=dict)
 
     def source(self, key: str) -> SourceRec:
         return self.sources.setdefault(key, SourceRec())
@@ -142,6 +157,7 @@ class State:
             announced_manual=d.get("announced_manual", []),
             venues={k: VenueRec(**r) for k, r in d.get("venues", {}).items()},
             discovery=DiscoveryRec(**d.get("discovery", {})),
+            shop_matches={k: ShopMatchRec(**r) for k, r in d.get("shop_matches", {}).items()},
         )
 
 

@@ -186,13 +186,13 @@ def test_parse_beer_list():
     assert parse_beer_list(list_page()) == BeerList(total=3, beers=[
         BreweryBeer(brewery_id=0, untappd_beer_id=1547626, name="Black IPA (Milestones)",
                     brewery="Dargett Brewery", style="IPA - Black / Cascadian Dark Ale", abv=6.5,
-                    url="https://untappd.com/beer/1547626"),
+                    url="https://untappd.com/b/dargett-brewery-black-ipa-milestones/1547626"),
         BreweryBeer(brewery_id=0, untappd_beer_id=2508041, name="Armenian Imperial Stout (Brandy Barrel Aged)",
                     brewery="Dargett Brewery", style="Stout - Imperial / Double", abv=11.0,
-                    url="https://untappd.com/beer/2508041"),
+                    url="https://untappd.com/b/dargett-brewery-armenian-imperial-stout-brandy-barrel-aged/2508041"),
         BreweryBeer(brewery_id=0, untappd_beer_id=1538345, name="Vienna Lager (Metamorphosis)",
                     brewery="Dargett Brewery", style="Lager - Vienna", abv=None,
-                    url="https://untappd.com/beer/1538345"),
+                    url="https://untappd.com/b/dargett-brewery-vienna-lager-metamorphosis/1538345"),
     ])
 
 
@@ -230,7 +230,8 @@ def test_fetch_brewery_list_complete():
     assert (result.brewery_id, result.place_id, result.sightings) == (265165, None, [])
     assert result.brewery_beers[0] == BreweryBeer(
         brewery_id=265165, untappd_beer_id=1547626, name="Black IPA (Milestones)", brewery="Dargett Brewery",
-        style="IPA - Black / Cascadian Dark Ale", abv=6.5, url="https://untappd.com/beer/1547626")
+        style="IPA - Black / Cascadian Dark Ale", abv=6.5,
+        url="https://untappd.com/b/dargett-brewery-black-ipa-milestones/1547626")
     assert [(b.brewery_id, b.untappd_beer_id, b.brewery) for b in result.brewery_beers] == [
         (265165, 1547626, "Dargett Brewery"), (265165, 2508041, "Dargett Brewery"),
         (265165, 1538345, "Dargett Brewery")]

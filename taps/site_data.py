@@ -12,7 +12,8 @@ from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 
 CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
 NEW_DAYS = 7             # 🆕/⭐ badges live this long after the event was sent
-INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url", "serving")
+INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url", "serving",
+               "shop_url")
 
 
 def _section(place: Place) -> str:
@@ -111,6 +112,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict
     row = {"place_id": place.id, "section": _section(place), "beer_key": key,
            "name": info.get("name") or info.get("title") or key}
     row.update({f: info.get(f) for f in INFO_FIELDS})
+    row["beer_logo"] = info.get("logo")
     row.update({
         "badge": kind,
         "since": yerevan_date(parse_iso(rec.first_seen)),

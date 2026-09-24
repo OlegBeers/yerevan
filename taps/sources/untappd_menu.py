@@ -40,6 +40,8 @@ class MenuItem:
     volume_ml: int | None
     container: str | None
     section: str
+    url: str = ""                 # canonical /b/<slug>/<id>, from the row's own beer link
+    logo: str | None = None       # beer label image (div.beer-label img)
 
 
 @dataclass(frozen=True)
@@ -115,6 +117,7 @@ def _item(li: Tag, section: str) -> MenuItem | None:
     bm = BREWERY_HREF_RE.match(brewery_link["href"]) if brewery_link else None
     abv, ibu = ABV_RE.search(stats_text), IBU_RE.search(stats_text)
     price, volume, container = _price(li)
+    logo = li.select_one("div.beer-label img[src]")
     return MenuItem(
         beer_id=int(m.group(1)),
         name=NUMBERING_RE.sub("", _text(link)),
@@ -128,6 +131,8 @@ def _item(li: Tag, section: str) -> MenuItem | None:
         volume_ml=volume,
         container=container,
         section=section,
+        url=f"https://untappd.com{link['href'].rstrip('/')}",   # canonical /b/<slug>/<id>: opens in the app
+        logo=logo["src"] if logo else None,
     )
 
 
@@ -180,7 +185,7 @@ def fetch_menu(client: UntappdClient, place: Place, now: datetime,
                 brewery=it.brewery or None, brewery_id=it.brewery_id, untappd_beer_id=it.beer_id,
                 style=it.style, abv=it.abv, ibu=it.ibu, rating=it.rating, price_amd=it.price_amd,
                 volume_ml=it.volume_ml, container=it.container, menu_id=menu_id,
-                url=f"https://untappd.com/beer/{it.beer_id}",
+                url=it.url, logo=it.logo,
             ))
     return SourceResult(
         key=key, source="untappd_menu", ok=bool(sightings), sightings=sightings,

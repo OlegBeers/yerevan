@@ -121,7 +121,7 @@ def test_breweries(cfg):
 
 def test_settings(cfg):
     assert cfg.settings == Settings(preview_digests=2, digest_time=time(17, 0), digest_max_lines=15,
-                                    hot_rating=3.75, untappd_daily_pages=30)
+                                    hot_rating=3.75, untappd_daily_pages=40)
     assert cfg.settings.digest_time == time(17, 0)
 
 

@@ -96,7 +96,7 @@ settings:
   digest_time: "17:00"      # раньше этого времени сводка ждёт (должно быть раньше вечернего запуска 18:17)
   digest_max_lines: 15
   hot_rating: 3.75          # с какого рейтинга 🔥
-  untappd_daily_pages: 30
+  untappd_daily_pages: 40
 ```
 
 ### `corrections.yaml` — правки от друзей

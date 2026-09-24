@@ -201,5 +201,6 @@ def fetch_yerevan_city(http: Http, place: Place, now: datetime, brewery_aliases:
             price_amd=item.price_amd, volume_ml=_volume_ml(title), container=_container(name_en, item.name_hy),
             in_stock=True,   # no stock flag: a sold-out item just leaves the list
             category=item.category, url=PRODUCT_URL.format(item.item_id),
+            shop_url=PRODUCT_URL.format(item.item_id),
         ))
     return SourceResult(key=key, source="yerevan_city", ok=True, sightings=sightings, place_id=place.id)

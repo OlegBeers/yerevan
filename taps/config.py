@@ -99,7 +99,7 @@ class Settings:
     digest_time: time = time(17, 0)
     digest_max_lines: int = 15
     hot_rating: float = 3.75
-    untappd_daily_pages: int = 30
+    untappd_daily_pages: int = 40
 
 
 @dataclass(frozen=True)

@@ -5,8 +5,8 @@ import pytest
 
 from taps.model import SourceResult, VenueCheckin
 from taps.state import (
-    BeerRec, BreweryNewRec, DigestRec, DiscoveryRec, PairRec, SourceRec, State, UntappdRec, VenueRec,
-    apply_aliases, empty_state, load_state, merge_places, prune, record_venues, resolve_alias, save_state,
+    BeerRec, BreweryNewRec, DigestRec, DiscoveryRec, PairRec, ShopMatchRec, SourceRec, State, UntappdRec,
+    VenueRec, apply_aliases, empty_state, load_state, merge_places, prune, record_venues, resolve_alias, save_state,
 )
 from taps.timeutil import iso
 
@@ -49,6 +49,9 @@ def full_state() -> State:
                                      logo="https://x/logo.jpg", verified=True,
                                      checkins=[{"id": 1, "at": ago(1)}])}
     s.discovery = DiscoveryRec(last_report_date="2026-09-22", reported=[13968261])
+    s.shop_matches = {"n:kilikia": ShopMatchRec(
+        untappd_beer_id=1547626, url="https://untappd.com/b/kilikia/1547626", rating=3.1, style="Lager",
+        abv=5.0, logo="https://x/label.jpg", matched_at=ago(1), checked_at=ago(1))}
     return s
 
 
@@ -64,6 +67,7 @@ def test_empty_state():
     assert s.announced_manual == []
     assert s.venues == {}
     assert s.discovery == DiscoveryRec(last_report_date=None, reported=[])
+    assert s.shop_matches == {}
     other = empty_state(NOW)
     other.pairs["x"] = {}
     other.untappd.pages_today = 5
@@ -98,6 +102,7 @@ def test_to_dict_from_dict_round_trip_every_record_type():
     assert isinstance(back.sources["untappd_menu:gargoyle"], SourceRec)
     assert isinstance(back.untappd, UntappdRec) and isinstance(back.digest, DigestRec)
     assert isinstance(back.venues["12252462"], VenueRec) and isinstance(back.discovery, DiscoveryRec)
+    assert isinstance(back.shop_matches["n:kilikia"], ShopMatchRec)
 
 
 def test_from_dict_does_not_share_input_objects():

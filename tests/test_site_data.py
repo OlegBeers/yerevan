@@ -156,10 +156,22 @@ def test_row_carries_display_fields():
         "place_id": "gargoyle", "section": "bars", "beer_key": "u:4280", "name": "Celebrator",
         "brewery": "Ayinger", "style": "Doppelbock", "abv": 6.7, "ibu": 24, "rating": 3.76,
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
-        "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None,
+        "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
         "badge": "menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
         "seen_days_ago": None, "new": False, "star": False, "by": None,
     }]
+
+
+def test_row_carries_beer_logo_and_shop_url():
+    """A shop row matched to Untappd (v1.1 §3): url/logo are the Untappd beer's, shop_url is the
+    shop's own product page, both filled by the search-match overlay onto the pair's own info."""
+    info = {"name": "Corona Extra", "url": "https://untappd.com/b/corona-extra/1", "logo": "https://x/logo.jpg",
+            "shop_url": "https://parma.am/en/product/product?slug=corona_1"}
+    st = state({"parma": {"n:corona extra": pair("parma", in_stock=True, info=info)}})
+    row = build(st)["rows"][0]
+    assert (row["url"], row["beer_logo"], row["shop_url"]) == (
+        "https://untappd.com/b/corona-extra/1", "https://x/logo.jpg",
+        "https://parma.am/en/product/product?slug=corona_1")
 
 
 def test_places_status():

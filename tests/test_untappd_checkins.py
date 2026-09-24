@@ -72,6 +72,7 @@ def test_craft_story_checkin_fields():
         at_home=False, created_at=datetime(2024, 10, 31, 15, 50, 9, tzinfo=timezone.utc),
         venue_url="https://untappd.com/v/craft-story/12281551",
         beer_url="https://untappd.com/b/omnipollo-black-is-beautiful-vol-2-ipa/5698328",
+        logo="https://assets.untappd.com/site/beer_logos/beer-5698328_a6ee7_sm.jpeg",
     )
 
 
