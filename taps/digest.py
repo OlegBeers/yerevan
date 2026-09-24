@@ -37,12 +37,19 @@ def _pair_time(rec: PairRec) -> datetime:
     return parse_iso(rec.event_at)
 
 
+def _is_stale(rec: PairRec, now: datetime) -> bool:
+    manual_date = rec.info.get("manual_date")
+    if manual_date:   # the calendar-day rule that records a manual entry as an event (rules.MANUAL_EVENT_DAYS)
+        return (to_yerevan(now).date() - date.fromisoformat(manual_date)).days > STALE_EVENT_DAYS
+    return age_days(parse_iso(rec.event_at), now) > STALE_EVENT_DAYS
+
+
 def drop_stale_events(state: State, now: datetime) -> int:
     """Pending events older than STALE_EVENT_DAYS are marked notified without sending."""
     count = 0
     for p, k in pending_pairs(state):
         rec = state.pairs[p][k]
-        if age_days(_pair_time(rec), now) > STALE_EVENT_DAYS:
+        if _is_stale(rec, now):
             rec.notified_at = iso(now)
             count += 1
     for k in pending_brewery(state):

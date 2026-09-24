@@ -212,6 +212,17 @@ def test_drop_stale_events_uses_manual_date_not_merge_time():
     assert s.pairs["tap-station"]["n:x"].notified_at == iso(NOW)
 
 
+def test_drop_stale_events_keeps_a_manual_entry_dated_exactly_three_days_ago():
+    """Same calendar-day rule as rules.MANUAL_EVENT_DAYS: recorded as an event, so not dropped in the same run."""
+    s = new_state(pairs={"tap-station": {
+        "n:x": pair(yv(24, 17), kind="manual", manual_date="2026-09-21", name="X"),   # 3 days ago, 18:17 today
+        "n:y": pair(yv(24, 17), kind="manual", manual_date="2026-09-20", name="Y"),   # 4 days ago
+    }})
+    assert drop_stale_events(s, NOW) == 1
+    assert s.pairs["tap-station"]["n:x"].notified_at is None
+    assert s.pairs["tap-station"]["n:y"].notified_at == iso(NOW)
+
+
 def due_state(event_at=None, found_at=None, last_sent_at=None, last_sent_date=None) -> State:
     s = new_state(digest=DigestRec(last_sent_date=last_sent_date, last_sent_at=last_sent_at and iso(last_sent_at)))
     if event_at:
