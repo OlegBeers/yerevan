@@ -282,6 +282,22 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
 
 # --- v1.2 beer identity: match shop/menu/manual beers to Untappd, zero pages or search --------
 
+def apply_same_as(state: State, corrections: Corrections, now: datetime) -> None:
+    """corrections.yaml same_as: a manual identity override, wins over local/search matches -- run
+    before both so their own candidate selection skips whatever this already resolved."""
+    if not corrections.same_as:
+        return
+    catalog = {b.untappd_id: b for b in known_untappd_beers(state)}
+    for (place_id, key), untappd_id in corrections.same_as.items():
+        if key not in state.pairs.get(place_id, {}):
+            continue
+        known = catalog.get(untappd_id)
+        state.shop_matches[key] = ShopMatchRec(
+            untappd_beer_id=untappd_id, url=f"https://untappd.com/beer/{untappd_id}",
+            name=known.name if known else None, brewery=known.brewery if known else None,
+            matched_at=iso(now), via="manual")
+
+
 def known_untappd_beers(state: State) -> list[KnownBeer]:
     """Every Untappd beer already known from a bar's own menu/check-ins/brewery page ("u:"-keyed
     pairs, wherever seen), deduped by id. A pair missing name or brewery is incomplete and skipped."""
@@ -622,6 +638,8 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     (repo / FATAL_FILE).unlink(missing_ok=True)
     apply_aliases(state, corrections.aliases)
     merge_places(state, {old: p.id for p in config.places.values() for old in p.merged_from})
+    apply_same_as(state, corrections, now)            # v1.2 beer identity: manual override, wins over local/search
+    match_shop_beers_locally(state, corrections, now)  # v1.2 beer identity: zero-page match, before search
     untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
                manual_result(corrections, config, now)]

@@ -793,6 +793,42 @@ def test_known_untappd_beers_from_pairs_deduped_and_requires_name_and_brewery():
     ]
 
 
+def test_apply_same_as_records_a_manual_match_with_known_name_and_brewery():
+    """v1.2 beer identity: corrections.yaml same_as, applied with the Untappd beer's own name/
+    brewery when already known from a bar's menu (e.g. Chimay, too different for local matching)."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:34039": _u_pair("Chimay Grande Réserve (Blue)", "Bières de Chimay")},
+        "beer-city": {"n:chimay peres trappistes blue": _shop_pair("Chimay", "Chimay peres trappistes blue")},
+    }
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:chimay peres trappistes blue"): 34039})
+    run_mod.apply_same_as(state, corrections, NOW)
+    match = state.shop_matches["n:chimay peres trappistes blue"]
+    assert (match.untappd_beer_id, match.via, match.name, match.brewery) == (
+        34039, "manual", "Chimay Grande Réserve (Blue)", "Bières de Chimay")
+    assert match.url == "https://untappd.com/beer/34039"
+    assert match.matched_at == iso(NOW)
+
+
+def test_apply_same_as_works_even_when_the_beer_is_not_otherwise_known():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:x"): 12345})
+    run_mod.apply_same_as(state, corrections, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.untappd_beer_id, match.via, match.name, match.brewery) == (12345, "manual", None, None)
+
+
+def test_apply_same_as_wins_over_an_existing_local_or_search_match():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=999, via="search", matched_at=iso(NOW))
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:x"): 12345})
+    run_mod.apply_same_as(state, corrections, NOW)
+    assert state.shop_matches["n:x"].untappd_beer_id == 12345
+    assert state.shop_matches["n:x"].via == "manual"
+
+
 def test_match_shop_beers_locally_records_a_local_match():
     """v1.2 beer identity: before any Untappd search, a shop beer already known from a bar's own
     menu is matched for free and marked via="local", with the Untappd beer's own name/brewery."""
