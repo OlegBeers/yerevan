@@ -82,8 +82,8 @@ def test_parse_by_category_rejects_malformed(mutate):
 def test_parse_search_maps_id_to_latin_name():
     names = parse_search(SEARCH)
     assert len(names) == 209
-    assert names["8158"] == YCName('Beer "Kilikia" 1l', 2788)
-    assert names["166205"] == YCName('Beer "Paulaner" Munchner hell (can) 5l', None)      # brandId null
+    assert (names["8158"].name_en, names["8158"].brand_id) == ('Beer "Kilikia" 1l', 2788)
+    assert (names["166205"].name_en, names["166205"].brand_id) == ('Beer "Paulaner" Munchner hell (can) 5l', None)
     assert names["192953"].name_en == 'Beer "Grevensteiner" unfiltered, light g/b 0.5l'  # leading space
     assert "175294" not in names    # beer drink: its Armenian name lacks the search word
 
@@ -95,7 +95,7 @@ def test_parse_search_skips_blank_name_and_ignores_odd_brand_id():
     by_id[13620]["brandId"] = "2835"
     names = parse_search(data)
     assert "8158" not in names and len(names) == 208
-    assert names["13620"] == YCName('Beer "Kotayk" 1l', None)
+    assert (names["13620"].name_en, names["13620"].brand_id) == ('Beer "Kotayk" 1l', None)
 
 
 @pytest.mark.parametrize("mutate", [
@@ -188,16 +188,16 @@ def test_fetch_posts_both_requests_with_spec_bodies():
 def test_fetch_sighting_from_latin_name():
     s = sightings()["112509"]
     assert s.title == 'Beer "Primator" IPA, light g/b 0.5l'
-    assert (s.brewery, s.name) == ("Primator", "IPA, light")
+    assert (s.brewery, s.name) == ("Primator", "Primator IPA, light")
     assert s.beer_key == "n:primator ipa light g b"
     assert s.category == "Imported beer"
     assert (s.price_amd, s.volume_ml, s.container) == (1250, 500, "bottle")
 
 
 @pytest.mark.parametrize("item_id,brewery,name,beer_key,volume_ml,container,category", [
-    ("51047", "Dargett", "Pilsner", "n:dargett pilsner", 1000, "draft", "Armenian beer"),
-    ("3102", "Krombacher", "Pils", "n:krombacher pils", 5000, "can", "Imported beer"),
-    ("195013", "Corona", "Zero light", "n:corona zero light", 330, "can", "Imported beer"),
+    ("51047", "Dargett", "Dargett Pilsner", "n:dargett pilsner", 1000, "draft", "Armenian beer"),
+    ("3102", "Krombacher", "Krombacher Pils", "n:krombacher pils", 5000, "can", "Imported beer"),
+    ("195013", "Corona", "Corona Zero light", "n:corona zero light", 330, "can", "Imported beer"),
     ("8158", "Kilikia", "Kilikia", "n:kilikia", 1000, None, "Armenian beer"),   # nothing after the brand
 ])
 def test_fetch_latin_names_volume_and_container(item_id, brewery, name, beer_key, volume_ml, container, category):
@@ -211,7 +211,7 @@ def test_fetch_sighting_from_armenian_name_when_missing_in_search():
     s = found["175294"]
     assert s.title == "Գարեջրային ըմպ. «Տրյոխգորնոե»Բլանշ,բաց ա/տ 0.45լ"
     assert s.beer_key == "n:գարեջրային ըմպ տրյոխգորնոե բլանշ բաց ա տ"
-    assert (s.brewery, s.name) == ("Տրյոխգորնոե", "Բլանշ,բաց")
+    assert (s.brewery, s.name) == ("Տրյոխգորնոե", "Տրյոխգորնոե Բլանշ,բաց")
     assert (s.price_amd, s.volume_ml, s.container, s.category) == (500, 450, "bottle", "Imported beer")
     assert found["173458"].container == "can"     # Krombacher Radler, թ/տ
 
@@ -226,7 +226,7 @@ def test_fetch_stop_list_brand_missing_in_search_gets_latin_brand():
     assert (s.brewery, s.name, s.volume_ml) == ("Kilikia", "Kilikia", 1000)
     s = found["195013"]
     assert s.title == "Գարեջուր «Կորոնա» զերո, բաց ա/տ 330մլ"
-    assert (s.brewery, s.name, s.volume_ml, s.container) == ("Corona", "զերո, բաց", 330, "bottle")
+    assert (s.brewery, s.name, s.volume_ml, s.container) == ("Corona", "Corona զերո, բաց", 330, "bottle")
 
 
 def test_fetch_applies_brewery_aliases_to_key_only():
@@ -270,3 +270,22 @@ def test_fetch_request_failure_keeps_fetch_error_kind(by_category, search, error
     result, http = fetch(by_category, search)
     assert (result.ok, result.error, result.sightings) == (False, error, [])
     assert len(http.calls) == requests
+
+
+def test_fetch_name_keeps_brand_when_title_has_only_a_colour():
+    """Yerevan City writes 'Beer "Cernovar" dark (can) 0.5l': without the brand the name was just "dark"."""
+    search = copy.deepcopy(SEARCH)
+    product = next(p for p in search["data"]["products"] if p["id"] == 112509)
+    product["nameEn"] = 'Beer "Cernovar" dark (can) 0.5l'
+    s = sightings(search=search)["112509"]
+    assert (s.brewery, s.name) == ("Cernovar", "Cernovar dark")
+
+
+def test_fetch_takes_shop_photo_as_small_label_image():
+    search = copy.deepcopy(SEARCH)
+    product = next(p for p in search["data"]["products"] if p["id"] == 112509)
+    product["photo"] = "https://media.yerevan-city.am/api/Image/Resize/ProductPhoto/1144516.png"
+    found = sightings(search=search)
+    assert found["112509"].logo == "https://media.yerevan-city.am/api/Image/Resize/ProductPhoto/1144516.png/160/160/false"
+    product["photo"] = "javascript:alert(1)"
+    assert sightings(search=search)["112509"].logo is None

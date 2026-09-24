@@ -18,6 +18,8 @@ SEARCH_URL = f"{API}/Search"
 SEARCH_BODY = {"search": "գարեջուր", "count": 500, "page": 1, "countries": [], "categories": [],
                "tags": [], "brands": [], "isDiscounted": False, "sortBy": 3}
 PRODUCT_URL = "https://yerevan-city.am/shop/product-details/{}"
+PHOTO_PREFIX = "https://media.yerevan-city.am/"
+PHOTO_SIZE = "/160/160/false"   # the shop's own resize path; the bare photo is ~650 KB
 
 # Stop-list (not_craft) brands as the shop writes them in «» of its Armenian names -> stop-list spelling,
 # so the shop filter still knows them when an item is missing from Search. Հայնեկեն is the spelling of
@@ -65,6 +67,7 @@ class YCListing:
 class YCName:
     name_en: str
     brand_id: int | None
+    photo: str | None = None
 
 
 def _is_int(v: Any) -> bool:
@@ -114,7 +117,9 @@ def parse_search(data: dict) -> dict[str, YCName]:
         if not _is_int(item_id) or not (name_en is None or isinstance(name_en, str)):
             raise ValueError(f"bad product {item_id!r}")
         if name_en and name_en.strip():
-            names[str(item_id)] = YCName(name_en.strip(), brand_id if _is_int(brand_id) else None)
+            photo = p.get("photo")
+            photo = photo + PHOTO_SIZE if isinstance(photo, str) and photo.startswith(PHOTO_PREFIX) else None
+            names[str(item_id)] = YCName(name_en.strip(), brand_id if _is_int(brand_id) else None, photo)
     return names
 
 
@@ -140,10 +145,13 @@ def brand_from(name_en: str | None, name_hy: str) -> str | None:
 
 
 def _clean_name(title: str, brand: str | None) -> str:
-    """Human name: the title after its brand, without volume, multipack and container marks."""
+    """Human name: brand + the title after it, without volume, multipack and container marks
+    (the shop's own variant is often just a colour: 'Beer "Cernovar" dark')."""
     m = _brand_match(title)
     rest = title[m.end():] if m else title
     rest = " ".join(_MARKS_RE.sub(" ", _VOLUME_RE.sub(" ", rest)).split())
+    if brand and rest and not rest.lower().startswith(brand.lower()):
+        return f"{brand} {rest}"
     return rest or brand or title
 
 
@@ -189,7 +197,8 @@ def fetch_yerevan_city(http: Http, place: Place, now: datetime, brewery_aliases:
     sightings = []
     for item in listing.items:
         # beer drinks, ciders and cocktails lack the search word, so they have no Latin name
-        name_en = names[item.item_id].name_en if item.item_id in names else None
+        found = names.get(item.item_id)
+        name_en = found.name_en if found else None
         title = name_en or item.name_hy
         beer_key = n_key(title, brewery_aliases)
         if beer_key == "n:":
@@ -201,6 +210,6 @@ def fetch_yerevan_city(http: Http, place: Place, now: datetime, brewery_aliases:
             price_amd=item.price_amd, volume_ml=_volume_ml(title), container=_container(name_en, item.name_hy),
             in_stock=True,   # no stock flag: a sold-out item just leaves the list
             category=item.category, url=PRODUCT_URL.format(item.item_id),
-            shop_url=PRODUCT_URL.format(item.item_id),
+            shop_url=PRODUCT_URL.format(item.item_id), logo=found.photo if found else None,
         ))
     return SourceResult(key=key, source="yerevan_city", ok=True, sightings=sightings, place_id=place.id)
