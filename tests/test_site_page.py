@@ -7,7 +7,9 @@ PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by")
-PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days")
+PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
+                "logo", "verified", "untappd_url")
+VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
 
 
 def _soup():
@@ -39,18 +41,26 @@ def test_page_is_russian_and_mobile_ready():
 
 def test_required_elements_exist():
     soup = _soup()
-    for element_id in ("tab-bars", "tab-shops", "only-new", "sort", "search", "places", "count", "rows",
-                       "stale-banner", "updated", "legend-star", "legend-hot"):
+    for element_id in ("tab-bars", "tab-shops", "tab-venues", "only-new", "sort", "search", "controls",
+                       "places", "count", "rows", "venues-section", "venues", "stale-banner", "updated",
+                       "legend-star", "legend-hot"):
         assert soup.find(id=element_id) is not None, element_id
 
 
 def test_tabs_are_toggle_buttons_with_bars_selected():
     soup = _soup()
-    bars, shops = soup.find(id="tab-bars"), soup.find(id="tab-shops")
-    assert bars.name == shops.name == "button"
-    assert "🍻 Бары" in bars.get_text() and "🛒 Магазины" in shops.get_text()
-    assert (bars["data-section"], shops["data-section"]) == ("bars", "shops")
-    assert (bars["aria-pressed"], shops["aria-pressed"]) == ("true", "false")
+    bars, shops, venues = soup.find(id="tab-bars"), soup.find(id="tab-shops"), soup.find(id="tab-venues")
+    assert bars.name == shops.name == venues.name == "button"
+    assert "🍻 Бары" in bars.get_text() and "🛒 Магазины" in shops.get_text() and "📍 Все места" in venues.get_text()
+    assert (bars["data-section"], shops["data-section"], venues["data-section"]) == ("bars", "shops", "venues")
+    assert (bars["aria-pressed"], shops["aria-pressed"], venues["aria-pressed"]) == ("true", "false", "false")
+
+
+def test_venues_section_starts_hidden():
+    soup = _soup()
+    assert soup.find(id="venues-section").has_attr("hidden")
+    intro = soup.find(id="venues-section").find("p", class_="intro")
+    assert "напишите Олегу" in intro.get_text()
 
 
 def test_sort_select_defaults_to_newness():
@@ -100,7 +110,8 @@ def test_no_external_scripts_or_styles():
 
 def test_script_uses_every_data_field():
     js = _js(_soup())
-    for field in ROW_FIELDS + PLACE_FIELDS + ("generated_at", "started_at", "hot_rating", "rows", "places"):
+    for field in set(ROW_FIELDS + PLACE_FIELDS + VENUE_FIELDS) | {"generated_at", "started_at", "hot_rating",
+                                                                     "rows", "places", "venues"}:
         assert re.search(rf"\.{field}\b", js), field
 
 
@@ -118,8 +129,10 @@ def test_script_texts_and_rules():
     assert "min-width: 700px" in js
     for text in ("✅ меню", "👀 видели", "✍️ со слов", "🛒 в магазине", "🔥", "⭐", "🆕",
                  "меню обновлено", "проверено", "⚠️ не удалось проверить", "обновлено",
-                 "ч назад", "Данные устарели", "с тех пор, как следим, с "):
+                 "ч назад", "Данные устарели", "с тех пор, как следим, с ",
+                 "Появилось", "чекинов за 30 дней", "в списке", "Верифицирован в Untappd", "no-referrer"):
         assert text in js, text
+    assert "Замечено" not in js
     for word in ("день", "дня", "дней"):
         assert f'"{word}"' in js, word
 
@@ -133,14 +146,21 @@ def test_colours_are_custom_properties_with_dark_variant():
     assert "overflow-x: auto" in css  # wide table scrolls inside its box, never the page
 
 
+def test_table_headers_use_new_since_label():
+    js = _js(_soup())
+    assert '"Появилось"' in js
+    assert '"Замечено"' not in js
+
+
 def test_footer_sources_legend_and_credits():
     soup = _soup()
     footer = soup.find("footer")
     text = footer.get_text(" ", strip=True)
-    assert "Идея и основа — hopandshot.github.io/hopsandshot" in text
-    assert "нашли ошибку — напишите олегу" in text.lower()
+    assert "Идея и основа" not in text
+    assert "Спасибо Ивану за идею." in text
+    assert "Проект делает и поддерживает Олег" in text
+    assert "Пожелания и ошибки — туда." in text
     assert soup.find(id="legend-star").get_text().startswith("⭐ — возможно, впервые в Ереване (с тех пор, как следим")
     hrefs = " ".join(a["href"] for a in footer.find_all("a"))
-    for host in ("hopandshot.github.io/hopsandshot", "untappd.com", "buy.am", "beer-city.am",
-                 "yerevan-city.am", "parma.am"):
+    for host in ("untappd.com", "buy.am", "beer-city.am", "yerevan-city.am", "parma.am", "t.me/oleg_sorokin"):
         assert host in hrefs, host

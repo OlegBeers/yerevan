@@ -5,49 +5,54 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ереван на кранах</title>
 <meta name="description" content="Крафтовое пиво в барах и магазинах Еревана: что наливают и что продают сейчас">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light dark;
-    --bg: #faf7f2;
+    --bg: #ffffff;
     --surface: #ffffff;
-    --surface-2: #f3eee6;
-    --border: #e3dccf;
-    --text: #1f1a14;
-    --muted: #6b5f52;
-    --accent: #9a5412;
+    --surface-2: #f6f5f2;
+    --border: #e7e3dc;
+    --text: #201d18;
+    --muted: #756f65;
+    --accent: #c8891c;
     --on-accent: #ffffff;
-    --hot: #b93a0e;
+    --hot: #d1451b;
     --danger: #b42318;
-    --warn-bg: #ffe98a;
-    --warn-text: #3d2e00;
-    --radius: 10px;
+    --warn-bg: #fdf1cf;
+    --warn-text: #6b4a06;
+    --radius: 14px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1a1612;
-      --surface: #221c17;
-      --surface-2: #2b231d;
-      --border: #3a322a;
-      --text: #f2ebdd;
-      --muted: #a89a89;
-      --accent: #e0a458;
+      --bg: #171511;
+      --surface: #1e1b17;
+      --surface-2: #262220;
+      --border: #35302a;
+      --text: #f1ede6;
+      --muted: #a89e90;
+      --accent: #e3a548;
       --on-accent: #1a1612;
       --hot: #ff8a5c;
       --danger: #ff8f84;
-      --warn-bg: #5a4700;
-      --warn-text: #ffe99a;
+      --warn-bg: #4a3a08;
+      --warn-text: #ffe9a8;
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font: 16px/1.55 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     overflow-wrap: anywhere;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 16px 16px 48px; }
-  a { color: var(--accent); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 56px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .sr-only {
     position: absolute; width: 1px; height: 1px; overflow: hidden;
@@ -55,58 +60,72 @@
   }
   .banner {
     background: var(--warn-bg); color: var(--warn-text); font-weight: 600;
-    border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px;
+    border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px;
   }
-  h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0; }
-  .sub { margin: 4px 0 16px; color: var(--muted); }
-  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0; font-weight: 800; }
+  .sub { margin: 6px 0 20px; color: var(--muted); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
   .tab {
-    flex: 1 1 0; max-width: 220px; font: inherit; font-weight: 600; cursor: pointer;
-    padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+    flex: 1 1 0; max-width: 220px; font: inherit; font-weight: 700; cursor: pointer;
+    padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--surface); color: var(--text);
   }
   .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-  .controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 12px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 16px; }
   #search, select {
     font: inherit; color: var(--text); background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px;
   }
   #search { flex: 1 1 240px; min-width: 0; }
   .sort, .toggle { display: inline-flex; gap: 8px; align-items: center; }
   .toggle { cursor: pointer; }
   .toggle input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
-  .places { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .places { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .place {
     display: flex; flex-direction: column; align-items: flex-start; max-width: 100%;
     font: inherit; font-size: .8rem; line-height: 1.3; text-align: left; cursor: pointer;
-    padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--surface); color: var(--muted);
   }
-  .place b { font-size: .95rem; color: var(--text); }
+  .place b { font-size: .95rem; color: var(--text); font-weight: 700; }
   .place .warn { color: var(--danger); }
   .place[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
-  .count { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
+  .place-head, .where-head { display: inline-flex; align-items: center; gap: 6px; }
+  .logo { border-radius: 50%; object-fit: cover; vertical-align: middle; flex-shrink: 0; background: var(--surface-2); }
+  .avatar {
+    display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: var(--surface-2); color: var(--muted); font-weight: 700; font-size: .7rem;
+    vertical-align: middle; flex-shrink: 0;
+  }
+  .verified { color: var(--accent); font-weight: 800; margin-left: 1px; }
+  .tracked-badge {
+    font-size: .72rem; color: var(--accent); border: 1px solid var(--accent);
+    border-radius: 999px; padding: 2px 9px; margin-left: 8px; white-space: nowrap;
+  }
+  .intro { color: var(--muted); margin: 0 0 16px; max-width: 60ch; }
+  .count { color: var(--muted); font-size: .85rem; margin: 0 0 10px; }
   .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
   table { width: 100%; border-collapse: collapse; font-size: .92rem; }
   th {
     text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--muted); background: var(--surface-2); padding: 10px 12px; white-space: nowrap;
+    color: var(--muted); background: var(--surface-2); padding: 12px 14px; white-space: nowrap;
   }
-  td { padding: 10px 12px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: normal; }
+  td { padding: 12px 14px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: normal; }
   .num { text-align: right; white-space: nowrap; }
   .nowrap { white-space: nowrap; }
-  .beer { font-weight: 600; }
+  .beer { font-weight: 700; }
   .small { display: block; color: var(--muted); font-size: .82rem; }
   .flag { margin-right: .25em; }
   .hot { color: var(--hot); font-weight: 700; white-space: nowrap; }
-  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
-  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-  .card .meta { color: var(--muted); font-size: .85rem; }
-  .card .where { font-size: .85rem; margin-top: 2px; }
-  footer { margin-top: 32px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
-  footer h2 { font-size: .95rem; color: var(--text); margin: 16px 0 4px; }
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .card .meta { color: var(--muted); font-size: .85rem; margin-top: 2px; }
+  .card .where { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .85rem; margin-top: 6px; }
+  .card .where .meta-inline { color: var(--muted); }
+  footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
+  footer h2 { font-size: .95rem; color: var(--text); margin: 20px 0 6px; font-weight: 700; }
   footer p { margin: 4px 0; }
   .legend { list-style: none; margin: 0; padding: 0; }
 </style>
@@ -122,8 +141,9 @@
     <div class="tabs" role="group" aria-label="Раздел">
       <button type="button" class="tab" id="tab-bars" data-section="bars" aria-pressed="true">🍻 Бары</button>
       <button type="button" class="tab" id="tab-shops" data-section="shops" aria-pressed="false">🛒 Магазины</button>
+      <button type="button" class="tab" id="tab-venues" data-section="venues" aria-pressed="false">📍 Все места</button>
     </div>
-    <div class="controls">
+    <div id="controls" class="controls">
       <label for="search" class="sr-only">Поиск по названию, стилю и пивоварне</label>
       <input type="search" id="search" placeholder="Название, стиль или пивоварня" autocomplete="off">
       <span class="sort">
@@ -139,6 +159,10 @@
     <div id="places" class="places" role="group" aria-label="Места"></div>
     <p id="count" class="count" aria-live="polite"></p>
     <div id="rows"></div>
+    <section id="venues-section" hidden>
+      <p class="intro">Где за последние 30 дней отмечали пиво местных пивоварен. Если место стоит добавить — напишите Олегу.</p>
+      <ul id="venues" class="cards"></ul>
+    </section>
   </main>
   <footer>
     <h2>Значки</h2>
@@ -158,8 +182,8 @@
       Меню Dargett Brewpub — <a href="https://buy.am/en/restaurants/dargett">buy.am</a>.
       Магазины: <a href="https://www.beer-city.am/en/">Beer City</a>, <a href="https://yerevan-city.am/">Yerevan City</a>,
       <a href="https://parma.am/en/">Parma</a>.</p>
-    <p>Идея и основа — <a href="https://hopandshot.github.io/hopsandshot/">hopandshot.github.io/hopsandshot</a></p>
-    <p>Нашли ошибку — напишите Олегу.</p>
+    <p>Спасибо Ивану за идею.</p>
+    <p>Проект делает и поддерживает Олег — <a href="https://t.me/oleg_sorokin">@oleg_sorokin</a>. Пожелания и ошибки — туда.</p>
   </footer>
 </div>
 <script>
@@ -208,14 +232,41 @@ function el(tag, attrs, ...kids) {
 }
 const safeUrl = (u) => (typeof u === "string" && /^https?:\/\//i.test(u) ? u : null);
 
+function avatarNode(name, size) {
+  const letter = (name || "?").trim().charAt(0).toUpperCase() || "?";
+  return el("span", { class: "avatar", style: `width:${size}px;height:${size}px;line-height:${size}px` }, letter);
+}
+function logoNode(name, url, size) {
+  const safe = safeUrl(url);
+  if (!safe) return avatarNode(name, size);
+  const img = el("img", {
+    src: safe, alt: "", class: "logo", width: size, height: size,
+    loading: "lazy", referrerpolicy: "no-referrer",
+  });
+  img.addEventListener("error", () => img.replaceWith(avatarNode(name, size)), { once: true });
+  return img;
+}
+function verifiedBadge() {
+  return el("span", { class: "verified", role: "img", "aria-label": "Верифицирован в Untappd", title: "Верифицирован в Untappd" }, "✓");
+}
+function placeNameNode(place) {
+  const url = safeUrl(place.untappd_url);
+  const kids = [place.name, place.verified ? verifiedBadge() : null];
+  return url
+    ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, ...kids)
+    : el("span", null, ...kids);
+}
+function placeObj(id) {
+  return ui.places.get(id) || { name: id };
+}
+
 const abvText = (r) => (r.abv != null ? `${r.abv}%` : "");
 const ibuText = (r) => (r.ibu != null ? `IBU ${r.ibu}` : "");
 const priceText = (r) => (r.price_amd != null ? `${r.price_amd} ֏` : "");
 const volumeText = (r) => [r.volume_ml != null ? `${r.volume_ml} мл` : "", CONTAINER_RU[r.container] || ""].filter(Boolean).join(" ");
-const placeName = (id) => (ui.places.get(id) || {}).name || id;
 function sinceText(s) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
-  return m ? `с ${m[3]}.${m[2]}` : "";
+  return m ? `${m[3]}.${m[2]}` : "";
 }
 function badgeText(r) {
   switch (r.badge) {
@@ -261,8 +312,15 @@ function visibleRows() {
       || String(a.name).localeCompare(String(b.name), "ru"));
 }
 
+function placeCell(r) {
+  const place = placeObj(r.place_id);
+  return [
+    el("span", { class: "where-head" }, logoNode(place.name, place.logo, 22), placeNameNode(place)),
+    el("span", { class: "small" }, badgeText(r)),
+  ];
+}
 function table(rows) {
-  const heads = ["Пиво", "Стиль", "Крепость", "IBU", "Рейтинг", "Цена", "Где", "Замечено"];
+  const heads = ["Пиво", "Стиль", "Крепость", "IBU", "Рейтинг", "Цена", "Где", "Появилось"];
   const numeric = new Set(["Крепость", "IBU", "Рейтинг", "Цена"]);
   const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: numeric.has(h) ? "num" : null }, h)));
   const body = rows.map((r) => el("tr", null,
@@ -272,9 +330,16 @@ function table(rows) {
     el("td", { class: "num" }, r.ibu ?? ""),
     el("td", { class: "num" }, ratingNode(r)),
     el("td", { class: "num" }, priceText(r), volumeText(r) ? el("span", { class: "small" }, volumeText(r)) : null),
-    el("td", null, placeName(r.place_id), el("span", { class: "small" }, badgeText(r))),
+    el("td", null, ...placeCell(r)),
     el("td", { class: "nowrap" }, sinceText(r.since))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
+}
+function cardWhere(r) {
+  const place = placeObj(r.place_id);
+  return el("div", { class: "where" },
+    logoNode(place.name, place.logo, 20),
+    placeNameNode(place),
+    el("span", { class: "meta-inline" }, badgeText(r)));
 }
 function cards(rows) {
   const line = (cls, text) => (text ? el("div", { class: cls }, text) : null);
@@ -282,7 +347,8 @@ function cards(rows) {
     el("div", { class: "top" }, el("span", null, ...flagNodes(r), nameNode(r)), ratingNode(r)),
     line("meta", dot([r.brewery, r.style, abvText(r), ibuText(r)])),
     line("meta", dot([volumeText(r), priceText(r)])),
-    line("where", dot([placeName(r.place_id), badgeText(r), sinceText(r.since)])))));
+    cardWhere(r),
+    sinceText(r.since) ? el("div", { class: "meta" }, `Появилось ${sinceText(r.since)}`) : null)));
 }
 function render() {
   if (!ui.data) return;
@@ -326,8 +392,23 @@ function renderPlaces() {
   };
   $("places").replaceChildren(
     chip(null, el("b", null, "Все места")),
-    ...ui.data.places.filter((p) => p.section === ui.section).map((p) => chip(p.id, el("b", null, p.name),
+    ...ui.data.places.filter((p) => p.section === ui.section).map((p) => chip(p.id,
+      el("span", { class: "place-head" }, logoNode(p.name, p.logo, 24), el("b", null, p.name), p.verified ? verifiedBadge() : null),
       ...placeStatus(p, now).map(([text, warn]) => el("span", { class: warn ? "warn" : null }, text)))));
+}
+function venueNode(v) {
+  const place = { name: v.name, logo: v.logo, verified: v.verified, untappd_url: v.url };
+  const last = parseTime(v.last_checkin);
+  return el("li", { class: "card" },
+    el("div", { class: "top" },
+      el("span", { class: "where-head" }, logoNode(v.name, v.logo, 28), placeNameNode(place)),
+      v.tracked ? el("span", { class: "tracked-badge" }, "в списке") : null),
+    el("div", { class: "meta" }, `${v.checkins_30d} чекинов за 30 дней`),
+    last ? el("div", { class: "meta" }, `последний ${yerevan(last).dm}`) : null);
+}
+function renderVenues() {
+  if (!ui.data) return;
+  $("venues").replaceChildren(...(ui.data.venues || []).map(venueNode));
 }
 function renderHeader() {
   const now = new Date();
@@ -351,8 +432,14 @@ function setSection(section) {
   ui.section = section;
   ui.place = null;
   for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-pressed", String(b.dataset.section === section));
-  renderPlaces();
-  render();
+  const isVenues = section === "venues";
+  $("controls").hidden = isVenues;
+  $("places").hidden = isVenues;
+  $("count").hidden = isVenues;
+  $("rows").hidden = isVenues;
+  $("venues-section").hidden = !isVenues;
+  if (isVenues) renderVenues();
+  else { renderPlaces(); render(); }
 }
 
 async function load() {
