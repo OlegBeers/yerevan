@@ -11323,9 +11323,10 @@ git commit -m "ci: add scheduled taps workflow, tests workflow and README"
    ```bash
    cd ~/Claude/Projects/yerevan-taps
    gh auth status        # должно быть: Active account: OlegBeers
+   git checkout main && git merge --ff-only feat/v1   # репозиторий создаём из main
    gh repo create OlegBeers/yerevan --public --source . --push
    ```
-   Репозиторий публичный: так Actions и Pages бесплатны. Токенов и паролей в нём нет, они только в секретах (шаги 3–5).
+   Репозиторий нужно создавать именно из `main`: иначе веткой по умолчанию станет `feat/v1`, а запуск по расписанию берёт `main` и упадёт. Репозиторий публичный: так Actions и Pages бесплатны. Токенов и паролей в нём нет, они только в секретах (шаги 3–5). **Не включайте защиту ветки `main` и обязательные pull request'ы:** бот пушит `state.json` прямо в `main`, с защитой каждый прогон будет падать.
 
 2. **Включить сайт.** Откройте https://github.com/OlegBeers/yerevan → Settings → Pages → Build and deployment → Source: **GitHub Actions**. Больше там ничего не нужно.
 
