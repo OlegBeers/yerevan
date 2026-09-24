@@ -22,7 +22,7 @@ MAX_PAGES = 100   # sanity bound on the page counter; a full walk is ~26 pages
 BEER_TITLE_RE = re.compile(r"^\s*(?:draught beer|beer|пиво)\b", re.I)
 PAGES_RE = re.compile(r"Page\s+(\d+)\s+of\s+(\d+)")
 VOLUME_RE = re.compile(r"\d+(?:[.,]\d+)?\s*(?:ml|cl|l|мл|л)(?!\w)", re.I)
-QUOTES_RE = re.compile(r"[\"«»“”„]")
+QUOTES_RE = re.compile(r"''|[\"«»“”„″]")   # '' = two apostrophes used as a double quote in some titles
 NUM_RE = re.compile(r"\d+(?:[.,]\d+)?")
 CONTAINERS = {"tin": "can", "can": "can", "glass": "bottle", "bottle": "bottle", "pet": "bottle",
               "plastic": "bottle", "keg": "keg"}

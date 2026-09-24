@@ -271,3 +271,10 @@ def test_any_listing_failure_fails_the_whole_run(responses, full, error):
     result, _ = fetch(responses, known=P1_IDS + DRAFT_IDS, full=full)
     assert (result.ok, result.error, result.full, result.sightings) == (False, error, full, [])
     assert (result.key, result.place_id) == ("beercity:beer-city", "beer-city")
+
+
+def test_clean_name_strips_double_apostrophe_quotes():
+    from taps.sources.beercity import clean_name
+    assert clean_name("Beer ''Forged'' irish stout 0,5l") == "Forged irish stout"
+    assert clean_name("Beer ''Ayinger celebrator '' dunkles 0,33l") == "Ayinger celebrator dunkles"
+    assert clean_name("Beer «Brewer's Choice» IPA 0,5l") == "Brewer's Choice IPA"
