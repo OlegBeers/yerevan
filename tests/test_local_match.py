@@ -10,7 +10,7 @@ def test_clean_text_strips_accented_generic_brewery_words():
 
 
 def test_clean_text_strips_glass_bottle_marker():
-    assert clean_text('Beer "Dargett" Apricot Ale g/b 0.33l') == 'Beer "Dargett" Apricot Ale'
+    assert clean_text('Draught "Dargett" Apricot Ale g/b 0.33l') == 'Draught "Dargett" Apricot Ale'
 
 
 def test_clean_text_strips_abv_percent():
@@ -18,8 +18,12 @@ def test_clean_text_strips_abv_percent():
 
 
 def test_clean_text_strips_volume_ml_and_cyrillic_litre():
-    assert clean_text('Beer «Bavik Super pils» 0,33л') == 'Beer «Bavik Super pils»'
+    assert clean_text('Draught «Bavik Super pils» 0,33л') == 'Draught «Bavik Super pils»'
     assert clean_text("379 Dunkel 0.33l") == "379 Dunkel"
+
+
+def test_clean_text_strips_the_generic_word_beer():
+    assert clean_text('Beer "379" cherry 0,33l') == '"379" cherry'
 
 
 def test_clean_text_preserves_meaningful_words():
@@ -111,3 +115,21 @@ def test_local_match_does_not_fall_back_when_brewery_is_latin_but_wrong():
 
 def test_local_match_with_no_known_beers_is_none():
     assert local_match("Dargett", "Apricot Ale", []) is None
+
+
+def test_local_match_does_not_confuse_draught_with_a_different_stout():
+    """Found via the real dry run: model.normalize_title's own stopwords (draught/can/bottle/... --
+    meant for PAIR-KEY identity, where packaging never matters) must not feed fuzzy matching here,
+    since "Draught" is part of Guinness's own distinguishing Untappd name, not shop packaging noise.
+    Stripping it previously left just "stout", which wrongly satisfied containment against a
+    completely different, stronger beer."""
+    draught = KnownBeer(untappd_id=4473, name="Guinness Draught", brewery="Guinness")
+    foreign_extra_stout = KnownBeer(untappd_id=1199, name="Guinness Foreign Extra Stout", brewery="Guinness")
+    assert local_match("Guinness & Co.", "Guinness Draught Stout dark", [draught, foreign_extra_stout]) is None
+
+
+def test_local_match_finds_plain_draught_by_name_alone():
+    draught = KnownBeer(untappd_id=4473, name="Guinness Draught", brewery="Guinness")
+    other = KnownBeer(untappd_id=1199, name="Guinness Foreign Extra Stout", brewery="Guinness")
+    found = local_match("Guinness", "Draught, dark", [draught, other])
+    assert found is draught

@@ -837,7 +837,7 @@ def test_match_shop_beers_locally_records_a_local_match():
         "beatles": {"u:1674726": _u_pair("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")},
         "beer-city": {"n:dargett apricot ale": _shop_pair("Dargett", "Dargett apricot ale")},
     }
-    run_mod.match_shop_beers_locally(state, run_mod.Corrections(), NOW)
+    run_mod.match_shop_beers_locally(state, NOW)
     match = state.shop_matches["n:dargett apricot ale"]
     assert (match.untappd_beer_id, match.via, match.name, match.brewery) == (
         1674726, "local", "Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
@@ -852,7 +852,7 @@ def test_match_shop_beers_locally_leaves_no_match_when_nothing_qualifies():
         "beatles": {"u:1": _u_pair("Hell", "Dahook")},
         "parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Beer")},
     }
-    run_mod.match_shop_beers_locally(state, run_mod.Corrections(), NOW)
+    run_mod.match_shop_beers_locally(state, NOW)
     assert state.shop_matches == {}
 
 
@@ -863,7 +863,7 @@ def test_match_shop_beers_locally_skips_already_matched_keys():
         "beer-city": {"n:dargett apricot ale": _shop_pair("Dargett", "Dargett apricot ale")},
     }
     state.shop_matches["n:dargett apricot ale"] = ShopMatchRec(untappd_beer_id=999, via="search", matched_at=iso(NOW))
-    run_mod.match_shop_beers_locally(state, run_mod.Corrections(), NOW)
+    run_mod.match_shop_beers_locally(state, NOW)
     assert state.shop_matches["n:dargett apricot ale"].untappd_beer_id == 999   # untouched
 
 
@@ -944,8 +944,8 @@ def test_match_shop_beers_cleans_noise_from_the_query():
 
 def test_match_shop_beers_records_no_match_when_nothing_scores():
     state = empty_state(NOW)
-    state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Beer")}}
-    client = _untappd_client({"https://untappd.com/search?q=Nonexistent%20Brand%20Nonexistent%20Beer&type=beer":
+    state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Item")}}
+    client = _untappd_client({"https://untappd.com/search?q=Nonexistent%20Brand%20Nonexistent%20Item&type=beer":
                               KILIKIA_RESULT_HTML})
     run_mod.match_shop_beers(state, client, NOW)
     match = state.shop_matches["n:x"]

@@ -313,14 +313,14 @@ def known_untappd_beers(state: State) -> list[KnownBeer]:
     return list(out.values())
 
 
-def match_shop_beers_locally(state: State, corrections: Corrections, now: datetime) -> None:
+def match_shop_beers_locally(state: State, now: datetime) -> None:
     """Before Untappd search: match every shop/menu/manual candidate against beers already known
     from a bar's own menu (zero extra pages). A miss is not cached (unlike search's "no_match") --
     it costs nothing to retry every run, and a bar might reveal the match later. A hit is recorded
     exactly like a search match (state.shop_matches), marked via="local", so search skips it too."""
     candidates = known_untappd_beers(state)
     for key, brand, name in _shop_match_candidates(state, now, limit=None):
-        found = local_match(brand, name, candidates, corrections.brewery_aliases)
+        found = local_match(brand, name, candidates)
         if found is not None:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.untappd_id, url=f"https://untappd.com/beer/{found.untappd_id}",
@@ -638,8 +638,8 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     (repo / FATAL_FILE).unlink(missing_ok=True)
     apply_aliases(state, corrections.aliases)
     merge_places(state, {old: p.id for p in config.places.values() for old in p.merged_from})
-    apply_same_as(state, corrections, now)            # v1.2 beer identity: manual override, wins over local/search
-    match_shop_beers_locally(state, corrections, now)  # v1.2 beer identity: zero-page match, before search
+    apply_same_as(state, corrections, now)   # v1.2 beer identity: manual override, wins over local/search
+    match_shop_beers_locally(state, now)     # v1.2 beer identity: zero-page match, before search
     untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
                manual_result(corrections, config, now)]
