@@ -137,7 +137,9 @@
   .card .meta { color: var(--muted); font-size: .85rem; margin-top: 2px; }
   .where { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .85rem; margin-top: 6px; }
   .where .meta-inline { color: var(--muted); }
-  .wherelist { display: flex; flex-direction: column; gap: 6px; }
+  .wherelist { display: flex; flex-direction: column; gap: 5px; }
+  .wherelist .where { margin-top: 0; gap: 2px 6px; }
+  .wherelist .where + .where { padding-top: 5px; border-top: 1px dashed var(--border); }
   footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
   footer h2 { font-size: .95rem; color: var(--text); margin: 20px 0 6px; font-weight: 700; }
   footer p { margin: 4px 0; }
@@ -388,10 +390,14 @@ function placeLines(rows) {   // one line per place a grouped beer is available 
   return rows.map((r) => {
     const place = placeObj(r.place_id);
     const extra = dot([priceText(r), volumeText(r)]);
+    // the plain "on the menu" status is the common case: a tooltip icon saves a line, other statuses keep their text
+    const status = r.badge === "menu"
+      ? el("span", { class: "flag", role: "img", "aria-label": "есть в меню", title: "есть в меню" }, "✅")
+      : el("span", { class: "meta-inline" }, ...badgeNodes(r));
     return el("div", { class: "where" },
       logoNode(place.name, place.logo, 20),
       placeNameNode(place),
-      el("span", { class: "meta-inline" }, ...badgeNodes(r)),
+      status,
       extra ? el("span", { class: "meta-inline" }, extra) : null,
       shopLinkNode(r));
   });
