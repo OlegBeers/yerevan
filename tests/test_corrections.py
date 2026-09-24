@@ -158,6 +158,39 @@ def test_bad_sighting_is_skipped(entry, fragment):
     assert fragment in errors[0]
 
 
+def test_parse_same_as_entry():
+    """v1.2 beer identity: a manual override -- wins over local/search matches (applied by run.py,
+    not here) -- keyed by (place, beer_key), consistent with how `hide` already works."""
+    corrections, errors = parse(
+        "same_as:\n"
+        "  - place: gargoyle\n"
+        "    beer: 'n:chimay peres trappistes blue'\n"
+        "    untappd_id: 34039\n"
+    )
+    assert errors == []
+    assert corrections.same_as == {("gargoyle", "n:chimay peres trappistes blue"): 34039}
+
+
+@pytest.mark.parametrize(
+    "entry, fragment",
+    [
+        ("{place: gargoyle, untappd_id: 1}", "нет поля beer"),
+        ("{place: gargoyle, beer: 'Chimay Blue', untappd_id: 1}", "не ключ пива"),
+        ("{place: gargoyle, beer: 'n:x', untappd_id: 0}", "untappd_id 0"),
+        ("{place: gargoyle, beer: 'n:x', untappd_id: abc}", "untappd_id 'abc'"),
+        ("{place: gargoyle, beer: 'n:x'}", "untappd_id None"),
+        ("{place: nowhere, beer: 'n:x', untappd_id: 1}", "место 'nowhere' не найдено"),
+        ("{place: gargoyle, beer: 'n:x', untappd_id: 1, extra: 1}", "неизвестные поля: extra"),
+    ],
+)
+def test_bad_same_as_entry_is_skipped(entry, fragment):
+    corrections, errors = parse(f"same_as:\n  - {entry}\n")
+    assert corrections.same_as == {}
+    assert len(errors) == 1
+    assert errors[0].startswith("corrections.yaml, same_as (")
+    assert fragment in errors[0]
+
+
 def test_bad_hide_alias_and_brand_entries_are_skipped():
     corrections, errors = parse(
         "hide:\n"

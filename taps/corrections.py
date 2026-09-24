@@ -10,10 +10,11 @@ import yaml
 
 from taps.model import untappd_n_key
 
-LIST_SECTIONS = ("sightings", "hide", "not_craft")
+LIST_SECTIONS = ("sightings", "hide", "same_as", "not_craft")
 MAP_SECTIONS = ("aliases", "brewery_aliases")
 SIGHTING_FIELDS = ("place", "brewery", "beer", "untappd", "by", "date")
 HIDE_FIELDS = ("place", "beer")
+SAME_AS_FIELDS = ("place", "beer", "untappd_id")
 BEER_KEY_RE = re.compile(r"u:[1-9]\d*|n:\S.*")
 
 
@@ -32,6 +33,7 @@ class ManualEntry:
 class Corrections:
     sightings: tuple[ManualEntry, ...] = ()
     hide: frozenset[tuple[str, str]] = frozenset()                   # (place_id, beer_key)
+    same_as: Mapping[tuple[str, str], int] = field(default_factory=dict)   # (place_id, beer_key) -> untappd_id
     aliases: Mapping[str, str] = field(default_factory=dict)          # beer_key -> beer_key
     brewery_aliases: Mapping[str, str] = field(default_factory=dict)  # text -> text
     not_craft: tuple[str, ...] = ()
@@ -138,6 +140,18 @@ def _hide(entry: Any, place_ids: Collection[str]) -> tuple[str, str]:
     return place, _beer_key(entry["beer"])
 
 
+def _same_as(entry: Any, place_ids: Collection[str]) -> tuple[tuple[str, str], int]:
+    entry = _fields(entry, SAME_AS_FIELDS)
+    place = _place(entry, place_ids)
+    if entry.get("beer") is None:
+        raise _Skip("нет поля beer")
+    key = _beer_key(entry["beer"])
+    untappd_id = entry.get("untappd_id")
+    if type(untappd_id) is not int or untappd_id <= 0:
+        raise _Skip(f"untappd_id {untappd_id!r}: нужно число из адреса пива на Untappd")
+    return (place, key), untappd_id
+
+
 def _alias(item: tuple[str, Any]) -> tuple[str, str]:
     return _beer_key(item[0]), _beer_key(item[1])
 
@@ -184,6 +198,7 @@ def parse_corrections(raw: dict, place_ids: Collection[str]) -> tuple[Correction
     corrections = Corrections(
         sightings=tuple(_parse_all("sightings", s["sightings"], lambda e: _sighting(e, place_ids, brewery_aliases), errors)),
         hide=frozenset(_parse_all("hide", s["hide"], lambda e: _hide(e, place_ids), errors)),
+        same_as=dict(_parse_all("same_as", s["same_as"], lambda e: _same_as(e, place_ids), errors)),
         aliases=dict(_parse_all("aliases", s["aliases"].items(), _alias, errors)),
         brewery_aliases=brewery_aliases,
         not_craft=tuple(_parse_all("not_craft", s["not_craft"], _brand, errors)),
