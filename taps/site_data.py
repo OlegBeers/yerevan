@@ -6,7 +6,7 @@ from pathlib import Path
 from taps.config import Config, Place
 from taps.model import SOURCE_KINDS
 from taps.sources.manual import MANUAL_KEEP_DAYS
-from taps.state import MARKERS, PairRec, State
+from taps.state import MARKERS, VENUE_KEEP_DAYS, PairRec, State
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 
 CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
@@ -30,11 +30,33 @@ def _place(place: Place, state: State, now: datetime) -> dict:
     failing_days = 0
     if failing:
         failing_days = max(0, int(age_days(parse_iso(last_ok or state.started_at), now)))
+    venue = state.venues.get(str(place.venue_id)) if place.venue_id is not None else None
     return {
         "id": place.id, "name": place.name, "kind": place.kind, "section": _section(place),
         "last_ok": last_ok, "menu_updated_at": _latest(r.menu_updated_at for r in recs),
         "failing": failing, "failing_days": failing_days,
+        "logo": venue.logo if venue else None,
+        "verified": venue.verified if venue else False,
+        "untappd_url": venue.url if venue else None,
     }
+
+
+def _venues(state: State, config: Config, now: datetime) -> list[dict]:
+    """v1.1 "Все места" tab: every venue seen in check-ins with at least one in the last 30 days."""
+    tracked = {p.venue_id: p.id for p in config.places.values() if p.venue_id is not None}
+    out = []
+    for vid_str, rec in state.venues.items():
+        recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
+        if not recent:
+            continue
+        vid = int(vid_str)
+        out.append({
+            "venue_id": vid, "name": rec.name, "url": rec.url, "logo": rec.logo, "verified": rec.verified,
+            "checkins_30d": len(recent), "last_checkin": max(c["at"] for c in recent),
+            "tracked": vid in tracked, "place_id": tracked.get(vid),
+        })
+    out.sort(key=lambda v: (-v["checkins_30d"], v["name"]))
+    return out
 
 
 def _days_ago(day: str, now: datetime) -> int:
@@ -104,6 +126,7 @@ def build_site_data(state: State, config: Config, now: datetime) -> dict:
         "hot_rating": config.settings.hot_rating,
         "places": [_place(p, state, now) for p in config.places.values()],
         "rows": rows,
+        "venues": _venues(state, config, now),
     }
 
 

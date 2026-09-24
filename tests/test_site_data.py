@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from taps.config import Config, Place, Settings
 from taps.site_data import build_site_data, write_site_data
-from taps.state import PairRec, SourceRec, State
+from taps.state import PairRec, SourceRec, State, VenueRec
 from taps.timeutil import iso
 
 NOW = datetime(2026, 10, 10, 12, 0, tzinfo=timezone.utc)  # 16:00 in Yerevan
@@ -29,8 +29,8 @@ def pair(source: str, first_seen: str = STARTED, **kw) -> PairRec:
     return PairRec(first_seen=first_seen, last_seen=first_seen, info=info, **kw)
 
 
-def state(pairs: dict, sources: dict | None = None) -> State:
-    return State(started_at=STARTED, pairs=pairs, sources=sources or {})
+def state(pairs: dict, sources: dict | None = None, venues: dict | None = None) -> State:
+    return State(started_at=STARTED, pairs=pairs, sources=sources or {}, venues=venues or {})
 
 
 def keys(data: dict) -> set[tuple[str, str]]:
@@ -163,7 +163,8 @@ def test_places_status():
     assert places["gargoyle"] == {
         "id": "gargoyle", "name": "Gargoyle Bar", "kind": "bar", "section": "bars",
         "last_ok": ago(0.2), "menu_updated_at": "2026-10-08T09:00:00+00:00",
-        "failing": False, "failing_days": 0}
+        "failing": False, "failing_days": 0,
+        "logo": None, "verified": False, "untappd_url": None}
     assert (places["dors"]["failing"], places["dors"]["failing_days"]) == (True, 3)
     assert places["dors"]["menu_updated_at"] is None
     # never succeeded: days counted from started_at
@@ -193,3 +194,48 @@ def test_write_site_data_is_compact_utf8(tmp_path):
     assert "Ծիրան Էյլ" in text and "Парма" in text
     assert "\\u" not in text and ", " not in text and ": " not in text and "\n" not in text
     assert json.loads(text) == data
+
+
+# --- v1.1: venue meta on places, and the venues list ------------------------------------
+
+def test_place_carries_venue_logo_and_verified_from_state():
+    st = state({}, venues={"1": VenueRec(name="Gargoyle Bar", url="https://untappd.com/v/gargoyle/1",
+                                         logo="https://x/logo.jpg", verified=True)})
+    places = {p["id"]: p for p in build(st)["places"]}
+    assert places["gargoyle"] == {
+        "logo": "https://x/logo.jpg", "verified": True, "untappd_url": "https://untappd.com/v/gargoyle/1",
+        "id": "gargoyle", "name": "Gargoyle Bar", "kind": "bar", "section": "bars",
+        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0}
+    assert places["parma"] == {
+        "logo": None, "verified": False, "untappd_url": None,
+        "id": "parma", "name": "Парма", "kind": "shop", "section": "shops",
+        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0}
+
+
+def test_venues_list_sorted_by_checkins_then_name():
+    st = state({}, venues={
+        "1": VenueRec(name="Gargoyle Bar", url="https://untappd.com/v/gargoyle/1", logo="https://x/g.jpg",
+                     verified=True, checkins=[{"id": 1, "at": ago(1)}, {"id": 2, "at": ago(2)}]),
+        "99": VenueRec(name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99",
+                      checkins=[{"id": 3, "at": ago(1)}, {"id": 4, "at": ago(2)}, {"id": 5, "at": ago(3)}]),
+        "50": VenueRec(name="Old Bar", url="https://untappd.com/v/old/50", checkins=[{"id": 6, "at": ago(40)}]),
+    })
+    venues = build(st)["venues"]
+    assert [v["name"] for v in venues] == ["KER U SUS", "Gargoyle Bar"]   # Old Bar has no checkin within 30d
+    ker = venues[0]
+    assert ker == {
+        "venue_id": 99, "name": "KER U SUS", "url": "https://untappd.com/v/ker-u-sus/99",
+        "logo": None, "verified": False, "checkins_30d": 3, "last_checkin": ago(1),
+        "tracked": False, "place_id": None,
+    }
+    gargoyle = venues[1]
+    assert (gargoyle["venue_id"], gargoyle["checkins_30d"], gargoyle["tracked"], gargoyle["place_id"]) == (
+        1, 2, True, "gargoyle")
+
+
+def test_venues_list_ties_break_by_name():
+    st = state({}, venues={
+        "2": VenueRec(name="Beatles Pub", url="u2", checkins=[{"id": 1, "at": ago(1)}]),
+        "1": VenueRec(name="Ambient Bar", url="u1", checkins=[{"id": 2, "at": ago(1)}]),
+    })
+    assert [v["name"] for v in build(st)["venues"]] == ["Ambient Bar", "Beatles Pub"]
