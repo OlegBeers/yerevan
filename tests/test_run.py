@@ -10,7 +10,7 @@ import pytest
 from taps import run as run_mod
 from taps.config import ConfigError
 from taps.fetch import FetchError, HttpResponse
-from taps.gitsync import commit_and_push, pull_ff
+from taps.gitsync import CheckoutError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome
 from taps.run import Deps, main, run, update_alerts
@@ -562,6 +562,19 @@ def test_digest_run_still_needs_the_group_chat_and_site_url(world):
 
 def test_dry_run_needs_no_environment_at_all(world):
     assert run(world.repo, NOW, {}, world.deps(), dry_run=True) == 0
+
+
+def test_checkout_that_is_not_a_clean_main_stops_the_run_with_exit_2(world):
+    def refuse(repo):
+        raise CheckoutError("прогон только из ветки main, сейчас feat/v1: переключитесь на чистый main")
+    deps = world.deps()
+    deps.pull = refuse
+
+    assert run(world.repo, NOW, ENV, deps) == 2
+
+    assert world.pushes == [] and world.http.urls == [] and world.untappd.started == 0
+    assert len(world.sends) == 1 and world.sends[0]["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]
+    assert "feat/v1" in world.sends[0]["text"]
 
 
 def test_dry_run_prints_no_digest_and_touches_no_git_or_telegram(world, capsys):

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from taps import gitsync
-from taps.gitsync import GitError, commit_and_push, pull_ff
+from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 
 
 def sh(repo: Path, *args: str) -> str:
@@ -203,3 +203,71 @@ def test_git_returns_stdout_and_raises_git_error_with_stderr(tmp_path, origin):
     assert gitsync.git(repo, "log", "-1", "--format=%s") == "seed\n"
     with pytest.raises(GitError, match="no-such-ref"):
         gitsync.git(repo, "show", "no-such-ref")
+
+
+# --- a normal run touches only a clean checkout of main ------------------------------------------
+
+def test_pull_ff_refuses_a_feature_branch_ahead_of_main_and_pushes_nothing(tmp_path, origin, git_calls):
+    repo = clone(tmp_path, "run", origin)
+    sh(repo, "checkout", "-q", "-b", "feat/v1")
+    (repo / "state.json").write_text('{"v": "feature"}\n')
+    sh(repo, "commit", "-am", "wip on the feature branch")
+    before = origin_head(origin)
+
+    with pytest.raises(CheckoutError, match="feat/v1"):
+        pull_ff(repo)
+
+    assert origin_head(origin) == before
+    assert not any(c[0] in ("push", "pull") for c in git_calls)
+
+
+def test_pull_ff_refuses_a_main_that_is_ahead_of_origin(tmp_path, origin):
+    repo = clone(tmp_path, "run", origin)
+    (repo / "state.json").write_text('{"v": "local"}\n')
+    sh(repo, "commit", "-am", "local only")
+
+    with pytest.raises(CheckoutError, match="origin/main"):
+        pull_ff(repo)   # "Already up to date" for ff-only, yet HEAD is not origin/main
+
+
+def test_pull_ff_refuses_a_detached_head(tmp_path, origin):
+    repo = clone(tmp_path, "run", origin)
+    sh(repo, "checkout", "-q", "--detach")
+
+    with pytest.raises(CheckoutError):
+        pull_ff(repo)
+
+
+def test_pull_ff_refuses_a_dirty_tracked_file_and_leaves_it_untouched(tmp_path, origin):
+    repo = clone(tmp_path, "run", origin)
+    push_change(tmp_path, origin, "oleg", "corrections.yaml", "sightings: [new]\n", "corrections: add beer")
+    (repo / "state.json").write_text('{"v": "hand edit"}\n')
+    head = sh(repo, "rev-parse", "HEAD")
+
+    with pytest.raises(CheckoutError, match="state.json"):
+        pull_ff(repo)
+
+    assert (repo / "state.json").read_text() == '{"v": "hand edit"}\n'
+    assert sh(repo, "rev-parse", "HEAD") == head
+
+
+def test_pull_ff_ignores_untracked_files(tmp_path, origin):
+    repo = clone(tmp_path, "run", origin)
+    (repo / "site").mkdir()
+    (repo / "site" / "data.json").write_text("{}")
+    (repo / ".taps-fatal").write_text("abc\n")
+
+    pull_ff(repo)
+
+
+def test_give_up_keeps_local_modifications_it_can_keep(tmp_path, origin):
+    repo = clone(tmp_path, "run", origin)
+    other_head = push_change(tmp_path, origin, "other", "state.json", '{"v": "other"}\n', "state: other run")
+    (repo / "state.json").write_text('{"v": "mine"}\n')
+    (repo / "corrections.yaml").write_text("sightings: [hand edit]\n")   # tracked, not ours to commit
+
+    assert commit_and_push(repo, ["state.json"], "state: my run") is False
+
+    assert sh(repo, "rev-parse", "HEAD") == other_head
+    assert (repo / "state.json").read_text() == '{"v": "other"}\n'
+    assert (repo / "corrections.yaml").read_text() == "sightings: [hand edit]\n"

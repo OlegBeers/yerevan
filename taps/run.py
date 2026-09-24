@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import json
 import os
 import sys
@@ -16,7 +17,7 @@ from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
 from taps.digest import build_digest, drop_stale_events, is_due, mark_sent, rollback
 from taps.fetch import Http, PageFetcher, UntappdClient, playwright_fetcher, untappd_due
-from taps.gitsync import GitError, commit_and_push, pull_ff
+from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome, merge_results
 from taps.site_data import build_site_data, write_site_data
@@ -192,7 +193,7 @@ def _fatal_untracked(repo: Path, text: str, send: Callable[[str], SendOutcome]) 
     digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
     prev = path.read_text(encoding="utf-8").strip() if path.exists() else None
     if prev != digest:
-        send(text)
+        send(html.escape(text))   # sent with parse_mode HTML
     path.write_text(digest + "\n", encoding="utf-8")
 
 
@@ -225,6 +226,8 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     if not dry_run:
         try:
             deps.pull(repo)
+        except CheckoutError as e:   # not a clean main: nothing is fetched, saved or pushed
+            return fatal(str(e), 2)
         except GitError as e:
             return fatal(f"git pull не прошёл: {e}", 1)
     try:   # first: a broken places.yaml or corrections.yaml then dedups its alert through state.alerts
