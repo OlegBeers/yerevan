@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from taps import run as run_mod
-from taps.config import ConfigError
+from taps.config import Config, ConfigError, Settings
 from taps.fetch import FetchError, HttpResponse
 from taps.gitsync import CheckoutError, commit_and_push, pull_ff
 from taps.model import SourceResult
@@ -258,7 +258,7 @@ def test_weekly_discovery_report_lists_untracked_venues_with_enough_checkins(wor
 
     def add_venues(state):
         state.venues["99999"] = VenueRec(
-            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999", country="Armenia",
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999", city="Yerevan", country="Armenia",
             checkins=[{"id": 1, "at": iso(MONDAY_MORNING - timedelta(days=1))},
                      {"id": 2, "at": iso(MONDAY_MORNING - timedelta(days=2))},
                      {"id": 3, "at": iso(MONDAY_MORNING - timedelta(days=3))}])
@@ -437,6 +437,106 @@ def test_city_check_stops_on_a_cloudflare_block_without_marking_checked(world):
     assert "https://untappd.com/v/blocked/54321" in world.untappd.urls   # it was attempted
 
 
+def test_city_check_marks_a_gyumri_venue_but_excludes_it_like_a_foreign_one(world):
+    """I-3 + M-1: addressLocality with no addressCountry (e.g. "Gyumri Հայաստան") yields country
+    Armenia (M-1), but the venue is still hidden from the report and the site -- only Yerevan counts."""
+    first_run(world)
+    gyumri_html = ('<script type="application/ld+json">'
+                  '{"@type":"Location","address":{"addressLocality":"Gyumri Հայաստան"}}</script>')
+
+    def add_venue(state):
+        state.venues["54322"] = VenueRec(
+            name="Gyumri Brewhouse", url="https://untappd.com/v/gyumri-brewhouse/54322",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(5)])
+    world.edit_state(add_venue)
+    pages = {**UNTAPPD_PAGES, "https://untappd.com/v/gyumri-brewhouse/54322": gyumri_html}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(MONDAY_MORNING, no_digest=True) == 0
+
+    rec = world.state().venues["54322"]
+    assert (rec.city, rec.country) == ("Gyumri", "Armenia")
+    assert not any("Gyumri Brewhouse" in s["text"] for s in world.sends)
+    data = json.loads((world.repo / "site" / "data.json").read_text(encoding="utf-8"))
+    assert not any(v["name"] == "Gyumri Brewhouse" for v in data["venues"])
+
+
+def test_city_check_survives_an_unparseable_venue_page(world):
+    """I-1: an unexpected page (JSON-LD that is a list of plain strings, no Location object at all)
+    must fail this one venue only -- run() completes, the venue is marked checked, and every other
+    candidate that same run is unaffected."""
+    first_run(world)
+
+    def add_venues(state):
+        state.venues["54323"] = VenueRec(
+            name="Weird Page", url="https://untappd.com/v/weird/54323",
+            checkins=[{"id": i, "at": iso(NEXT_EVENING - timedelta(days=1))} for i in range(3)])
+        state.venues["54324"] = VenueRec(
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/54324",
+            checkins=[{"id": i, "at": iso(NEXT_EVENING - timedelta(days=1))} for i in range(2)])
+    world.edit_state(add_venues)
+    weird_html = '<script type="application/ld+json">["just", "a", "list", "of", "strings"]</script>'
+    pages = {**UNTAPPD_PAGES, "https://untappd.com/v/weird/54323": weird_html,
+             "https://untappd.com/v/ker-u-sus/54324": fixture_text("untappd/vertigo_checkins.html")}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(NEXT_EVENING) == 0
+
+    weird = world.state().venues["54323"]
+    assert weird.city is None and weird.country is None and weird.location_checked_at == iso(NEXT_EVENING)
+    other = world.state().venues["54324"]
+    assert other.city == "Yerevan" and other.location_checked_at == iso(NEXT_EVENING)
+
+
+def test_discover_venue_locations_survives_a_parse_crash_and_continues(monkeypatch):
+    """I-1, unit-level: any parse error (not just the type-safety cases above) must fail only that
+    candidate -- it is marked checked, and the loop continues to the next one instead of raising."""
+    state = empty_state(NOW)
+    state.venues["1"] = VenueRec(name="Boom", url="https://untappd.com/v/boom/1",
+                                 checkins=[{"id": i, "at": iso(NOW - timedelta(days=1))} for i in range(2)])
+    state.venues["2"] = VenueRec(name="Fine", url="https://untappd.com/v/fine/2",
+                                 checkins=[{"id": i, "at": iso(NOW - timedelta(days=1))} for i in range(2)])
+    config = Config(places={}, breweries=(), settings=Settings())
+
+    class FakeLocClient:
+        def __init__(self, pages):
+            self.pages = pages
+
+        def get(self, url):
+            return self.pages[url]
+
+    client = FakeLocClient({"https://untappd.com/v/boom/1": "<html></html>",
+                           "https://untappd.com/v/fine/2": "<html></html>"})
+    calls = []
+
+    def fake_parse(html):
+        calls.append(html)
+        if len(calls) == 1:
+            raise ValueError("boom")
+        return None
+    monkeypatch.setattr(run_mod, "parse_venue_location", fake_parse)
+
+    run_mod.discover_venue_locations(state, config, client, NOW)
+
+    assert state.venues["1"].location_checked_at == iso(NOW)   # marked checked despite the crash
+    assert state.venues["2"].location_checked_at == iso(NOW)   # loop continued to the next candidate
+
+
+def test_location_known_via_country_only_is_not_a_recheck_candidate(world):
+    """M-4: a location is "known" once either city or country is set -- an address with only
+    addressCountry (no addressLocality) must not look unchecked and get re-fetched every run."""
+    state = empty_state(NOW)
+    state.venues["54325"] = VenueRec(
+        name="Country Only", url="https://untappd.com/v/country-only/54325", city=None, country="Georgia",
+        location_checked_at=iso(NOW - timedelta(days=200)),
+        checkins=[{"id": i, "at": iso(NOW - timedelta(days=1))} for i in range(5)])
+    save_state(world.repo / "state.json", state)
+
+    assert world.run(NOW) == 0
+
+    assert "https://untappd.com/v/country-only/54325" not in world.untappd.urls
+
+
 def test_city_check_respects_the_untappd_budget(world):
     """The daily budget runs out during the main jobs (as in test_sources_out_of_untappd_budget_are_
     skipped_without_failure): the city check must not spend a page either, and stays unchecked."""
@@ -459,10 +559,10 @@ def test_discovery_report_pluralizes_checkins_correctly(world):
 
     def add_venues(state):
         state.venues["1"] = VenueRec(
-            name="Four Checkins", url="https://untappd.com/v/four/1", country="Armenia",
+            name="Four Checkins", url="https://untappd.com/v/four/1", city="Yerevan", country="Armenia",
             checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(4)])
         state.venues["2"] = VenueRec(
-            name="Eleven Checkins", url="https://untappd.com/v/eleven/2", country="Armenia",
+            name="Eleven Checkins", url="https://untappd.com/v/eleven/2", city="Yerevan", country="Armenia",
             checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(11)])
     world.edit_state(add_venues)
     world.next_run()
@@ -480,7 +580,7 @@ def test_weekly_discovery_report_caps_at_20_venues_and_marks_only_those_reported
     def add_many(state):
         for i in range(25):
             state.venues[str(90000 + i)] = VenueRec(
-                name=f"Venue {i:02d}", url=f"https://untappd.com/v/venue-{i:02d}/{90000 + i}", country="Armenia",
+                name=f"Venue {i:02d}", url=f"https://untappd.com/v/venue-{i:02d}/{90000 + i}", city="Yerevan", country="Armenia",
                 checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for _ in range(3)])
     world.edit_state(add_many)
     world.next_run()
@@ -502,7 +602,7 @@ def test_weekly_discovery_report_stays_under_telegram_text_limit_with_long_names
         for i in range(20):
             long_name = "Очень Длинное Название Заведения " * 6 + str(i)
             state.venues[str(91000 + i)] = VenueRec(
-                name=long_name, url=f"https://untappd.com/v/venue-{i:02d}/{91000 + i}", country="Armenia",
+                name=long_name, url=f"https://untappd.com/v/venue-{i:02d}/{91000 + i}", city="Yerevan", country="Armenia",
                 checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for _ in range(3)])
     world.edit_state(add_many)
     world.next_run()
@@ -524,7 +624,7 @@ def test_discovery_report_send_failure_alerts_admin(world, status, code):
 
     def add_venue(state):
         state.venues["99999"] = VenueRec(
-            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999", country="Armenia",
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999", city="Yerevan", country="Armenia",
             checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(3)])
     world.edit_state(add_venue)
     world.next_run(send=[SendOutcome("rejected", "Bad Request: chat not found"),

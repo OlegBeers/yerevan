@@ -133,24 +133,41 @@ def parse_venue_meta(html: str) -> dict | None:
 
 
 ARMENIA_LOCALITY_MARKERS = ("yerevan", "ереван", "երևան")
+# M-1: Untappd's JSON-LD has no addressCountry for Armenian venues we've seen -- addressLocality packs
+# city and country together with no separator, e.g. "Yerevan Հայաստան" or "Gyumri Հայաստան".
+COUNTRY_SUFFIX_MARKERS = ("armenia", "հայաստան")
+
+
+def _split_locality(locality: str) -> tuple[str, str | None]:
+    """Split a trailing Armenia spelling off addressLocality (M-1), e.g. "Gyumri Հայաստան" -> ("Gyumri",
+    "Armenia"). Left alone (no split) when the trailing word isn't a recognized country spelling."""
+    city, _, suffix = locality.rpartition(" ")
+    if city and suffix.lower() in COUNTRY_SUFFIX_MARKERS:
+        return city, "Armenia"
+    return locality, None
 
 
 def parse_venue_location(html: str) -> dict | None:
     """City/country from the venue's own JSON-LD "Location" block (v1.1 city check, §4); None if the
-    page carries no such block. Untappd's JSON-LD has no addressCountry for Armenian venues we've seen
-    (only addressLocality, e.g. "Yerevan Հայաստան"); is_armenia_location() covers that case too."""
+    page carries no such block. A JSON-LD script may hold a single object or a list of them (I-1); any
+    entry that isn't a dict, or whose "address" isn't a dict, is skipped rather than raising."""
     soup = BeautifulSoup(html, "html.parser")
     for script in soup.find_all("script", type="application/ld+json"):
         try:
             data = json.loads(script.get_text())
         except ValueError:
             continue
-        if data.get("@type") != "Location":
-            continue
-        address = data.get("address") or {}
-        locality, country = address.get("addressLocality"), address.get("addressCountry")
-        if locality or country:
-            return {"locality": locality, "country": country}
+        for item in data if isinstance(data, list) else [data]:
+            if not isinstance(item, dict) or item.get("@type") != "Location":
+                continue
+            address = item.get("address")
+            if not isinstance(address, dict):
+                continue
+            locality, country = address.get("addressLocality"), address.get("addressCountry")
+            if isinstance(locality, str) and not country:
+                locality, country = _split_locality(locality)
+            if locality or country:
+                return {"locality": locality, "country": country}
     return None
 
 
@@ -164,6 +181,15 @@ def is_armenia_location(loc: dict | None) -> bool:
         return country in ("armenia", "am")
     locality = (loc.get("locality") or "").lower()
     return any(marker in locality for marker in ARMENIA_LOCALITY_MARKERS)
+
+
+def is_yerevan_city(city: str | None) -> bool:
+    """True when city (rec.city, already split from addressLocality) is a Yerevan spelling (I-3): other
+    Armenian cities (Gyumri, ...) are hidden from "Все места" and the weekly report just like foreign
+    venues -- the project's scope is Yerevan, not Armenia."""
+    if not city:
+        return False
+    return any(marker in city.lower() for marker in ARMENIA_LOCALITY_MARKERS)
 
 
 def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, now: datetime,

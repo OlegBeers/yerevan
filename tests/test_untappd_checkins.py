@@ -8,7 +8,7 @@ from taps.fetch import FetchError
 from taps.model import VenueCheckin
 from taps.sources.untappd_checkins import (
     Checkin, checkins_to_sightings, checkins_to_venue_checkins, fetch_venue_checkins, is_armenia_location,
-    parse_checkins, parse_venue_location, parse_venue_meta,
+    is_yerevan_city, parse_checkins, parse_venue_location, parse_venue_meta,
 )
 from tests.helpers import fixture_text
 
@@ -262,6 +262,66 @@ def test_parse_venue_location_foreign_country():
 def test_parse_venue_location_missing_block_is_none():
     assert parse_venue_location("<html><body>Nothing</body></html>") is None
     assert is_armenia_location(None) is False
+
+
+# --- I-1: type safety against unexpected JSON-LD shapes ------------------------------------------
+
+def test_parse_venue_location_json_ld_as_a_list_of_items():
+    """Some pages wrap JSON-LD objects in a list instead of a bare object."""
+    html = """<script type="application/ld+json">
+    [{"@type":"BreadcrumbList"}, {"@type":"Location","address":{"addressLocality":"Yerevan Հայաստան"}}]
+    </script>"""
+    loc = parse_venue_location(html)
+    assert loc == {"locality": "Yerevan", "country": "Armenia"}
+
+
+def test_parse_venue_location_list_of_non_dict_items_is_ignored():
+    html = '<script type="application/ld+json">["just", "a", "list", "of", "strings"]</script>'
+    assert parse_venue_location(html) is None
+
+
+def test_parse_venue_location_string_address_is_ignored():
+    html = ('<script type="application/ld+json">'
+           '{"@type":"Location","address":"1 Rustaveli Ave, Tbilisi"}</script>')
+    assert parse_venue_location(html) is None
+
+
+def test_parse_venue_location_garbage_html_is_none():
+    assert parse_venue_location("<<<not even html>>>") is None
+    assert parse_venue_location("") is None
+
+
+# --- M-1: derive country from the text after the city in addressLocality -------------------------
+
+def test_parse_venue_location_derives_armenia_from_locality_suffix():
+    html = ('<script type="application/ld+json">'
+           '{"@type":"Location","address":{"addressLocality":"Gyumri Հայաստան"}}</script>')
+    assert parse_venue_location(html) == {"locality": "Gyumri", "country": "Armenia"}
+
+
+def test_parse_venue_location_derives_armenia_from_english_suffix():
+    html = ('<script type="application/ld+json">'
+           '{"@type":"Location","address":{"addressLocality":"Yerevan Armenia"}}</script>')
+    assert parse_venue_location(html) == {"locality": "Yerevan", "country": "Armenia"}
+
+
+def test_parse_venue_location_unrecognized_suffix_is_left_alone():
+    html = ('<script type="application/ld+json">'
+           '{"@type":"Location","address":{"addressLocality":"Some Place"}}</script>')
+    assert parse_venue_location(html) == {"locality": "Some Place", "country": None}
+
+
+def test_parse_venue_location_explicit_country_is_not_overridden():
+    assert parse_venue_location(FOREIGN_VENUE_HTML) == {"locality": "Tbilisi", "country": "Georgia"}
+
+
+# --- I-3: Yerevan-only visibility, distinct from "is Armenia" ------------------------------------
+
+@pytest.mark.parametrize("city, yerevan", [
+    ("Yerevan", True), ("Ереван", True), ("Երևան", True), ("Gyumri", False), (None, False), ("", False),
+])
+def test_is_yerevan_city(city, yerevan):
+    assert is_yerevan_city(city) is yerevan
 
 
 @pytest.mark.parametrize("loc, armenia", [

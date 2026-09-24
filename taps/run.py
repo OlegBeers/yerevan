@@ -27,7 +27,7 @@ from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
 from taps.sources.untappd_brewery import fetch_brewery_checkins, fetch_brewery_list
 from taps.sources.untappd_checkins import (
-    fetch_venue_checkins, is_armenia_location, parse_venue_location, parse_venue_meta,
+    fetch_venue_checkins, is_armenia_location, is_yerevan_city, parse_venue_location, parse_venue_meta,
 )
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.yerevan_city import fetch_yerevan_city
@@ -149,10 +149,15 @@ def collect_shops(state: State, config: Config, corrections: Corrections, now: d
 def _location_candidates(state: State, config: Config, now: datetime) -> list:
     """Untracked venues with >= LOCATION_MIN_CHECKINS check-ins in the last 30 days and no known
     location yet -- never checked, or checked long enough ago to deserve a retry (a location once
-    known, Armenian or not, is never rechecked). Most check-ins first, capped per run."""
+    known, Armenian or not, is never rechecked). Most check-ins first, capped per run.
+
+    M-4: a location is "known" once either city or country is set -- a foreign venue whose address
+    carried only addressCountry (no addressLocality) must not look unchecked. A venue pruned from
+    state.venues (VENUE_KEEP_DAYS) and later reappearing starts as a fresh record with both fields
+    None, so it is rechecked once more even if it was previously known to be foreign."""
     due = []
     for vid_str, rec in state.venues.items():
-        if int(vid_str) in config.known_venue_ids or rec.city is not None:
+        if int(vid_str) in config.known_venue_ids or rec.city is not None or rec.country is not None:
             continue
         checked = rec.location_checked_at
         if checked is not None and age_days(parse_iso(checked), now) <= LOCATION_RECHECK_DAYS:
@@ -170,19 +175,25 @@ def discover_venue_locations(state: State, config: Config, client: UntappdClient
     weekly report and the site's "Все места" tab. Any fetch failure (network, Cloudflare, out of
     budget) stops the whole step for this run without marking the venue checked, so it is retried next
     run; a page that loads but carries no parseable location is marked checked and only retried after
-    LOCATION_RECHECK_DAYS."""
+    LOCATION_RECHECK_DAYS.
+
+    I-1: an unexpected page (odd markup, a parser bug) must fail this one venue only, never the run --
+    it is marked checked (so LOCATION_RECHECK_DAYS applies) and the loop moves on to the next candidate."""
     for rec in _location_candidates(state, config, now):
         try:
             html = client.get(rec.url)
         except FetchError:
             break
-        loc = parse_venue_location(html)
-        rec.city = loc["locality"] if loc else None
-        rec.country = "Armenia" if is_armenia_location(loc) else (loc["country"] if loc else None)
+        try:
+            loc = parse_venue_location(html)
+            rec.city = loc["locality"] if loc else None
+            rec.country = "Armenia" if is_armenia_location(loc) else (loc["country"] if loc else None)
+            meta = parse_venue_meta(html)
+            if meta is not None:
+                rec.logo, rec.verified = meta["logo"], meta["verified"]
+        except Exception:
+            pass
         rec.location_checked_at = iso(now)
-        meta = parse_venue_meta(html)
-        if meta is not None:
-            rec.logo, rec.verified = meta["logo"], meta["verified"]
 
 
 # --- alerts ------------------------------------------------------------------
@@ -259,12 +270,15 @@ def build_discovery_report(state: State, config: Config, now: datetime) -> tuple
     """Untracked venues (no place in places.yaml, enabled or disabled) with >= 3 check-ins in the last
     30 days, not reported before. Capped at DISCOVERY_MAX_VENUES lines and MAX_TEXT chars (Telegram's
     limit): venues left out of a capped message are NOT marked reported, so they are reconsidered
-    (and may rank higher) next week."""
+    (and may rank higher) next week.
+
+    I-3: the project's scope is Yerevan, not Armenia -- a venue in another Armenian city (Gyumri, ...)
+    is excluded here just like a foreign one, even though its country is also "Armenia" (M-1)."""
     reported = set(state.discovery.reported)
     candidates = []
     for vid_str, rec in state.venues.items():
         vid = int(vid_str)
-        if vid in config.known_venue_ids or vid in reported or rec.country != "Armenia":
+        if vid in config.known_venue_ids or vid in reported or not is_yerevan_city(rec.city):
             continue
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if len(recent) >= DISCOVERY_MIN_CHECKINS:

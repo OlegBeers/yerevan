@@ -216,9 +216,9 @@ def test_venues_list_sorted_by_checkins_then_name():
     st = state({}, venues={
         "1": VenueRec(name="Gargoyle Bar", url="https://untappd.com/v/gargoyle/1", logo="https://x/g.jpg",
                      verified=True, checkins=[{"id": 1, "at": ago(1)}, {"id": 2, "at": ago(2)}]),
-        "99": VenueRec(name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99", country="Armenia",
+        "99": VenueRec(name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99", city="Yerevan", country="Armenia",
                       checkins=[{"id": 3, "at": ago(1)}, {"id": 4, "at": ago(2)}, {"id": 5, "at": ago(3)}]),
-        "50": VenueRec(name="Old Bar", url="https://untappd.com/v/old/50", country="Armenia",
+        "50": VenueRec(name="Old Bar", url="https://untappd.com/v/old/50", city="Yerevan", country="Armenia",
                       checkins=[{"id": 6, "at": ago(40)}]),
     })
     venues = build(st)["venues"]
@@ -236,8 +236,8 @@ def test_venues_list_sorted_by_checkins_then_name():
 
 def test_venues_list_ties_break_by_name():
     st = state({}, venues={
-        "2": VenueRec(name="Beatles Pub", url="u2", country="Armenia", checkins=[{"id": 1, "at": ago(1)}]),
-        "1": VenueRec(name="Ambient Bar", url="u1", country="Armenia", checkins=[{"id": 2, "at": ago(1)}]),
+        "2": VenueRec(name="Beatles Pub", url="u2", city="Yerevan", country="Armenia", checkins=[{"id": 1, "at": ago(1)}]),
+        "1": VenueRec(name="Ambient Bar", url="u1", city="Yerevan", country="Armenia", checkins=[{"id": 2, "at": ago(1)}]),
     })
     assert [v["name"] for v in build(st)["venues"]] == ["Ambient Bar", "Beatles Pub"]
 

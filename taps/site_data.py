@@ -6,6 +6,7 @@ from pathlib import Path
 from taps.config import Config, Place
 from taps.model import SOURCE_KINDS
 from taps.sources.manual import MANUAL_KEEP_DAYS
+from taps.sources.untappd_checkins import is_yerevan_city
 from taps.state import MARKERS, VENUE_KEEP_DAYS, PairRec, State
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 
@@ -43,13 +44,14 @@ def _place(place: Place, state: State, now: datetime) -> dict:
 
 def _venues(state: State, config: Config, now: datetime) -> list[dict]:
     """v1.1 "Все места" tab: every venue seen in check-ins with at least one in the last 30 days.
-    A place not in places.yaml is shown only once its location is known to be in Armenia (city check,
-    §4): a foreign or not-yet-checked venue surfacing on an Armenian brewery's page stays hidden."""
+    A place not in places.yaml is shown only once its city is known to be Yerevan (city check, §4;
+    I-3): a foreign venue, one in another Armenian city, or one not yet checked stays hidden -- the
+    project's scope is Yerevan, not Armenia."""
     tracked = {p.venue_id: p.id for p in config.places.values() if p.venue_id is not None}
     out = []
     for vid_str, rec in state.venues.items():
         vid = int(vid_str)
-        if vid not in tracked and rec.country != "Armenia":
+        if vid not in tracked and not is_yerevan_city(rec.city):
             continue
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if not recent:
