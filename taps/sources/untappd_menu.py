@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup, Tag
 from taps.config import Place
 from taps.fetch import FetchError, UntappdClient
 from taps.model import Sighting, SourceResult, u_key
+from taps.sources.untappd_checkins import parse_venue_meta
 from taps.timeutil import parse_iso
 
 SKIP_TAB_RE = re.compile(r"(food|wine|cocktail|spirit|kitchen|кухн|вино)", re.I)
@@ -150,7 +151,8 @@ def fetch_menu(client: UntappdClient, place: Place, now: datetime,
     params = place.sources["untappd_menu"]
     url = f"https://untappd.com/v/{params['slug']}/{params['venue_id']}"
     try:
-        first = parse_menu_page(client.get(url))
+        first_html = client.get(url)
+        first = parse_menu_page(first_html)
         # A single-menu venue page is the menu. Otherwise read every beer tab in selector order;
         # the venue page stands for the tab it shows and is not used when that tab is unknown.
         pages = [] if first.tabs else [(first.active_menu_id, first)]
@@ -164,6 +166,8 @@ def fetch_menu(client: UntappdClient, place: Place, now: datetime,
     except FetchError as e:
         return SourceResult(key=key, source="untappd_menu", ok=False, error=e.kind, place_id=place.id)
 
+    meta = parse_venue_meta(first_html)
+    venue_meta = {"venue_id": params["venue_id"], "name": place.name, "url": url, **meta} if meta else None
     sightings, seen = [], set()
     for menu_id, page in pages:
         for it in page.items:
@@ -182,4 +186,5 @@ def fetch_menu(client: UntappdClient, place: Place, now: datetime,
         key=key, source="untappd_menu", ok=bool(sightings), sightings=sightings,
         error=None if sightings else "empty", place_id=place.id,
         menu_updated_at=max((p.updated_at for _, p in pages if p.updated_at), default=None),
+        venue_meta=venue_meta,
     )

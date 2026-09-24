@@ -186,6 +186,12 @@ def test_fetch_gargoyle_reads_every_beer_tab():
     assert client.urls == [GARGOYLE_URL, GARGOYLE_URL + "?menu_id=203568"]
     assert (result.key, result.source, result.ok, result.error, result.place_id, result.full) == \
         ("untappd_menu:gargoyle", "untappd_menu", True, None, "gargoyle", True)
+    assert result.venue_meta == {
+        "venue_id": 12252462, "name": "Gargoyle Bar", "url": GARGOYLE_URL,
+        "logo": "https://images.untp.beer/resize?width=176&height=176&background=255,255,255&extend=white&"
+                "stripmeta=true&url=https://utfb-images.untappd.com/5u4i6ms9fe4iuzdw1dy36fvhunp0?auto=compress",
+        "verified": True,
+    }
     assert result.menu_updated_at == datetime(2026, 4, 19, 10, 49, 24, 755755, tzinfo=timezone.utc)  # newest tab
     keys = [s.beer_key for s in result.sightings]
     assert len(keys) == len(set(keys)) == 133   # 8 rows repeated on the stand-in, 3 beers in both tabs
@@ -203,6 +209,7 @@ def test_fetch_single_menu_venue():
     result = fetch_menu(client, BEATLES, NOW, {"dahook": "dahook brewery"})
     assert client.urls == [BEATLES_URL]
     assert (result.ok, result.key, len(result.sightings)) == (True, "untappd_menu:beatles", 133)
+    assert result.venue_meta["verified"] is True and result.venue_meta["venue_id"] == 2162817
     assert result.menu_updated_at == datetime(2025, 6, 17, 10, 24, 26, 39219, tzinfo=timezone.utc)
     assert all(s.menu_id is None and s.kind == "menu" and s.place_id == "beatles" and s.seen_at == NOW
                and s.beer_key == f"u:{s.untappd_beer_id}" for s in result.sightings)
