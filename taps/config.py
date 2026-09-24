@@ -18,7 +18,9 @@ SOURCE_PARAMS: dict[str, dict[str, type]] = {
     "parma": {},
 }
 ID_RE = re.compile(r"[a-z0-9][a-z0-9-]*")
-PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewery_name", "untappd_venue_id")
+CHECKIN_VENUE_FIELDS = ("slug", "venue_id", "address")
+PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewery_name", "untappd_venue_id",
+                "merged_from")
 BREWERY_FIELDS = ("id", "name", "brewery_id", "slug", "list_enabled")
 SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages")
 _REQUIRED = object()
@@ -38,6 +40,7 @@ class Place:
     brewery_id: int | None = None
     brewery_name: str | None = None
     untappd_venue_id: int | None = None
+    merged_from: tuple[str, ...] = ()   # old place ids merged into this one (state.merge_places), v1.1
 
     def source_keys(self) -> list[str]:
         return [f"{s}:{self.id}" for s in self.sources]
@@ -46,12 +49,35 @@ class Place:
     def has_menu(self) -> bool:
         return "untappd_menu" in self.sources or "buyam" in self.sources
 
+    def _checkin_venues(self) -> list[Mapping[str, Any]]:
+        checkins = self.sources.get("untappd_checkins")
+        if checkins is None:
+            return []
+        return checkins["venues"] if "venues" in checkins else [checkins]
+
+    @property
+    def venue_ids(self) -> list[int]:
+        """Every Untappd venue id behind this place (v1.1: one place may list several, e.g. two branches
+        of the same brewpub sharing a single Untappd brand)."""
+        if "untappd_menu" in self.sources:
+            return [self.sources["untappd_menu"]["venue_id"]]
+        venues = self._checkin_venues()
+        if venues:
+            return [v["venue_id"] for v in venues]
+        return [self.untappd_venue_id] if self.untappd_venue_id is not None else []
+
     @property
     def venue_id(self) -> int | None:
-        for name in ("untappd_menu", "untappd_checkins"):
-            if name in self.sources:
-                return self.sources[name]["venue_id"]
-        return self.untappd_venue_id
+        """The place's own (first) venue id: used where a place is represented by a single id
+        (logo/verified lookup, `known_venue_ids`'s uniqueness check)."""
+        ids = self.venue_ids
+        return ids[0] if ids else None
+
+    @property
+    def addresses(self) -> list[str]:
+        """Per-venue addresses (v1.1 multi-venue places), in `places.yaml` order; empty for a place with
+        no addresses on file."""
+        return [v["address"] for v in self._checkin_venues() if v.get("address")]
 
 
 @dataclass(frozen=True)
@@ -84,7 +110,7 @@ class Config:
     known_venue_ids: frozenset[int] = frozenset()   # every place's venue id, enabled or disabled (v1.1 discovery)
 
     def place_by_venue(self, venue_id: int) -> Place | None:
-        return next((p for p in self.places.values() if p.venue_id == venue_id), None)
+        return next((p for p in self.places.values() if venue_id in p.venue_ids), None)
 
 
 def _fail(where: str, msg: str) -> ConfigError:
@@ -112,11 +138,28 @@ def _get(d: Mapping, key: str, typ: type | tuple[type, ...], where: str, default
     return value
 
 
+def _checkin_venue(raw: Any, where: str) -> dict[str, Any]:
+    d = _mapping(raw, where, CHECKIN_VENUE_FIELDS)
+    return {
+        "slug": _get(d, "slug", str, where),
+        "venue_id": _get(d, "venue_id", int, where),
+        "address": _get(d, "address", str, where, None),
+    }
+
+
 def _sources(raw: Any, where: str) -> dict[str, dict[str, Any]]:
     sources = {}
     for name, params in _mapping(raw, where).items():
         if name not in SOURCE_PARAMS:
             raise _fail(where, f"неизвестный источник {name!r}, есть: {', '.join(SOURCE_PARAMS)}")
+        # v1.1: untappd_checkins may list several venues of one place instead of a single slug/venue_id
+        if name == "untappd_checkins" and isinstance(params, dict) and "venues" in params:
+            venues = params["venues"]
+            if not isinstance(venues, list) or not venues:
+                raise _fail(f"{where}, {name}", "venues: нужен непустой список")
+            sources[name] = {"venues": [_checkin_venue(v, f"{where}, {name}, venues[{i + 1}]")
+                                        for i, v in enumerate(venues)]}
+            continue
         spec = SOURCE_PARAMS[name]
         params = _mapping(params or {}, f"{where}, {name}", tuple(spec))
         for key, typ in spec.items():
@@ -138,6 +181,9 @@ def _place(raw: Any, n: int) -> Place:
     sources = _sources(d.get("sources") or {}, where)
     if not sources:
         raise _fail(where, "нужен хотя бы один источник")
+    merged_from = _get(d, "merged_from", list, where, [])
+    if not all(isinstance(v, str) for v in merged_from):
+        raise _fail(where, f"неверное значение merged_from: {merged_from!r}")
     return Place(
         id=pid,
         name=_get(d, "name", str, where),
@@ -147,6 +193,7 @@ def _place(raw: Any, n: int) -> Place:
         brewery_id=_get(d, "brewery_id", int, where, None),
         brewery_name=_get(d, "brewery_name", str, where, None),
         untappd_venue_id=_get(d, "untappd_venue_id", int, where, None),
+        merged_from=tuple(merged_from),
     )
 
 
@@ -208,5 +255,5 @@ def load_config(path: Path) -> Config:
         places={p.id: p for p in places if p.enabled},
         breweries=breweries,
         settings=_settings(root.get("settings") or {}),
-        known_venue_ids=frozenset(p.venue_id for p in places if p.venue_id is not None),
+        known_venue_ids=frozenset(vid for p in places for vid in p.venue_ids),
     )

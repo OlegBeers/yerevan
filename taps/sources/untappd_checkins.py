@@ -216,26 +216,34 @@ def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, 
 
 def fetch_venue_checkins(client: UntappdClient, place: Place, config: Config, now: datetime,
                          brewery_aliases: Mapping[str, str]) -> SourceResult:
-    params = place.sources["untappd_checkins"]
-    url = f"https://untappd.com/v/{params['slug']}/{params['venue_id']}"
+    """v1.1: a place may list several Untappd venues (place.sources["untappd_checkins"]["venues"]); each
+    is fetched in turn and their check-ins merged into one result. Any single venue's failure fails the
+    whole (small, fixed-size) result rather than risk a silently incomplete merge."""
+    checkins_source = place.sources["untappd_checkins"]
+    venues = checkins_source["venues"] if "venues" in checkins_source else [checkins_source]
     result = SourceResult(key=f"untappd_checkins:{place.id}", source="untappd_checkins", ok=False,
                           place_id=place.id)
-    try:
-        html = client.get(url)
-    except FetchError as e:
-        result.error = e.kind
-        return result
-    checkins = parse_checkins(html)
-    if not checkins:
-        result.error = "empty"
-        return result
-    if all(c.venue_id != params["venue_id"] for c in checkins):
-        result.error = "bad_response"   # e.g. Untappd merged the venue and redirected to a new id
-        return result
-    result.sightings = checkins_to_sightings(checkins, config, "untappd_checkins", now, brewery_aliases)
-    result.venue_checkins = checkins_to_venue_checkins(checkins)
-    meta = parse_venue_meta(html)
-    if meta is not None:
-        result.venue_meta = {"venue_id": params["venue_id"], "name": place.name, "url": url, **meta}
+    all_checkins: list[Checkin] = []
+    for v in venues:
+        url = f"https://untappd.com/v/{v['slug']}/{v['venue_id']}"
+        try:
+            html = client.get(url)
+        except FetchError as e:
+            result.error = e.kind
+            return result
+        checkins = parse_checkins(html)
+        if not checkins:
+            result.error = "empty"
+            return result
+        if all(c.venue_id != v["venue_id"] for c in checkins):
+            result.error = "bad_response"   # e.g. Untappd merged the venue and redirected to a new id
+            return result
+        all_checkins += checkins
+        if result.venue_meta is None:   # the place's own venue: the first (main) one that carries a header
+            meta = parse_venue_meta(html)
+            if meta is not None:
+                result.venue_meta = {"venue_id": v["venue_id"], "name": place.name, "url": url, **meta}
+    result.sightings = checkins_to_sightings(all_checkins, config, "untappd_checkins", now, brewery_aliases)
+    result.venue_checkins = checkins_to_venue_checkins(all_checkins)
     result.ok = True
     return result

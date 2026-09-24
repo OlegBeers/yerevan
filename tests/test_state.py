@@ -6,7 +6,7 @@ import pytest
 from taps.model import SourceResult, VenueCheckin
 from taps.state import (
     BeerRec, BreweryNewRec, DigestRec, DiscoveryRec, PairRec, SourceRec, State, UntappdRec, VenueRec,
-    apply_aliases, empty_state, load_state, prune, record_venues, resolve_alias, save_state,
+    apply_aliases, empty_state, load_state, merge_places, prune, record_venues, resolve_alias, save_state,
 )
 from taps.timeutil import iso
 
@@ -330,6 +330,41 @@ def test_apply_aliases_is_idempotent():
     once = s.to_dict()
     apply_aliases(s, aliases)
     assert s.to_dict() == once
+
+
+# --- merge_places (v1.1: two Untappd venues folded into one place) ----------------
+
+def test_merge_places_moves_pairs_and_drops_the_old_place():
+    s = empty_state(NOW)
+    s.pairs = {
+        "beer-academy-ethnograph": {"u:1": PairRec(first_seen=ago(9), last_seen=ago(1), notified_at="baseline")},
+        "beer-academy": {"u:2": PairRec(first_seen=ago(5), last_seen=ago(1), notified_at=ago(4))},
+    }
+    merge_places(s, {"beer-academy-ethnograph": "beer-academy"})
+    assert "beer-academy-ethnograph" not in s.pairs
+    assert set(s.pairs["beer-academy"]) == {"u:1", "u:2"}
+    assert s.pairs["beer-academy"]["u:1"] == PairRec(first_seen=ago(9), last_seen=ago(1), notified_at="baseline")
+
+
+def test_merge_places_never_creates_a_pending_event_for_a_colliding_key():
+    # both places had already seen and announced/baselined the same beer: merging must not resurrect an event.
+    s = empty_state(NOW)
+    s.pairs = {
+        "beer-academy-ethnograph": {"u:1": PairRec(first_seen=ago(20), last_seen=ago(10), event_at=ago(20),
+                                                    notified_at="baseline", in_stock=None)},
+        "beer-academy": {"u:1": PairRec(first_seen=ago(9), last_seen=ago(1), event_at=ago(9),
+                                        notified_at=ago(8), in_stock=None)},
+    }
+    merge_places(s, {"beer-academy-ethnograph": "beer-academy"})
+    rec = s.pairs["beer-academy"]["u:1"]
+    assert rec.first_seen == ago(20) and rec.notified_at == ago(8) and rec.event_at == ago(20)
+
+
+def test_merge_places_is_a_noop_once_the_old_place_id_is_gone():
+    s = empty_state(NOW)
+    s.pairs = {"beer-academy": {"u:2": PairRec(first_seen=ago(5), last_seen=ago(1))}}
+    merge_places(s, {"beer-academy-ethnograph": "beer-academy"})   # already merged in an earlier run
+    assert s.pairs == {"beer-academy": {"u:2": PairRec(first_seen=ago(5), last_seen=ago(1))}}
 
 
 # --- prune -------------------------------------------------------------------------

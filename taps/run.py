@@ -34,7 +34,9 @@ from taps.sources.untappd_checkins import (
 )
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.yerevan_city import fetch_yerevan_city
-from taps.state import VENUE_KEEP_DAYS, BeerRec, State, apply_aliases, load_state, prune, record_venues, save_state
+from taps.state import (
+    VENUE_KEEP_DAYS, BeerRec, State, apply_aliases, load_state, merge_places, prune, record_venues, save_state,
+)
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
@@ -455,6 +457,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     alerter.resolve("fatal")   # reached the end of loading: the fatal series is over
     (repo / FATAL_FILE).unlink(missing_ok=True)
     apply_aliases(state, corrections.aliases)
+    merge_places(state, {old: p.id for p in config.places.values() for old in p.merged_from})
     untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
                manual_result(corrections, config, now)]

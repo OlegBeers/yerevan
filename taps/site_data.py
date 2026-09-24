@@ -12,7 +12,7 @@ from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 
 CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
 NEW_DAYS = 7             # 🆕/⭐ badges live this long after the event was sent
-INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url")
+INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url", "serving")
 
 
 def _section(place: Place) -> str:
@@ -39,6 +39,7 @@ def _place(place: Place, state: State, now: datetime) -> dict:
         "logo": venue.logo if venue else None,
         "verified": venue.verified if venue else False,
         "untappd_url": venue.url if venue else None,
+        "addresses": place.addresses,
     }
 
 

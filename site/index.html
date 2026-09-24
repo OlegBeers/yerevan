@@ -203,6 +203,7 @@
 const TZ = "Asia/Yerevan";
 const STALE_HOURS = 36;
 const CONTAINER_RU = { can: "банка", bottle: "бутылка", keg: "кег", draft: "разлив" };
+const SERVING_RU = { Draft: "разлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
 const wide = window.matchMedia("(min-width: 700px)");
 const ui = { data: null, places: new Map(), section: "bars", place: null };
 const $ = (id) => document.getElementById(id);
@@ -286,7 +287,11 @@ function iconSpan(icon) {
 function badgeNodes(r) {
   switch (r.badge) {
     case "menu": return [iconSpan("✅"), "меню"];
-    case "checkin": return [iconSpan("👀"), r.seen_days_ago == null ? "видели" : `видели ${ago(r.seen_days_ago)}`];
+    case "checkin": {
+      const seen = r.seen_days_ago == null ? "видели" : `видели ${ago(r.seen_days_ago)}`;
+      const serving = SERVING_RU[r.serving];
+      return [iconSpan("👀"), serving ? `${serving}, ${seen}` : seen];
+    }
     case "manual": return [iconSpan("✍️"), r.by ? `со слов (${r.by})` : "со слов"];
     case "shop": return [iconSpan("🛒"), "в магазине"];
     default: return [];
@@ -379,6 +384,7 @@ function render() {
 
 function placeStatus(p, now) {
   const lines = [];
+  if (p.addresses && p.addresses.length) lines.push({ text: p.addresses.join(", "), warn: false });
   const menu = parseTime(p.menu_updated_at);
   if (menu) lines.push({ text: `меню обновлено ${ago(daysBetween(menu, now))}`, warn: false });
   const ok = parseTime(p.last_ok);
