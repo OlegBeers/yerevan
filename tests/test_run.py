@@ -244,6 +244,15 @@ def test_next_evening_new_beer_goes_to_admin_as_preview(world):
     assert len(world.pushes) == 1
 
 
+def test_site_data_marks_the_beer_the_digest_just_announced_as_new_and_star(world):
+    first_run(world)
+    assert world.run(NEXT_EVENING) == 0
+
+    data = json.loads((world.repo / "site" / "data.json").read_text(encoding="utf-8"))
+    row = next(r for r in data["rows"] if r["place_id"] == "beatles" and r["beer_key"] == "u:999001")
+    assert row["new"] is True and row["star"] is True
+
+
 def test_second_run_same_evening_sends_nothing(world):
     first_run(world)
     assert world.run(NEXT_EVENING) == 0
@@ -475,6 +484,84 @@ def test_fatal_alert_is_sent_once_per_series_across_runs(world, break_repo):
 
     assert len(world.sends) == 1
     assert world.sends[0]["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]
+
+
+def test_fatal_alert_dedup_survives_a_fresh_checkout_via_state_json(world):
+    """On GitHub every job starts from a clean checkout: the untracked marker is gone, state.json is not."""
+    (world.repo / "places.yaml").write_text("not: [a, valid\n", encoding="utf-8")
+    assert world.run(NOW) == 2
+    assert "fatal" in world.state().alerts
+    assert not (world.repo / ".taps-fatal").exists()       # state.json did the dedup, not the marker
+
+    (world.repo / ".taps-fatal").unlink(missing_ok=True)   # a fresh checkout
+    assert world.run(NOW) == 2
+
+    assert len(world.sends) == 1
+    assert [p["paths"] for p in world.pushes] == [["state.json"]] * 2
+
+
+def test_fatal_alert_series_is_cleared_by_a_good_run_so_a_new_failure_alerts_again(world):
+    (world.repo / "places.yaml").write_text("not: [a, valid\n", encoding="utf-8")
+    assert world.run(NOW) == 2
+    (world.repo / "places.yaml").write_text(PLACES_YAML, encoding="utf-8")
+    world.next_run()
+    assert world.run(NOW) == 0
+    assert "fatal" not in world.state().alerts
+
+    (world.repo / "places.yaml").write_text("not: [a, valid\n", encoding="utf-8")
+    world.next_run()
+    assert world.run(NOW + timedelta(hours=1)) == 2
+    assert len(world.sends) == 1
+
+
+def test_corrupt_state_json_dedups_through_the_marker_file(world):
+    (world.repo / "state.json").write_text("{not json", encoding="utf-8")
+    assert world.run(NOW) == 2
+    assert (world.repo / ".taps-fatal").exists()
+    assert world.run(NOW) == 2
+    assert len(world.sends) == 1
+
+
+def test_browser_that_does_not_start_alerts_once_and_shops_still_run(world):
+    def broken_browser():
+        raise RuntimeError("Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium-1234")
+    world.untappd = broken_browser
+    assert world.run(NOW) == 0
+    state = world.state()
+    assert "untappd:browser" in state.alerts
+    assert len(world.sends) == 1 and "браузер" in world.sends[0]["text"]
+    assert state.sources["parma:parma"].baseline_done and not any(k.startswith("untappd") for k in state.sources)
+
+    def other_error():
+        raise RuntimeError("a different text on the next run")
+    world.next_run(untappd=other_error)
+    assert world.run(NOW + timedelta(hours=8)) == 0
+    assert world.sends == []                     # same series, the text changed: still one alert
+
+
+@pytest.mark.parametrize("status, code", [("sent", 0), ("rejected", 1), ("unknown", 1)])
+def test_admin_alert_that_is_not_delivered_makes_the_run_exit_1(world, status, code):
+    world.untappd = FakeUntappd(challenge=True)         # queues the single Cloudflare alert
+    world.send_outcomes = [SendOutcome(status, "Bad Request: chat not found")]
+    assert world.run(NOW) == code
+    assert len(world.sends) == 1
+    if status == "rejected":                            # the hashes were forgotten and that state was pushed
+        assert "untappd:cloudflare" not in world.pushes[-1]["state"]["alerts"]
+
+
+def test_no_digest_needs_only_the_bot_token_and_the_admin_chat(world):
+    env = {k: ENV[k] for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID")}
+    assert run(world.repo, NOW, env, world.deps(), no_digest=True) == 0
+
+
+def test_digest_run_still_needs_the_group_chat_and_site_url(world):
+    env = {k: ENV[k] for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID")}
+    assert run(world.repo, NOW, env, world.deps()) == 2
+    assert world.pulls == []
+
+
+def test_dry_run_needs_no_environment_at_all(world):
+    assert run(world.repo, NOW, {}, world.deps(), dry_run=True) == 0
 
 
 def test_dry_run_prints_no_digest_and_touches_no_git_or_telegram(world, capsys):

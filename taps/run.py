@@ -37,7 +37,8 @@ FATAL_FILE = ".taps-fatal"   # dedup marker for fatal alerts when no state.json 
 SITE_DATA = Path("site") / "data.json"
 BUTTON_TEXT = "Открыть список"
 LISTS_PER_RUN = 2          # brewery beer lists per Untappd collection (spec §10: 1-2)
-ENV_KEYS = ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "TELEGRAM_ADMIN_CHAT_ID", "SITE_URL")
+ADMIN_ENV_KEYS = ("TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID")          # alerts only
+ENV_KEYS = ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "TELEGRAM_ADMIN_CHAT_ID", "SITE_URL")   # a digest may go out
 TRIP_RU = {
     "shrink": "позиций стало меньше половины",
     "mass_new": "больше половины позиций новые",
@@ -90,7 +91,8 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
     try:
         fetch_page, close = deps.untappd_fetcher()
     except Exception as e:
-        alerter.alert("untappd:browser", f"не запустился браузер для Untappd: {type(e).__name__}: {e}")
+        alerter.alert("untappd:browser", f"не запустился браузер для Untappd: {type(e).__name__}: {e}",
+                      dedupe_by_key=True)
         return [], None
     alerter.resolve("untappd:browser")
     try:
@@ -184,8 +186,8 @@ def _save_push(repo: Path, state: State, deps: Deps, message: str) -> bool:
 
 
 def _fatal_untracked(repo: Path, text: str, send: Callable[[str], SendOutcome]) -> None:
-    """Dedup a fatal alert when no state.json can be trusted (broken places.yaml/state.json, failed
-    pull): the hash lives in an untracked marker file instead, since nothing else is safe to persist."""
+    """Dedup a fatal alert when no state.json can be trusted (corrupt state.json, failed pull): the hash
+    lives in an untracked marker file instead. Fine on a Mac; a fresh CI checkout starts without it."""
     path = repo / FATAL_FILE
     digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
     prev = path.read_text(encoding="utf-8").strip() if path.exists() else None
@@ -197,8 +199,9 @@ def _fatal_untracked(repo: Path, text: str, send: Callable[[str], SendOutcome]) 
 def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: bool = False,
         no_digest: bool = False) -> int:
     """0 done; 1 git pull/push failed (nothing sent); 2 cannot run (settings, config, state, corrections)."""
-    missing = [k for k in ENV_KEYS if not env.get(k)]
-    if missing and not dry_run:
+    needed = () if dry_run else ADMIN_ENV_KEYS if no_digest else ENV_KEYS
+    missing = [k for k in needed if not env.get(k)]
+    if missing:
         print(f"не заданы переменные окружения: {', '.join(missing)}", file=sys.stderr)
         return 2
 
@@ -206,8 +209,8 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
         return deps.send(env["TELEGRAM_BOT_TOKEN"], env["TELEGRAM_ADMIN_CHAT_ID"], text)
 
     def fatal(text: str, code: int, state: State | None = None) -> int:
-        """Dedup once per series: with a loadable state use its own alerts (persisted); without one
-        (broken places.yaml/state.json, or a failed pull) fall back to an untracked marker file."""
+        """Dedup once per series: with a loadable state use its own alerts (persisted, so it survives a
+        fresh CI checkout); without one (corrupt state.json, or a failed pull) an untracked marker file."""
         print(text, file=sys.stderr)
         if not dry_run:
             if state is not None:
@@ -224,14 +227,14 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
             deps.pull(repo)
         except GitError as e:
             return fatal(f"git pull не прошёл: {e}", 1)
-    try:
-        config = load_config(repo / "places.yaml")
-    except ConfigError as e:
-        return fatal(str(e), 2)
-    try:   # before corrections: the corrections snapshot lives in the state
+    try:   # first: a broken places.yaml or corrections.yaml then dedups its alert through state.alerts
         state = load_state(repo / STATE_FILE, now)
     except ValueError as e:
         return fatal(str(e), 2)
+    try:
+        config = load_config(repo / "places.yaml")
+    except ConfigError as e:
+        return fatal(str(e), 2, state)
     load = load_corrections(repo / "corrections.yaml", state.corrections_snapshot, set(config.places))
     if load.corrections is None:
         return fatal(load.errors[0], 2, state)
@@ -240,6 +243,8 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
         state.corrections_snapshot = load.raw
 
     alerter = Alerter(state)
+    alerter.resolve("fatal")   # reached the end of loading: the fatal series is over
+    (repo / FATAL_FILE).unlink(missing_ok=True)
     apply_aliases(state, corrections.aliases)
     untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
@@ -276,11 +281,14 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
                 return 1
             pushed = state.to_dict()
         digest_alerts(alerter, sent)
-    alerter.flush(to_admin)
+        # the marks are settled now: rebuild so the rows just announced carry 🆕/⭐
+        write_site_data(repo / SITE_DATA, build_site_data(state, config, now))
+    alert_outcome = alerter.flush(to_admin)
     # alert hashes changed after the last push: push them too
     if state.to_dict() != pushed and not _save_push(repo, state, deps, f"state {iso(now)}: предупреждения"):
         return 1
-    return 0
+    # an admin alert that surely or possibly did not arrive: fail the job so GitHub emails
+    return 1 if alert_outcome is not None and alert_outcome.status != "sent" else 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
