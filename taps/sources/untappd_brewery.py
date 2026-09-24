@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup, Tag
 from taps.config import Brewery, Config
 from taps.fetch import FetchError, UntappdClient
 from taps.model import BreweryBeer, SourceResult
-from taps.sources.untappd_checkins import checkins_to_sightings, parse_checkins
+from taps.sources.untappd_checkins import checkins_to_sightings, checkins_to_venue_checkins, parse_checkins
 
 # The page links the list as /w/<slug>/<brewery_id>/beer. The slug in places.yaml is unverified for
 # most breweries; that Untappd accepts it is checked on the live page at launch (list_enabled).
@@ -44,7 +44,8 @@ def fetch_brewery_checkins(client: UntappdClient, brewery: Brewery, config: Conf
                             brewery_id=brewery.brewery_id)
     sightings = checkins_to_sightings(checkins, config, "untappd_brewery", now, brewery_aliases)
     return SourceResult(key=key, source="untappd_brewery", ok=True, brewery_id=brewery.brewery_id,
-                        sightings=[replace(s, brewery_id=brewery.brewery_id) for s in sightings])
+                        sightings=[replace(s, brewery_id=brewery.brewery_id) for s in sightings],
+                        venue_checkins=checkins_to_venue_checkins(checkins))
 
 
 def parse_beer_list(html: str) -> BeerList:

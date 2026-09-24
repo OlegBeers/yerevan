@@ -5,7 +5,7 @@ import pytest
 
 from taps.config import Brewery, Config, Place, Settings
 from taps.fetch import FetchError
-from taps.model import BreweryBeer
+from taps.model import BreweryBeer, VenueCheckin
 from taps.sources.untappd_brewery import BeerList, fetch_brewery_checkins, fetch_brewery_list, parse_beer_list
 from taps.sources.untappd_checkins import checkins_to_sightings, parse_checkins
 from tests.helpers import fixture_text
@@ -80,6 +80,18 @@ def test_checkin_sighting_fields():
     # serving is passed through as is: rules.py decides which servings count
     assert [(by_id[i].beer_key, by_id[i].serving) for i in (1528689976, 1528688333, 1528638060)] == [
         ("u:1570010", "Taster"), ("u:1570010", "Draft"), ("u:2301685", "Draft")]
+
+
+def test_brewery_page_records_every_venue_seen_in_checkins():
+    # 20 check-ins: 4 at-home and 2 without a venue are dropped; the rest include untracked venues.
+    result = fetch_brewery_checkins(FakeClient(brewery_page()), DARGETT, CONFIG, NOW, {})
+    assert len(result.venue_checkins) == 14
+    assert all(isinstance(vc, VenueCheckin) for vc in result.venue_checkins)
+    names = {vc.venue_name for vc in result.venue_checkins}
+    assert names == {"Dargett Craft Brewery", "Number 8", "Ferment", "Caffe Napoli"}
+    napoli = next(vc for vc in result.venue_checkins if vc.venue_name == "Caffe Napoli")
+    assert napoli.venue_url == "https://untappd.com/v/caffe-napoli/645961"
+    assert result.venue_meta is None   # a brewery page, not a venue page
 
 
 def test_no_checkins_at_config_places_is_ok():
