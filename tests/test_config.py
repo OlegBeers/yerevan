@@ -171,3 +171,19 @@ def test_broken_file_raises(tmp_path, text):
 def test_missing_file_raises(tmp_path):
     with pytest.raises(ConfigError):
         load_config(tmp_path / "nope.yaml")
+
+
+def test_shop_with_untappd_checkins_source_is_valid(tmp_path):
+    """v1.1: a craft beer shop (e.g. Houl) tracked by check-ins rather than a shop-list source."""
+    extra = MINIMAL + """
+  - id: houl
+    name: Houl
+    kind: shop
+    sources:
+      untappd_checkins: {slug: houl, venue_id: 9709804}
+"""
+    cfg = load_config(write(tmp_path, extra))
+    houl = cfg.places["houl"]
+    assert houl.kind == "shop"
+    assert houl.venue_id == 9709804
+    assert not houl.has_menu

@@ -32,6 +32,7 @@ CONFIG = Config(
         "tap-station": place("tap-station", "Tap Station", "bar", {"untappd_checkins": {"slug": "t", "venue_id": 4}}),
         "beer-city": place("beer-city", "Beer City", "shop", {"beercity": {}}),
         "parma": place("parma", "Parma", "shop", {"parma": {}}),
+        "houl": place("houl", "Houl", "shop", {"untappd_checkins": {"slug": "houl", "venue_id": 5}}),
     },
     breweries=(),
     settings=SETTINGS,
@@ -139,6 +140,16 @@ def test_checkin_seen_ago_uses_correct_russian_plural(days_ago, expected):
                                               checkin_at=iso(when))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
     assert expected in d.html
+
+
+def test_shop_checkin_goes_to_the_shops_block():
+    """v1.1: a check-in at a shop (e.g. Houl) belongs in МАГАЗИНЫ, not БАРЫ."""
+    s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving="Bottle",
+                                              checkin_at=iso(yv(24, 9)))}})
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    shops_block = d.html.split("МАГАЗИНЫ</b>", 1)[1]
+    assert "Stout" in shops_block and "👀" in shops_block
+    assert "БАРЫ</b>" not in d.html
 
 
 def test_to_admin_false_after_preview_digests():

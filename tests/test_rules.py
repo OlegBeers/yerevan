@@ -35,6 +35,8 @@ CONFIG = Config(
         place("izh", "bar", {"untappd_checkins": venue(6)}),
         place("beer-city", "shop", {"beercity": {}}),
         place("parma", "shop", {"parma": {}}),
+        place("houl", "shop", {"untappd_checkins": venue(7)}),
+        place("alpenberg", "brewpub", {"untappd_checkins": venue(8)}, brewery_name="Alpenberg"),
     )},
     breweries=(Brewery("dors", "Dors", 441775, "dors"),
               Brewery("dargett", "Dargett", 265165, "dargett", list_enabled=True)),
@@ -414,6 +416,23 @@ def test_checkin_without_serving_counts_at_the_brewerys_own_brewpub():
     info = state.pairs["dors"]["u:1"].info
     assert info["kind"] == "checkin" and info["source"] == "untappd_brewery" and "serving" not in info
     assert info["checkin_at"] == iso(NOW - DAY)
+
+
+@pytest.mark.parametrize("serving", ["Bottle", "Can", None, "Draft"])
+def test_shop_checkins_count_regardless_of_serving(serving):
+    """v1.1: a shop (e.g. Houl) is not a brewpub, so a bottle/can/unlabelled check-in counts too."""
+    state = ready("untappd_checkins:houl")
+    out = merge(state, venue_checkins(checkin(1, "houl", serving=serving), place="houl"))
+    assert out.events == [("houl", "u:1")]
+
+
+def test_own_beer_matches_brewery_name_prefix_without_brewery_id():
+    """v1.1: Alpenberg has no known brewery_id; its own check-ins are still recognised by name prefix
+    ("Alpenberg" vs. the check-in's "Alpenberg Yerevan")."""
+    state = ready("untappd_checkins:alpenberg")
+    out = merge(state, venue_checkins(checkin(1, "alpenberg", serving=None, brewery="Alpenberg Yerevan"),
+                                      place="alpenberg"))
+    assert out.events == [("alpenberg", "u:1")]
 
 
 def test_checkin_age_limits():

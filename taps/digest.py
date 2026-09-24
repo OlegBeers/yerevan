@@ -185,7 +185,9 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
             line = _line(any(r.star for _, r in found), rec.info, details(section, place, rec),
                          [p.name for p, _ in found[1:]])
             header = group_header.get(section) or f"<b>{esc(place.name)}</b>" + (" ✅" if section == "menu" else "")
-            entries.append(("shops" if section == "shop" else "bars", header, line))
+            # v1.1: a shop's own check-ins (e.g. Houl) belong in the shops block, not bars
+            block = "shops" if section == "shop" or (section == "checkin" and place.kind == "shop") else "bars"
+            entries.append((block, header, line))
 
     if not entries:
         return None

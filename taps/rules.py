@@ -135,12 +135,13 @@ class _Merger:
                     pair.last_in_result = (result.place_id, key) in touched
 
     def _ignored_checkin(self, s: Sighting, place: Place) -> bool:
-        """A check-in counts only when poured at a place without a menu (spec §6)."""
+        """A check-in counts only when poured at a place without a menu (spec §6). A shop's check-ins
+        count regardless of serving (v1.1): a bottle bought there is as good a sighting as a draft pour."""
         if s.kind != "checkin":
             return False
         if place.has_menu or s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS:
             return True
-        if s.serving == "Draft":
+        if place.kind == "shop" or s.serving == "Draft":
             return False
         return not (s.serving is None and place.kind == "brewpub" and self._own_beer(s, place))
 

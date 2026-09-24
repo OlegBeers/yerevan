@@ -64,6 +64,16 @@ places:
     sources:
       untappd_checkins: {slug: beer-academy-ethnograph, venue_id: 10274653}
 
+  - id: alpenberg
+    name: Alpenberg
+    kind: brewpub
+    # пивоварня-ресторан в австрийском стиле, Арама 48; собственный бренд на Untappd — "Alpenberg Yerevan",
+    # brewery_id неизвестен, поэтому не указан
+    enabled: true
+    brewery_name: Alpenberg
+    sources:
+      untappd_checkins: {slug: alpenberg, venue_id: 12574344}
+
   - id: 379-torch-brew
     name: "379 Torch & Brew"
     kind: brewpub
@@ -163,6 +173,14 @@ places:
     enabled: true
     sources:
       parma: {}
+
+  - id: houl
+    name: Houl
+    kind: shop
+    # магазин крафтового пива, Хоренаци 28 (в Untappd указан как коктейль-бар)
+    enabled: true
+    sources:
+      untappd_checkins: {slug: houl, venue_id: 9709804}
 
 # slug: из адреса списка сортов https://untappd.com/w/<slug>/<brewery_id>/beer — проверить при запуске
 breweries:
