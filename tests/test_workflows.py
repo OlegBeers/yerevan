@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import yaml
@@ -72,6 +73,18 @@ def test_run_installs_python_deps_and_chromium():
     assert setup["with"]["cache"] == "pip"
     step_index(steps, run="pip install -r requirements.txt")
     step_index(steps, run="python -m playwright install --with-deps chromium")
+
+
+def test_playwright_install_failure_does_not_stop_the_run():
+    steps = only_job(load("run.yml"))["steps"]
+    assert steps[step_index(steps, run="playwright install")]["continue-on-error"] is True
+
+
+def test_requirements_are_pinned_to_exact_versions():
+    lines = [ln.strip() for ln in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert {ln.partition("==")[0].lower() for ln in lines} == {"playwright", "requests", "beautifulsoup4", "pyyaml",
+                                                              "pytest"}
+    assert all(re.fullmatch(r"[A-Za-z0-9_.-]+==\d+(\.\d+)*", ln) for ln in lines), lines
 
 
 def test_run_sets_bot_git_identity():
