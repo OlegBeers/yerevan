@@ -350,7 +350,7 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
     "no_match", so it is retried after SHOP_MATCH_RETRY_DAYS rather than every run."""
     for key, brand, name in _shop_match_candidates(state, now, limit):
         try:
-            html = client.get(search_url(f"{brand} {name}"))
+            html = client.get(search_url(clean_query(brand, name)))
         except FetchError:
             break
         try:
@@ -365,7 +365,8 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
         else:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.beer_id, url=found.url, rating=found.rating, style=found.style,
-                abv=found.abv, logo=found.logo, matched_at=iso(now), checked_at=iso(now))
+                abv=found.abv, logo=found.logo, name=found.name, brewery=found.brewery,
+                matched_at=iso(now), checked_at=iso(now), via="search")
 
 
 def _shop_match_refresh_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
@@ -400,18 +401,19 @@ def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> 
 
 
 def apply_shop_matches(state: State) -> None:
-    """Overlay a matched Untappd beer's rating/style/abv/logo/url onto every shop pair that shares
-    its key (v1.1 §3), after this run's merge. The shop's own product link already reached info via
-    Sighting.shop_url like any other field; only Untappd's data needs to move in here."""
+    """Overlay a matched Untappd beer's name/brewery/rating/style/abv/logo/url onto every shop/menu/
+    manual pair that shares its key (v1.1 §3, v1.2 beer identity), after this run's merge. The shop's
+    own product link already reached info via Sighting.shop_url like any other field; only Untappd's
+    data needs to move in here."""
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
-            if rec.info.get("kind") != "shop":
+            if rec.info.get("kind") not in ("shop", "menu", "manual"):
                 continue
             match = state.shop_matches.get(key)
             if match is None or match.untappd_beer_id is None:
                 continue
             rec.info["url"] = match.url
-            for field in ("logo", "rating", "style", "abv"):
+            for field in ("logo", "rating", "style", "abv", "name", "brewery"):
                 value = getattr(match, field)
                 if value is not None:
                     rec.info[field] = value

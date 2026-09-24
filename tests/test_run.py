@@ -884,6 +884,28 @@ def test_match_shop_beers_records_a_match():
     assert match.matched_at == iso(NOW) and match.checked_at == iso(NOW)
 
 
+def test_match_shop_beers_records_via_and_canonical_name_brewery():
+    """v1.2 beer identity: a search match is tagged via="search" and carries the Untappd beer's own
+    name/brewery too, exactly like a local match does."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:kilikia"]
+    assert (match.via, match.name, match.brewery) == ("search", "Kilikia", "Kilikia Brewery")
+
+
+def test_match_shop_beers_cleans_noise_from_the_query():
+    """v1.2 beer identity: the same noise-cleaning as local matching applies to the search query
+    string, e.g. "379 Dunkel dark" -- the shop's own colour suffix -- must not reach Untappd as-is."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:379 dunkel dark": _shop_pair("379", "379 Dunkel dark")}}
+    client = _untappd_client({"https://untappd.com/search?q=379%20379%20Dunkel&type=beer":
+                              "<html><body>Nothing found.</body></html>"})
+    run_mod.match_shop_beers(state, client, NOW)
+    assert state.shop_matches["n:379 dunkel dark"].matched_at == iso(NOW)   # the cleaned URL was fetched
+
+
 def test_match_shop_beers_records_no_match_when_nothing_scores():
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Beer")}}
@@ -1052,6 +1074,41 @@ def test_apply_shop_matches_leaves_unmatched_and_non_shop_pairs_alone():
     run_mod.apply_shop_matches(state)
     assert state.pairs["parma"]["n:x"].info["url"] == "https://parma.am/p/2"
     assert state.pairs["gargoyle"]["u:1"].info == {"kind": "menu"}
+
+
+def test_apply_shop_matches_overlays_canonical_name_and_brewery():
+    """v1.2 beer identity: a matched shop row shows the Untappd beer's own name/brewery, e.g. the
+    site groups it correctly and Oleg sees the same name as on Untappd."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:dargett apricot ale": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "Dargett apricot ale", "brewery": "Dargett"})}}
+    state.shop_matches["n:dargett apricot ale"] = ShopMatchRec(
+        untappd_beer_id=1674726, name="Apricot Ale (Prunus Armeniaca)", brewery="Dargett Brewery",
+        matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:dargett apricot ale"].info
+    assert (info["name"], info["brewery"]) == ("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
+
+
+def test_apply_shop_matches_also_overlays_menu_and_manual_kind_pairs():
+    """Dargett Brewpub (buyam, kind "menu") and a friend's manual sighting can be matched too."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "dargett-brewpub": {"n:apricot ale": PairRec(
+            first_seen=iso(NOW), last_seen=iso(NOW),
+            info={"kind": "menu", "source": "buyam", "name": "Apricot Ale", "brewery": "Dargett"})},
+        "tap-station": {"n:hazy pale": PairRec(
+            first_seen=iso(NOW), last_seen=iso(NOW),
+            info={"kind": "manual", "name": "Hazy Pale", "brewery": "379"})},
+    }
+    state.shop_matches["n:apricot ale"] = ShopMatchRec(untappd_beer_id=1, url="https://untappd.com/beer/1",
+                                                        matched_at=iso(NOW), via="local")
+    state.shop_matches["n:hazy pale"] = ShopMatchRec(untappd_beer_id=2, url="https://untappd.com/beer/2",
+                                                      matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["dargett-brewpub"]["n:apricot ale"].info["url"] == "https://untappd.com/beer/1"
+    assert state.pairs["tap-station"]["n:hazy pale"].info["url"] == "https://untappd.com/beer/2"
 
 
 def test_discovery_report_pluralizes_checkins_correctly(world):
