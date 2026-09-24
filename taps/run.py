@@ -57,6 +57,7 @@ TRIP_RU = {
 CLOUDFLARE_ALERT = "Untappd показал проверку Cloudflare: сбор Untappd в этом прогоне остановлен, магазины работают"
 DISCOVERY_MIN_CHECKINS = 3   # v1.1: untracked venues below this are not worth mentioning
 DISCOVERY_HOUR = 9           # weekly report: first successful run on or after Monday 09:00 Yerevan
+                              # (or, during the owner's temporary discovery_daily_until window, 09:00 daily)
 DISCOVERY_MAX_VENUES = 20    # cap on lines in the weekly report, besides the MAX_TEXT length cap below
 LOCATION_CANDIDATES_PER_RUN = 3   # v1.1 city check (§4): at most this many untracked venue pages per run
 LOCATION_MIN_CHECKINS = 2         # below this, not worth spending a page on
@@ -431,13 +432,26 @@ def _week_start(now: datetime) -> str:
     return (local - timedelta(days=local.weekday())).isoformat()
 
 
-def _discovery_due(state: State, now: datetime) -> bool:
+def _discovery_period(config: Config, now: datetime) -> str:
+    """The Yerevan date identifying the current report period: the day itself while the owner's
+    temporary daily-cadence window (discovery_daily_until) is active, otherwise the Monday of the
+    week -- compared against state.discovery.last_report_date to decide "already reported"."""
+    today = yerevan_date(now)
+    if config.settings.discovery_daily_active(today):
+        return today
+    return _week_start(now)
+
+
+def _discovery_due(state: State, config: Config, now: datetime) -> bool:
     local = to_yerevan(now)
-    monday = local.date() - timedelta(days=local.weekday())
-    monday_9am = datetime(monday.year, monday.month, monday.day, DISCOVERY_HOUR, tzinfo=YEREVAN)
-    if local < monday_9am:
+    if config.settings.discovery_daily_active(yerevan_date(now)):
+        due_since = datetime(local.year, local.month, local.day, DISCOVERY_HOUR, tzinfo=YEREVAN)
+    else:
+        monday = local.date() - timedelta(days=local.weekday())
+        due_since = datetime(monday.year, monday.month, monday.day, DISCOVERY_HOUR, tzinfo=YEREVAN)
+    if local < due_since:
         return False
-    return state.discovery.last_report_date != _week_start(now)
+    return state.discovery.last_report_date != _discovery_period(config, now)
 
 
 def _checkins_ru(n: int) -> str:
@@ -596,12 +610,12 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
         return 0
 
     discovery_msg = None
-    if _discovery_due(state, now):
+    if _discovery_due(state, config, now):
         built = build_discovery_report(state, config, now)
         if built is not None:
             discovery_msg, venue_ids = built
             state.discovery.reported.extend(venue_ids)
-        state.discovery.last_report_date = _week_start(now)
+        state.discovery.last_report_date = _discovery_period(config, now)
 
     # Spec §7: the sent mark is pushed before sending, so a failed push sends nothing.
     mark = mark_sent(state, digest, now) if digest else None

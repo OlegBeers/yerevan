@@ -23,7 +23,7 @@ PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewe
                 "merged_from")
 BREWERY_FIELDS = ("id", "name", "brewery_id", "slug", "list_enabled")
 SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages",
-                   "boost_until", "boost_daily_pages", "boost_search_per_run")
+                   "boost_until", "boost_daily_pages", "boost_search_per_run", "discovery_daily_until")
 _REQUIRED = object()
 
 
@@ -106,6 +106,10 @@ class Settings:
     boost_until: str | None = None
     boost_daily_pages: int | None = None
     boost_search_per_run: int | None = None
+    # temporary one-off cadence change (owner decision): while the Yerevan date is <= discovery_daily_until,
+    # the new-places report (v1.1 weekly admin report) is due daily instead of weekly; unset or expired ->
+    # the normal weekly (Monday) cadence.
+    discovery_daily_until: str | None = None
 
     def _boost_active(self, today: str) -> bool:
         return self.boost_until is not None and today <= self.boost_until
@@ -119,6 +123,9 @@ class Settings:
         if self._boost_active(today) and self.boost_search_per_run is not None:
             return self.boost_search_per_run
         return default
+
+    def discovery_daily_active(self, today: str) -> bool:
+        return self.discovery_daily_until is not None and today <= self.discovery_daily_until
 
 
 @dataclass(frozen=True)
@@ -242,6 +249,14 @@ def _settings(raw: Any) -> Settings:
     except (TypeError, ValueError):
         raise _fail("settings",
                     f"boost_until {raw_boost_until!r}: нужна дата ГГГГ-ММ-ДД в кавычках, например \"2026-10-01\"") from None
+    raw_discovery_daily_until = d.get("discovery_daily_until")   # unquoted date -> TypeError, same as boost_until
+    try:
+        discovery_daily_until = (None if raw_discovery_daily_until is None
+                                 else date.fromisoformat(raw_discovery_daily_until).isoformat())
+    except (TypeError, ValueError):
+        raise _fail("settings",
+                    f"discovery_daily_until {raw_discovery_daily_until!r}: нужна дата ГГГГ-ММ-ДД в кавычках, "
+                    "например \"2026-10-01\"") from None
     return Settings(
         preview_digests=_get(d, "preview_digests", int, "settings", s.preview_digests),
         digest_time=parsed_time,
@@ -251,6 +266,7 @@ def _settings(raw: Any) -> Settings:
         boost_until=boost_until,
         boost_daily_pages=_get(d, "boost_daily_pages", int, "settings", s.boost_daily_pages),
         boost_search_per_run=_get(d, "boost_search_per_run", int, "settings", s.boost_search_per_run),
+        discovery_daily_until=discovery_daily_until,
     )
 
 

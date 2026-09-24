@@ -311,6 +311,52 @@ def test_weekly_discovery_report_skips_a_venue_already_reported(world):
     assert not any("Новые места по чекинам" in s["text"] for s in world.sends)
 
 
+# --- v1.1 discovery_daily_until: owner's temporary daily cadence for the discovery report --------
+
+def _config(**settings_kw):
+    return Config(places={}, breweries=(), settings=Settings(**settings_kw))
+
+
+def test_discovery_due_daily_the_first_time_that_day():
+    state = empty_state(NOW)
+    config = _config(discovery_daily_until="2026-09-30")
+    assert run_mod._discovery_due(state, config, NOW) is True
+
+
+def test_discovery_not_due_daily_again_the_same_day():
+    state = empty_state(NOW)
+    config = _config(discovery_daily_until="2026-09-30")
+    state.discovery.last_report_date = run_mod._discovery_period(config, NOW)
+    assert run_mod._discovery_due(state, config, NOW) is False
+
+
+def test_discovery_due_daily_again_the_next_day():
+    state = empty_state(NOW)
+    config = _config(discovery_daily_until="2026-09-30")
+    state.discovery.last_report_date = run_mod._discovery_period(config, NOW)
+    assert run_mod._discovery_due(state, config, NOW + timedelta(days=1)) is True
+
+
+def test_discovery_not_due_daily_before_9am_yerevan():
+    state = empty_state(NOW)
+    config = _config(discovery_daily_until="2026-09-30")
+    before_9am = datetime(2026, 9, 24, 2, 0, tzinfo=timezone.utc)   # 06:00 in Yerevan, same Yerevan date as NOW
+    assert run_mod._discovery_due(state, config, before_9am) is False
+
+
+def test_discovery_falls_back_to_weekly_once_the_daily_window_expires():
+    """Once the Yerevan date passes discovery_daily_until, the report is due once per week again
+    (not once per day): reporting on Thursday must not make Friday, the same week, due again."""
+    config = _config(discovery_daily_until="2026-09-23")   # expired: NOW's Yerevan date (09-24) is past it
+    state = empty_state(NOW)
+    assert run_mod._discovery_due(state, config, NOW) is True   # Thursday: first check of the week
+    state.discovery.last_report_date = run_mod._discovery_period(config, NOW)
+
+    assert run_mod._discovery_due(state, config, NOW + timedelta(days=1)) is False   # Friday, same week
+
+    assert run_mod._discovery_due(state, config, MONDAY_MORNING) is True   # next week's Monday
+
+
 def test_disabled_place_venue_is_not_reported_as_a_new_place(world):
     """I-2: a disabled place's venue counts as tracked/known and must never reach the discovery report."""
     first_run(world)

@@ -175,6 +175,37 @@ def test_effective_search_per_run_normal_after_boost_until_or_unset():
     assert Settings().effective_search_per_run("2026-09-24", default=8) == 8
 
 
+def test_discovery_daily_until_defaults_to_none(cfg):
+    assert cfg.settings.discovery_daily_until is None
+
+
+def test_discovery_daily_until_parsed(tmp_path):
+    extra = 'settings:\n  discovery_daily_until: "2026-10-08"\n'
+    cfg = load_config(write(tmp_path, MINIMAL + extra))
+    assert cfg.settings.discovery_daily_until == "2026-10-08"
+
+
+@pytest.mark.parametrize("extra", [
+    "settings:\n  discovery_daily_until: 2026-10-08\n",     # unquoted: YAML reads it as a date object, not str
+    'settings:\n  discovery_daily_until: "2026-13-40"\n',   # not a real date
+])
+def test_invalid_discovery_daily_until_raises(tmp_path, extra):
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + extra))
+
+
+def test_discovery_daily_active_on_and_before_the_date():
+    s = Settings(discovery_daily_until="2026-10-08")
+    assert s.discovery_daily_active("2026-09-24") is True
+    assert s.discovery_daily_active("2026-10-08") is True          # boundary: still daily on the day itself
+
+
+def test_discovery_daily_active_false_after_the_date_or_unset():
+    s = Settings(discovery_daily_until="2026-10-08")
+    assert s.discovery_daily_active("2026-10-09") is False
+    assert Settings().discovery_daily_active("2026-09-24") is False
+
+
 def test_disabled_place_is_excluded(tmp_path):
     cfg = load_config(write(tmp_path, MINIMAL))
     assert list(cfg.places) == ["gargoyle"]

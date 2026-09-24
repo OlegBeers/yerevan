@@ -109,8 +109,9 @@ class VenueRec:
 
 @dataclass
 class DiscoveryRec:
-    """v1.1: the weekly admin DM about untracked venues with enough check-ins."""
-    last_report_date: str | None = None   # Yerevan date of the last weekly check, sent or not
+    """v1.1: the admin DM about untracked venues with enough check-ins (weekly, or daily during the
+    owner's temporary discovery_daily_until window)."""
+    last_report_date: str | None = None   # Yerevan date (week start, or the day itself) of the last check, sent or not
     reported: list[int] = field(default_factory=list)   # venue ids already mentioned once
 
 
