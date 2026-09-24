@@ -254,10 +254,10 @@ def prune(state: State, now: datetime) -> int:
 def record_venues(state: State, results: Sequence[SourceResult], now: datetime,
                   known_venue_ids: frozenset[int] = frozenset()) -> None:
     """v1.1: state.venues from every fetch's venue_meta (own venue: logo/verified) and venue_checkins
-    (every venue seen in check-ins, tracked or not); check-ins deduped by id, pruned to 30 days.
+    (every venue seen in check-ins, tracked or not); check-ins deduped by id, pruned to VENUE_KEEP_DAYS (60) days.
 
     known_venue_ids: every place's venue id from places.yaml, enabled or disabled (Config.known_venue_ids).
-    A venue record left with no check-in in the last 30 days is dropped unless its id is known, so that
+    A venue record left with no check-in in the last VENUE_KEEP_DAYS days is dropped unless its id is known, so that
     worldwide venues surfacing on brewery pages don't accumulate in state.json forever, while a disabled
     place's own venue (kept for its logo/verified badge) survives a quiet spell."""
     seen_ids: dict[str, set[int]] = {}

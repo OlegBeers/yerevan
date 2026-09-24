@@ -1,8 +1,11 @@
 """Network layer: plain HTTP for shops, a budgeted polite client for Untappd, Cloudflare detection."""
+import os
+import re
 import random
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Callable, Mapping
 
 import requests
@@ -98,6 +101,8 @@ class UntappdClient:
         self.sleep = sleep
         self.blocked = False
         self.responded = False
+        self.last_html: str | None = None   # last page fetched, for TAPS_DEBUG_DIR (dump_debug_html)
+        self.last_url: str | None = None
         self._first = True
         today = yerevan_date(now)
         if untappd.pages_date != today:
@@ -127,7 +132,36 @@ class UntappdClient:
         if is_cloudflare_challenge(resp.status, resp.headers, resp.text):
             self.blocked = True
         _check(resp, url)
+        self.last_html, self.last_url = resp.text, f"{url} -> {resp.headers['x-final-url']}" if resp.headers.get("x-final-url") else url
         return resp.text
+
+
+DEBUG_DIR_ENV = "TAPS_DEBUG_DIR"
+
+
+def dump_debug_html(source_key: str, client: "UntappdClient") -> None:
+    """Opt-in capture: when TAPS_DEBUG_DIR is set, write the last page client fetched to
+    <TAPS_DEBUG_DIR>/<source_key, ':' -> '_'>.html, for debugging a production-only failure
+    (e.g. Cloudflare blocks Untappd from a dev machine). A no-op if the env var is unset, or if
+    the client never fetched a page."""
+    debug_dir = os.environ.get(DEBUG_DIR_ENV)
+    if not debug_dir or client.last_html is None:
+        return
+    path = Path(debug_dir)
+    path.mkdir(parents=True, exist_ok=True)
+    body = f"<!-- {client.last_url} -->\n{redact_users(client.last_html)}" if client.last_url else redact_users(client.last_html)
+    (path / f"{source_key.replace(':', '_')}.html").write_text(body, encoding="utf-8")
+
+
+def redact_users(html: str) -> str:
+    """The repo is public and so are its workflow artifacts: strip Untappd user handles, display
+    names in user links, avatar alts and profile photos before a page is written to disk."""
+    html = re.sub(r"/user/[^\"'/?#\s<>]+", "/user/anon", html)
+    html = re.sub(r'data-user-name="[^"]*"', 'data-user-name="anon"', html)
+    html = re.sub(r'(<a\b[^>]*href="[^"]*/user/anon[^"]*"[^>]*>)[^<]*(</a>)', r"\1User\2", html)
+    html = re.sub(r'(<a\b[^>]*href="[^"]*/user/anon[^"]*"[^>]*)title="[^"]*"', r'\1title="User"', html)
+    html = re.sub(r'alt="[^"]*"', 'alt=""', html)
+    return re.sub(r'https?://[^"\s]*(?:assets\.untappd\.com/profile|untappd\.s3\.amazonaws\.com/photos)/[^"\s]+', "", html)
 
 
 # Ported from hopandshot/hopsandshot scraper.py (languages switched to en-US).
@@ -163,7 +197,9 @@ def playwright_fetcher() -> tuple[PageFetcher, Callable[[], None]]:
             page.wait_for_timeout(1500)
             if resp is None:
                 raise FetchError("network", f"no response: {url}")
-            return HttpResponse(resp.status, {k.lower(): v for k, v in resp.headers.items()}, page.content())
+            headers = {k.lower(): v for k, v in resp.headers.items()}
+            headers["x-final-url"] = page.url   # after redirects; shown in TAPS_DEBUG_DIR dumps
+            return HttpResponse(resp.status, headers, page.content())
         except PlaywrightError as e:
             raise FetchError("network", f"{url}: {e}") from e
 

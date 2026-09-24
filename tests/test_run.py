@@ -870,6 +870,57 @@ def test_sources_out_of_untappd_budget_are_skipped_without_failure(world):
     assert state.untappd.pages_today == 30 and state.alerts == {} and world.sends == []
 
 
+# --- TAPS_DEBUG_DIR opt-in capture --------------------------------------------------------------
+
+def test_taps_debug_dir_captures_html_of_a_failed_brewery_source(world, monkeypatch, tmp_path):
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    broken = UNTAPPD_PAGES["https://untappd.com/brewery/265165"].replace(
+        'data-checkin-id="', 'data-old-id="')   # changed markup -> parse_checkins finds none ("empty")
+    world.untappd = FakeUntappd({**UNTAPPD_PAGES, "https://untappd.com/brewery/265165": broken})
+    assert world.run(NOW) == 0
+
+    written = (debug_dir / "untappd_brewery_265165.html").read_text(encoding="utf-8")
+    assert written.splitlines()[0] == "<!-- https://untappd.com/brewery/265165 -->"
+    assert "data-old-id=" in written
+
+
+def test_taps_debug_dir_captures_html_of_a_failed_menu_source(world, monkeypatch, tmp_path):
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    broken = BEATLES_HTML.replace('href="/b/', 'href="/x/')   # no beer links parse -> no sightings ("empty")
+    world.untappd = FakeUntappd({**UNTAPPD_PAGES, BEATLES: broken})
+    assert world.run(NOW) == 0
+
+    written = (debug_dir / "untappd_menu_beatles.html").read_text(encoding="utf-8")
+    assert written.splitlines()[0] == f"<!-- {BEATLES} -->"
+    assert 'href="/x/' in written
+
+
+def test_taps_debug_dir_captures_html_of_a_failed_checkins_source(world, monkeypatch, tmp_path):
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    craft_story_url = "https://untappd.com/v/craft-story/12281551"
+    # check-ins parse fine, but none at the tracked venue itself -> "bad_response"
+    broken = UNTAPPD_PAGES[craft_story_url].replace("/v/craft-story/12281551", "/v/craft-story/99999999")
+    world.untappd = FakeUntappd({**UNTAPPD_PAGES, craft_story_url: broken})
+    assert world.run(NOW) == 0
+
+    written = (debug_dir / "untappd_checkins_craft-story.html").read_text(encoding="utf-8")
+    assert written.splitlines()[0] == f"<!-- {craft_story_url} -->"
+    assert "/v/craft-story/99999999" in written
+
+
+def test_taps_debug_dir_unset_writes_no_files_even_when_a_source_fails(world, monkeypatch, tmp_path):
+    monkeypatch.delenv("TAPS_DEBUG_DIR", raising=False)
+    debug_dir = tmp_path / "debug"
+    broken = UNTAPPD_PAGES["https://untappd.com/brewery/265165"].replace(
+        'data-checkin-id="', 'data-old-id="')
+    world.untappd = FakeUntappd({**UNTAPPD_PAGES, "https://untappd.com/brewery/265165": broken})
+    assert world.run(NOW) == 0
+    assert not debug_dir.exists()
+
+
 def test_broken_corrections_without_snapshot_stops_with_exit_2(world):
     (world.repo / "corrections.yaml").write_text("sightings: [\n", encoding="utf-8")
     assert world.run(NOW) == 2

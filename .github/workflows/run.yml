@@ -51,6 +51,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
           SITE_URL: ${{ vars.SITE_URL }}
+          TAPS_DEBUG_DIR: ${{ runner.temp }}/taps-debug
 
       # Publish whatever site/data.json the run produced, even if the run failed later
       - if: always() && hashFiles('site/data.json') != ''
@@ -64,3 +65,12 @@ jobs:
       - if: always() && hashFiles('site/data.json') != ''
         id: deploy
         uses: actions/deploy-pages@v4
+
+      - if: always()
+        name: taps-debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: taps-debug
+          path: ${{ runner.temp }}/taps-debug
+          if-no-files-found: ignore
+          retention-days: 1

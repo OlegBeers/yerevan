@@ -44,15 +44,17 @@ def _place(place: Place, state: State, now: datetime) -> dict:
 
 def _venues(state: State, config: Config, now: datetime) -> list[dict]:
     """v1.1 "Все места" tab: every venue seen in check-ins with at least one in the last 30 days.
-    A place not in places.yaml is shown only once its city is known to be Yerevan (city check, §4;
-    I-3): a foreign venue, one in another Armenian city, or one not yet checked stays hidden -- the
-    project's scope is Yerevan, not Armenia."""
+    A venue already in places.yaml (enabled or disabled) never appears as untracked. A place not in
+    places.yaml is shown only once its city is known to be Yerevan (city check, §4; I-3): a foreign
+    venue, one in another Armenian city, or one not yet checked stays hidden -- the project's scope
+    is Yerevan, not Armenia."""
     tracked = {p.venue_id: p.id for p in config.places.values() if p.venue_id is not None}
     out = []
     for vid_str, rec in state.venues.items():
         vid = int(vid_str)
-        if vid not in tracked and not is_yerevan_city(rec.city):
-            continue
+        if vid not in tracked:
+            if vid in config.known_venue_ids or not is_yerevan_city(rec.city):
+                continue
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if not recent:
             continue

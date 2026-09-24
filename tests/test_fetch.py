@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from taps.fetch import (UA, FetchError, Http, HttpResponse, UntappdClient,
-                        is_cloudflare_challenge, untappd_due)
+                        dump_debug_html, is_cloudflare_challenge, untappd_due)
 from taps.state import UntappdRec
 from taps.timeutil import iso
 from tests.helpers import fixture_text
@@ -258,3 +258,62 @@ def test_client_retry_respects_budget():
         client.get("https://untappd.com/v/x/1")
     assert e.value.kind == "budget"
     assert rec.pages_today == 1 and len(pages.urls) == 1
+
+
+def test_client_records_last_html_and_url_of_the_most_recent_successful_fetch():
+    client, _, _, _ = make_client(OK, HttpResponse(200, {}, "<html>2</html>"))
+    assert client.last_html is None and client.last_url is None
+    client.get("https://untappd.com/v/x/1")
+    assert (client.last_url, client.last_html) == ("https://untappd.com/v/x/1", "<html>menu</html>")
+    client.get("https://untappd.com/v/x/2")
+    assert (client.last_url, client.last_html) == ("https://untappd.com/v/x/2", "<html>2</html>")
+
+
+# --- dump_debug_html (TAPS_DEBUG_DIR opt-in capture) --------------------------
+
+def test_dump_debug_html_writes_nothing_when_env_unset(tmp_path, monkeypatch):
+    monkeypatch.delenv("TAPS_DEBUG_DIR", raising=False)
+    client, _, _, _ = make_client(OK)
+    client.get("https://untappd.com/v/x/1")
+    dump_debug_html("untappd_menu:gargoyle", client)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_dump_debug_html_writes_the_last_page_with_its_url(tmp_path, monkeypatch):
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(tmp_path))
+    client, _, _, _ = make_client(OK)
+    client.get("https://untappd.com/v/gargoyle-bar/12252462")
+    dump_debug_html("untappd_menu:gargoyle", client)
+    written = (tmp_path / "untappd_menu_gargoyle.html").read_text(encoding="utf-8")
+    assert written.splitlines()[0] == "<!-- https://untappd.com/v/gargoyle-bar/12252462 -->"
+    assert "<html>menu</html>" in written
+
+
+def test_dump_debug_html_overwrites_the_previous_file(tmp_path, monkeypatch):
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(tmp_path))
+    client, _, _, _ = make_client(OK)
+    client.get("https://untappd.com/v/x/1")
+    (tmp_path / "untappd_brewery_265165.html").write_text("stale", encoding="utf-8")
+    dump_debug_html("untappd_brewery:265165", client)
+    assert "stale" not in (tmp_path / "untappd_brewery_265165.html").read_text(encoding="utf-8")
+
+
+def test_dump_debug_html_creates_the_debug_dir_if_missing(tmp_path, monkeypatch):
+    debug_dir = tmp_path / "nested" / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    client, _, _, _ = make_client(OK)
+    client.get("https://untappd.com/v/x/1")
+    dump_debug_html("untappd_menu:gargoyle", client)
+    assert (debug_dir / "untappd_menu_gargoyle.html").exists()
+
+
+def test_debug_dump_redacts_untappd_users(tmp_path, monkeypatch):
+    from taps.fetch import redact_users
+    html = ('<a href="/user/mikee88" class="user">Mikee</a> '
+            '<a class="user-toasts" data-user-name="DMCBrew" href="/user/DMCBrew" title="DMC Brew">x</a> '
+            '<img src="https://assets.untappd.com/profile/abc_100x100.jpg" alt="Mikee avatar"> '
+            '<a href="/b/some-beer/123">Beer</a>')
+    out = redact_users(html)
+    for leaked in ("mikee88", "Mikee", "DMCBrew", "DMC Brew", "abc_100x100"):
+        assert leaked not in out
+    assert '/b/some-beer/123' in out and ">Beer<" in out

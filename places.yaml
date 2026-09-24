@@ -93,6 +93,16 @@ places:
     sources:
       untappd_checkins: {slug: 379-torch-and-brew, venue_id: 11198162}
 
+  - id: dahook-beer-house
+    name: Dahook Beer House
+    kind: brewpub
+    # в Цахкадзоре (ул. братьев Орбели 10), а Untappd ошибочно пишет Ереван — поэтому выключено
+    enabled: false
+    brewery_id: 559009
+    brewery_name: Dahook
+    sources:
+      untappd_checkins: {slug: dahook-beer-house, venue_id: 14268335}
+
   # Отключено 2026-09-24: за 3 недели ни одного чекина, место, похоже, стало «Sway Bar».
   - id: tap-station
     name: Tap Station

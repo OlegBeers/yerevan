@@ -16,7 +16,9 @@ from typing import Callable, Mapping, Sequence
 from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
 from taps.digest import build_digest, drop_stale_events, is_due, mark_sent, rollback
-from taps.fetch import FetchError, Http, PageFetcher, UntappdClient, playwright_fetcher, untappd_due
+from taps.fetch import (
+    FetchError, Http, PageFetcher, UntappdClient, dump_debug_html, playwright_fetcher, untappd_due,
+)
 from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome, merge_results
@@ -77,6 +79,14 @@ def _guard(key: str, place_id: str | None, fetch: Callable[[], SourceResult]) ->
                             error=f"exception: {type(e).__name__}: {e}"[:300])
 
 
+DEBUG_ERRORS = ("empty", "bad_response")   # TAPS_DEBUG_DIR: dump the page behind these Untappd failures
+
+
+def _maybe_dump_debug(result: SourceResult, client: UntappdClient) -> None:
+    if result.error in DEBUG_ERRORS or (result.error or "").startswith("exception:"):
+        dump_debug_html(result.key, client)
+
+
 def collect_untappd(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
                     alerter: Alerter) -> tuple[list[SourceResult], UntappdClient | None]:
     """Menus -> brewery check-ins -> venue check-ins -> 1-2 brewery lists -> city check for a few
@@ -108,7 +118,11 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
     try:
         client = UntappdClient(state.untappd, config.settings.untappd_daily_pages, now, fetch_page, sleep=deps.sleep)
         # once blocked, the sources themselves return error "blocked" without spending pages
-        results = [_guard(key, place_id, lambda: job(client)) for key, place_id, job in jobs]
+        results = []
+        for key, place_id, job in jobs:
+            result = _guard(key, place_id, lambda: job(client))
+            _maybe_dump_debug(result, client)   # client.last_html/url still belong to this job
+            results.append(result)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
     finally:
         close()

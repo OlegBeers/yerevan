@@ -99,10 +99,21 @@ def test_run_step_command_and_env_from_secrets_and_vars():
     step = steps[step_index(steps, run="python -m taps run")]
     assert step["run"].strip() == "python -m taps run"
     env = step["env"]
-    assert set(env) == {*TELEGRAM_SECRETS, "SITE_URL"}
+    assert set(env) == {*TELEGRAM_SECRETS, "SITE_URL", "TAPS_DEBUG_DIR"}
     for name in TELEGRAM_SECRETS:
         assert env[name] == f"${{{{ secrets.{name} }}}}"
     assert env["SITE_URL"] == "${{ vars.SITE_URL }}"
+    assert env["TAPS_DEBUG_DIR"] == "${{ runner.temp }}/taps-debug"
+
+
+def test_run_uploads_untappd_debug_html_if_any_was_captured():
+    steps = only_job(load("run.yml"))["steps"]
+    step = steps[step_index(steps, uses="actions/upload-artifact@v4")]
+    assert step["if"] == "always()"
+    assert step["name"] == "taps-debug"
+    assert step["with"]["path"] == "${{ runner.temp }}/taps-debug"
+    assert step["with"]["if-no-files-found"] == "ignore"
+    assert step["with"]["retention-days"] == 1
 
 
 def test_run_deploys_site_even_after_failed_run_if_data_exists():
@@ -129,6 +140,7 @@ def test_run_step_order():
         step_index(steps, uses="actions/configure-pages@v5"),
         step_index(steps, uses="actions/upload-pages-artifact@v3"),
         step_index(steps, uses="actions/deploy-pages@v4"),
+        step_index(steps, uses="actions/upload-artifact@v4"),
     ]
     assert order == sorted(order)
 

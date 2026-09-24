@@ -258,3 +258,23 @@ def test_venues_list_includes_tracked_venue_regardless_of_location():
     venues = build(st)["venues"]
     assert [v["name"] for v in venues] == ["Gargoyle Bar"]
     assert venues[0]["tracked"] is True
+
+
+def test_venues_list_excludes_venue_of_disabled_place_even_when_city_matches():
+    """A disabled place's venue (known_venue_ids) must never appear as untracked, even if Untappd
+    reports its city as Yerevan (e.g. a mislocated venue that was disabled for that reason)."""
+    config = Config(places=CONFIG.places, breweries=(), settings=CONFIG.settings,
+                     known_venue_ids=frozenset({777}))
+    st = state({}, venues={
+        "777": VenueRec(name="Dahook Beer House", url="u1", city="Yerevan", country="Armenia",
+                        checkins=[{"id": 1, "at": ago(1)}]),
+        "99": VenueRec(name="KER U SUS", url="u2", city="Yerevan", country="Armenia",
+                      checkins=[{"id": 2, "at": ago(1)}]),
+    })
+    data = build_site_data(st, config, NOW)
+    names = {v["name"] for v in data["venues"]}
+    assert "Dahook Beer House" not in names
+    assert "KER U SUS" in names  # a genuinely unmatched Yerevan venue still shows as untracked
+    gargoyle_data = build(state({}, venues={"1": VenueRec(name="Gargoyle Bar", url="u1",
+                                                          checkins=[{"id": 1, "at": ago(1)}])}))["venues"]
+    assert gargoyle_data[0]["tracked"] is True  # enabled-place venue still shows as tracked
