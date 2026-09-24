@@ -30,7 +30,7 @@ from taps.sources.untappd_checkins import fetch_venue_checkins
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.yerevan_city import fetch_yerevan_city
 from taps.state import VENUE_KEEP_DAYS, State, apply_aliases, load_state, prune, record_venues, save_state
-from taps.telegram import Alerter, SendOutcome, send_message
+from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
 STATE_FILE = "state.json"
@@ -48,6 +48,7 @@ TRIP_RU = {
 CLOUDFLARE_ALERT = "Untappd показал проверку Cloudflare: сбор Untappd в этом прогоне остановлен, магазины работают"
 DISCOVERY_MIN_CHECKINS = 3   # v1.1: untracked venues below this are not worth mentioning
 DISCOVERY_HOUR = 9           # weekly report: first successful run on or after Monday 09:00 Yerevan
+DISCOVERY_MAX_VENUES = 20    # cap on lines in the weekly report, besides the MAX_TEXT length cap below
 
 
 @dataclass
@@ -194,14 +195,28 @@ def _discovery_due(state: State, now: datetime) -> bool:
     return state.discovery.last_report_date != _week_start(now)
 
 
+def _checkins_ru(n: int) -> str:
+    """Russian plural of "чекин": 1 чекин, 2-4 чекина, else чекинов (11-14 also чекинов)."""
+    n10, n100 = n % 10, n % 100
+    if n10 == 1 and n100 != 11:
+        form = "чекин"
+    elif 2 <= n10 <= 4 and not (12 <= n100 <= 14):
+        form = "чекина"
+    else:
+        form = "чекинов"
+    return f"{n} {form}"
+
+
 def build_discovery_report(state: State, config: Config, now: datetime) -> tuple[str, list[int]] | None:
-    """Untracked venues (not an enabled place) with >= 3 check-ins in the last 30 days, not reported before."""
-    tracked = {p.venue_id for p in config.places.values() if p.venue_id is not None}
+    """Untracked venues (no place in places.yaml, enabled or disabled) with >= 3 check-ins in the last
+    30 days, not reported before. Capped at DISCOVERY_MAX_VENUES lines and MAX_TEXT chars (Telegram's
+    limit): venues left out of a capped message are NOT marked reported, so they are reconsidered
+    (and may rank higher) next week."""
     reported = set(state.discovery.reported)
     candidates = []
     for vid_str, rec in state.venues.items():
         vid = int(vid_str)
-        if vid in tracked or vid in reported:
+        if vid in config.known_venue_ids or vid in reported:
             continue
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if len(recent) >= DISCOVERY_MIN_CHECKINS:
@@ -209,13 +224,30 @@ def build_discovery_report(state: State, config: Config, now: datetime) -> tuple
     if not candidates:
         return None
     candidates.sort(key=lambda c: (-len(c[2]), c[1].name))
-    lines = []
-    for vid, rec, recent in candidates:
+    header = "🍺 Новые места по чекинам (за 30 дней):"
+    footer = "\nДобавить в список — напиши Claude."
+    lines: list[str] = []
+    included: list[int] = []
+    for vid, rec, recent in candidates[:DISCOVERY_MAX_VENUES]:
         last = to_yerevan(parse_iso(max(c["at"] for c in recent))).strftime("%d.%m")
-        lines.append(f"• {html.escape(rec.name)} — {len(recent)} чекинов, последний {last} — "
-                     f"{html.escape(rec.url)}")
-    text = "🍺 Новые места по чекинам (за 30 дней):\n" + "\n".join(lines) + "\nДобавить в список — напиши Claude."
-    return text, [vid for vid, _, _ in candidates]
+        line = f"• {html.escape(rec.name)} — {_checkins_ru(len(recent))}, последний {last} — {html.escape(rec.url)}"
+        omitted = len(candidates) - len(lines) - 1
+        tail = f"\n…и ещё {omitted}" if omitted else ""
+        if len(header) + 1 + len("\n".join([*lines, line])) + len(tail) + len(footer) > MAX_TEXT:
+            break
+        lines.append(line)
+        included.append(vid)
+    omitted = len(candidates) - len(lines)
+    tail = f"\n…и ещё {omitted}" if omitted else ""
+    text = header + "\n" + "\n".join(lines) + tail + footer
+    return text, included
+
+
+def discovery_alerts(alerter: Alerter, outcome: SendOutcome) -> None:
+    if outcome.status == "sent":
+        alerter.resolve("discovery")
+    else:
+        alerter.alert("discovery", f"еженедельный отчёт о новых местах, возможно, не дошёл ({outcome.description})")
 
 
 # --- run ---------------------------------------------------------------------
@@ -294,7 +326,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
                manual_result(corrections, config, now)]
-    record_venues(state, results, now)
+    record_venues(state, results, now, config.known_venue_ids)
     outcome = merge_results(state, results, config, corrections, now)
     prune(state, now)
     update_alerts(alerter, state, outcome, client, load.errors)
@@ -326,6 +358,13 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     if not _save_push(repo, state, deps, f"state {iso(now)}"):
         return 1
     pushed = state.to_dict()
+    # The discovery report's own bookkeeping (reported ids, last_report_date) was pushed above already,
+    # with no rollback on a failed send (unlike the digest mark below): the report is a small addition
+    # to the admin, not a public announcement, so re-sending it next run if it did not arrive is fine,
+    # and it must not depend on -- or be skipped by -- the digest branch below (its own rollback and
+    # possible early "push failed" return must not silently drop the report).
+    if discovery_msg:
+        discovery_alerts(alerter, to_admin(discovery_msg))
     if digest:
         chat = env["TELEGRAM_ADMIN_CHAT_ID"] if digest.to_admin else env["TELEGRAM_CHAT_ID"]
         sent = deps.send(env["TELEGRAM_BOT_TOKEN"], chat, digest.html, button=(BUTTON_TEXT, env["SITE_URL"]))
@@ -337,8 +376,6 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
         digest_alerts(alerter, sent)
         # the marks are settled now: rebuild so the rows just announced carry 🆕/⭐
         write_site_data(repo / SITE_DATA, build_site_data(state, config, now))
-    if discovery_msg:   # pushed above already, with the rest of this run's state
-        to_admin(discovery_msg)
     alert_outcome = alerter.flush(to_admin)
     # alert hashes changed after the last push: push them too
     if state.to_dict() != pushed and not _save_push(repo, state, deps, f"state {iso(now)}: предупреждения"):

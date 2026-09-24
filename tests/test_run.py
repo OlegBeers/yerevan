@@ -16,7 +16,7 @@ from taps.rules import MergeOutcome
 from taps.run import Deps, main, run, update_alerts
 from taps.sources.parma import fetch_parma as real_fetch_parma
 from taps.state import VenueRec, empty_state, load_state, save_state
-from taps.telegram import Alerter, SendOutcome, send_message
+from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import iso
 from tests.helpers import fixture_json, fixture_text
 
@@ -39,6 +39,11 @@ places:
     untappd_venue_id: 4640403
     sources: {buyam: {url: "https://buy.am/en/restaurants/dargett"}}
   - {id: craft-story, name: Craft Story, kind: bar, sources: {untappd_checkins: {slug: craft-story, venue_id: 12281551}}}
+  - id: closed-bar
+    name: Closed Bar
+    kind: bar
+    enabled: false
+    sources: {untappd_checkins: {slug: closed-bar, venue_id: 88888}}
   - {id: beer-city, name: Beer City, kind: shop, sources: {beercity: {}}}
   - {id: yerevan-city, name: Yerevan City, kind: shop, sources: {yerevan_city: {}}}
   - {id: parma, name: Parma, kind: shop, sources: {parma: {}}}
@@ -257,7 +262,7 @@ def test_weekly_discovery_report_lists_untracked_venues_with_enough_checkins(wor
 
     admin_sends = [s for s in world.sends if s["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]]
     discovery = next(s for s in admin_sends if "Новые места по чекинам" in s["text"])
-    assert "KER U SUS" in discovery["text"] and "3 чекинов" in discovery["text"]
+    assert "KER U SUS" in discovery["text"] and "3 чекина" in discovery["text"]
     assert "untappd.com/v/ker-u-sus/99999" in discovery["text"]
     assert "Too Few" not in discovery["text"]
     assert "Добавить в список" in discovery["text"]
@@ -294,6 +299,129 @@ def test_weekly_discovery_report_skips_a_venue_already_reported(world):
     assert world.run(MONDAY_MORNING) == 0
 
     assert not any("Новые места по чекинам" in s["text"] for s in world.sends)
+
+
+def test_disabled_place_venue_is_not_reported_as_a_new_place(world):
+    """I-2: a disabled place's venue counts as tracked/known and must never reach the discovery report."""
+    first_run(world)
+
+    def add_venue(state):
+        state.venues["88888"] = VenueRec(
+            name="Closed Bar", url="https://untappd.com/v/closed-bar/88888",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(5)])
+    world.edit_state(add_venue)
+    world.next_run()
+
+    assert world.run(MONDAY_MORNING) == 0
+
+    assert not any("Closed Bar" in s["text"] for s in world.sends)
+
+
+def test_prune_drops_untracked_venue_record_without_recent_checkins(world):
+    """I-1: worldwide venues seen once on a brewery page must not accumulate in state.venues forever."""
+    first_run(world)
+    world.edit_state(lambda s: s.venues.__setitem__(
+        "77777", VenueRec(name="Random Bar", url="u", checkins=[{"id": 1, "at": iso(NOW - timedelta(days=40))}])))
+    world.next_run()
+
+    assert world.run(NEXT_EVENING) == 0
+
+    assert "77777" not in world.state().venues
+
+
+def test_prune_keeps_a_disabled_known_place_venue_without_recent_checkins(world):
+    """I-1: a disabled place's own venue is kept (for its logo/verified) even through a quiet spell."""
+    first_run(world)
+    world.edit_state(lambda s: s.venues.__setitem__(
+        "88888", VenueRec(name="Closed Bar", url="u", checkins=[{"id": 1, "at": iso(NOW - timedelta(days=40))}])))
+    world.next_run()
+
+    assert world.run(NEXT_EVENING) == 0
+
+    assert "88888" in world.state().venues
+
+
+def test_discovery_report_pluralizes_checkins_correctly(world):
+    first_run(world)
+
+    def add_venues(state):
+        state.venues["1"] = VenueRec(
+            name="Four Checkins", url="https://untappd.com/v/four/1",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(4)])
+        state.venues["2"] = VenueRec(
+            name="Eleven Checkins", url="https://untappd.com/v/eleven/2",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(11)])
+    world.edit_state(add_venues)
+    world.next_run()
+
+    assert world.run(MONDAY_MORNING, no_digest=True) == 0
+
+    discovery = next(s for s in world.sends if "Новые места по чекинам" in s["text"])
+    assert "4 чекина" in discovery["text"]
+    assert "11 чекинов" in discovery["text"]
+
+
+def test_weekly_discovery_report_caps_at_20_venues_and_marks_only_those_reported(world):
+    first_run(world)
+
+    def add_many(state):
+        for i in range(25):
+            state.venues[str(90000 + i)] = VenueRec(
+                name=f"Venue {i:02d}", url=f"https://untappd.com/v/venue-{i:02d}/{90000 + i}",
+                checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for _ in range(3)])
+    world.edit_state(add_many)
+    world.next_run()
+
+    assert world.run(MONDAY_MORNING, no_digest=True) == 0
+
+    discovery = next(s for s in world.sends if "Новые места по чекинам" in s["text"])
+    lines = [line for line in discovery["text"].splitlines() if line.startswith("• ")]
+    assert len(lines) == 20
+    assert "…и ещё 5" in discovery["text"]
+    assert len(discovery["text"]) <= MAX_TEXT
+    assert len(world.state().discovery.reported) == 20
+
+
+def test_weekly_discovery_report_stays_under_telegram_text_limit_with_long_names(world):
+    first_run(world)
+
+    def add_many(state):
+        for i in range(20):
+            long_name = "Очень Длинное Название Заведения " * 6 + str(i)
+            state.venues[str(91000 + i)] = VenueRec(
+                name=long_name, url=f"https://untappd.com/v/venue-{i:02d}/{91000 + i}",
+                checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for _ in range(3)])
+    world.edit_state(add_many)
+    world.next_run()
+
+    assert world.run(MONDAY_MORNING, no_digest=True) == 0
+
+    discovery = next(s for s in world.sends if "Новые места по чекинам" in s["text"])
+    assert len(discovery["text"]) <= MAX_TEXT
+    lines = [line for line in discovery["text"].splitlines() if line.startswith("• ")]
+    assert len(lines) < 20
+    assert "…и ещё" in discovery["text"]
+
+
+@pytest.mark.parametrize("status, code", [("sent", 0), ("rejected", 1), ("unknown", 1)])
+def test_discovery_report_send_failure_alerts_admin(world, status, code):
+    """I-3: a discovery message that (maybe) never arrived alerts the admin and fails the job,
+    like a digest failure, but reported ids/last_report_date stay committed regardless (no rollback)."""
+    first_run(world)
+
+    def add_venue(state):
+        state.venues["99999"] = VenueRec(
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(3)])
+    world.edit_state(add_venue)
+    world.next_run(send=[SendOutcome("rejected", "Bad Request: chat not found"),
+                         SendOutcome(status, "Bad Request: chat not found")])
+
+    assert world.run(MONDAY_MORNING, no_digest=True) == code
+
+    assert len(world.sends) == 2
+    assert "отчёт о новых местах" in world.sends[1]["text"]
+    assert world.state().discovery.reported == [99999]
 
 
 def test_next_evening_new_beer_goes_to_admin_as_preview(world):
