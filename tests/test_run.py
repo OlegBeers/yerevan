@@ -15,7 +15,7 @@ from taps.model import SourceResult
 from taps.rules import MergeOutcome
 from taps.run import Deps, main, run, update_alerts
 from taps.sources.parma import fetch_parma as real_fetch_parma
-from taps.state import empty_state, load_state, save_state
+from taps.state import VenueRec, empty_state, load_state, save_state
 from taps.telegram import Alerter, SendOutcome, send_message
 from taps.timeutil import iso
 from tests.helpers import fixture_json, fixture_text
@@ -23,6 +23,7 @@ from tests.helpers import fixture_json, fixture_text
 CONFIG_FIXTURES = Path(__file__).parent / "fixtures" / "config"   # frozen: never the live hand-edited files
 NOW = datetime(2026, 9, 24, 14, 17, tzinfo=timezone.utc)       # Thu 18:17 in Yerevan
 NEXT_EVENING = NOW + timedelta(days=1)
+MONDAY_MORNING = datetime(2026, 9, 28, 5, 0, tzinfo=timezone.utc)   # Mon 09:00 in Yerevan
 ENV = {"TELEGRAM_BOT_TOKEN": "tok", "TELEGRAM_CHAT_ID": "-100chat", "TELEGRAM_ADMIN_CHAT_ID": "42",
        "SITE_URL": "https://example.github.io/yerevan-taps/"}
 
@@ -224,6 +225,75 @@ def test_first_run_is_silent_and_saves_state_and_site(world):
     assert data["generated_at"] == iso(NOW)
     assert [p["id"] for p in data["places"]][:2] == ["gargoyle", "beatles"]
     assert any(r["name"] == "Guinness Draught" for r in data["rows"])
+
+
+# --- v1.1: venue meta / discovery -----------------------------------------------------
+
+def test_venue_meta_recorded_from_own_venue_pages(world):
+    first_run(world)
+    state = world.state()
+    gargoyle = state.venues["12252462"]
+    assert (gargoyle.name, gargoyle.verified) == ("Gargoyle Bar", True)
+    assert gargoyle.logo and gargoyle.logo.startswith("https://")
+    assert state.venues["12281551"].name == "Craft Story"   # craft-story's own untappd_checkins page
+
+
+def test_weekly_discovery_report_lists_untracked_venues_with_enough_checkins(world):
+    first_run(world)
+
+    def add_venues(state):
+        state.venues["99999"] = VenueRec(
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999",
+            checkins=[{"id": 1, "at": iso(MONDAY_MORNING - timedelta(days=1))},
+                     {"id": 2, "at": iso(MONDAY_MORNING - timedelta(days=2))},
+                     {"id": 3, "at": iso(MONDAY_MORNING - timedelta(days=3))}])
+        state.venues["55555"] = VenueRec(   # below the 3-checkin threshold: not reported
+            name="Too Few", url="https://untappd.com/v/too-few/55555",
+            checkins=[{"id": 9, "at": iso(MONDAY_MORNING - timedelta(days=1))}])
+    world.edit_state(add_venues)
+    world.next_run()
+
+    assert world.run(MONDAY_MORNING) == 0
+
+    admin_sends = [s for s in world.sends if s["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]]
+    discovery = next(s for s in admin_sends if "Новые места по чекинам" in s["text"])
+    assert "KER U SUS" in discovery["text"] and "3 чекинов" in discovery["text"]
+    assert "untappd.com/v/ker-u-sus/99999" in discovery["text"]
+    assert "Too Few" not in discovery["text"]
+    assert "Добавить в список" in discovery["text"]
+    state = world.state()
+    assert state.discovery.reported == [99999]
+    assert state.discovery.last_report_date == "2026-09-28"
+    # the report was pushed before it was sent, like a digest
+    assert world.pushes[0]["state"]["discovery"]["reported"] == [99999]
+
+    # a second run the same week does not repeat it
+    world.next_run()
+    assert world.run(MONDAY_MORNING + timedelta(hours=1)) == 0
+    assert not any("Новые места по чекинам" in s["text"] for s in world.sends)
+
+
+def test_weekly_discovery_report_marks_the_week_checked_even_when_empty(world):
+    first_run(world)
+    assert world.run(MONDAY_MORNING) == 0
+    assert not any("Новые места по чекинам" in s["text"] for s in world.sends)
+    assert world.state().discovery.last_report_date == "2026-09-28"
+
+
+def test_weekly_discovery_report_skips_a_venue_already_reported(world):
+    first_run(world)
+    world.edit_state(lambda s: setattr(s.discovery, "reported", [99999]))
+
+    def add_venue(state):
+        state.venues["99999"] = VenueRec(
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(5)])
+    world.edit_state(add_venue)
+    world.next_run()
+
+    assert world.run(MONDAY_MORNING) == 0
+
+    assert not any("Новые места по чекинам" in s["text"] for s in world.sends)
 
 
 def test_next_evening_new_beer_goes_to_admin_as_preview(world):

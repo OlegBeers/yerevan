@@ -9,7 +9,7 @@ import os
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
@@ -29,9 +29,9 @@ from taps.sources.untappd_brewery import fetch_brewery_checkins, fetch_brewery_l
 from taps.sources.untappd_checkins import fetch_venue_checkins
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.yerevan_city import fetch_yerevan_city
-from taps.state import State, apply_aliases, load_state, prune, save_state
+from taps.state import VENUE_KEEP_DAYS, State, apply_aliases, load_state, prune, record_venues, save_state
 from taps.telegram import Alerter, SendOutcome, send_message
-from taps.timeutil import iso, parse_iso, utcnow, yerevan_date
+from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
 STATE_FILE = "state.json"
 FATAL_FILE = ".taps-fatal"   # dedup marker for fatal alerts when no state.json can be trusted; not committed
@@ -46,6 +46,8 @@ TRIP_RU = {
     "list_mass_new": "больше 5 новых сортов за раз",
 }
 CLOUDFLARE_ALERT = "Untappd показал проверку Cloudflare: сбор Untappd в этом прогоне остановлен, магазины работают"
+DISCOVERY_MIN_CHECKINS = 3   # v1.1: untracked venues below this are not worth mentioning
+DISCOVERY_HOUR = 9           # weekly report: first successful run on or after Monday 09:00 Yerevan
 
 
 @dataclass
@@ -176,6 +178,46 @@ def digest_alerts(alerter: Alerter, outcome: SendOutcome) -> None:
         alerter.alert("digest", f"сводка, возможно, не дошла ({outcome.description})")
 
 
+# --- v1.1: weekly admin report of untracked venues seen in check-ins ---------
+
+def _week_start(now: datetime) -> str:
+    local = to_yerevan(now).date()
+    return (local - timedelta(days=local.weekday())).isoformat()
+
+
+def _discovery_due(state: State, now: datetime) -> bool:
+    local = to_yerevan(now)
+    monday = local.date() - timedelta(days=local.weekday())
+    monday_9am = datetime(monday.year, monday.month, monday.day, DISCOVERY_HOUR, tzinfo=YEREVAN)
+    if local < monday_9am:
+        return False
+    return state.discovery.last_report_date != _week_start(now)
+
+
+def build_discovery_report(state: State, config: Config, now: datetime) -> tuple[str, list[int]] | None:
+    """Untracked venues (not an enabled place) with >= 3 check-ins in the last 30 days, not reported before."""
+    tracked = {p.venue_id for p in config.places.values() if p.venue_id is not None}
+    reported = set(state.discovery.reported)
+    candidates = []
+    for vid_str, rec in state.venues.items():
+        vid = int(vid_str)
+        if vid in tracked or vid in reported:
+            continue
+        recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
+        if len(recent) >= DISCOVERY_MIN_CHECKINS:
+            candidates.append((vid, rec, recent))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda c: (-len(c[2]), c[1].name))
+    lines = []
+    for vid, rec, recent in candidates:
+        last = to_yerevan(parse_iso(max(c["at"] for c in recent))).strftime("%d.%m")
+        lines.append(f"• {html.escape(rec.name)} — {len(recent)} чекинов, последний {last} — "
+                     f"{html.escape(rec.url)}")
+    text = "🍺 Новые места по чекинам (за 30 дней):\n" + "\n".join(lines) + "\nДобавить в список — напиши Claude."
+    return text, [vid for vid, _, _ in candidates]
+
+
 # --- run ---------------------------------------------------------------------
 
 def _save_push(repo: Path, state: State, deps: Deps, message: str) -> bool:
@@ -252,6 +294,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
                manual_result(corrections, config, now)]
+    record_venues(state, results, now)
     outcome = merge_results(state, results, config, corrections, now)
     prune(state, now)
     update_alerts(alerter, state, outcome, client, load.errors)
@@ -270,6 +313,14 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
         print(json.dumps(site_data, ensure_ascii=False))
         return 0
 
+    discovery_msg = None
+    if _discovery_due(state, now):
+        built = build_discovery_report(state, config, now)
+        if built is not None:
+            discovery_msg, venue_ids = built
+            state.discovery.reported.extend(venue_ids)
+        state.discovery.last_report_date = _week_start(now)
+
     # Spec §7: the sent mark is pushed before sending, so a failed push sends nothing.
     mark = mark_sent(state, digest, now) if digest else None
     if not _save_push(repo, state, deps, f"state {iso(now)}"):
@@ -286,6 +337,8 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
         digest_alerts(alerter, sent)
         # the marks are settled now: rebuild so the rows just announced carry 🆕/⭐
         write_site_data(repo / SITE_DATA, build_site_data(state, config, now))
+    if discovery_msg:   # pushed above already, with the rest of this run's state
+        to_admin(discovery_msg)
     alert_outcome = alerter.flush(to_admin)
     # alert hashes changed after the last push: push them too
     if state.to_dict() != pushed and not _save_push(repo, state, deps, f"state {iso(now)}: предупреждения"):
