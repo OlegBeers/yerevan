@@ -71,9 +71,10 @@
     background: var(--surface); color: var(--text);
   }
   .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-  @media (max-width: 400px) {
-    .tabs { overflow-x: auto; }
-    .tab { white-space: nowrap; font-size: .84rem; padding: 9px 8px; }
+  @media (max-width: 560px) {
+    .tabs { overflow-x: auto; gap: 6px; }
+    .tab { white-space: nowrap; font-size: .8rem; padding: 9px 8px; }
+    .tab .ico { margin-right: .25em; }
   }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 16px; }
   #search, select {
@@ -155,9 +156,10 @@
       <p class="sub">Крафтовое пиво в барах и магазинах Еревана · <span id="updated">загружаем…</span></p>
     </header>
     <div class="tabs" role="group" aria-label="Раздел">
-      <button type="button" class="tab" id="tab-bars" data-section="bars" aria-pressed="true"><span class="ico" aria-hidden="true">🍻</span>Бары</button>
+      <button type="button" class="tab" id="tab-all" data-section="all" aria-pressed="true"><span class="ico" aria-hidden="true">🔎</span>Всё пиво</button>
+      <button type="button" class="tab" id="tab-bars" data-section="bars" aria-pressed="false"><span class="ico" aria-hidden="true">🍻</span>Бары</button>
       <button type="button" class="tab" id="tab-shops" data-section="shops" aria-pressed="false"><span class="ico" aria-hidden="true">🛒</span>Магазины</button>
-      <button type="button" class="tab" id="tab-venues" data-section="venues" aria-pressed="false"><span class="ico" aria-hidden="true">📍</span>Все места</button>
+      <button type="button" class="tab" id="tab-venues" data-section="venues" aria-pressed="false"><span class="ico" aria-hidden="true">📍</span>Где пьют</button>
     </div>
     <div id="controls" class="controls">
       <label for="search" class="sr-only">Поиск по названию, стилю и пивоварне</label>
@@ -176,7 +178,7 @@
     <p id="count" class="count" aria-live="polite"></p>
     <div id="rows"></div>
     <section id="venues-section" hidden>
-      <p class="intro">Где за последние 60 дней отмечали пиво местных пивоварен. Если место стоит добавить — напишите Олегу.</p>
+      <p class="intro">Все места Еревана, где за последние 60 дней отмечали пиво местных пивоварен, в том числе те, которые мы пока не отслеживаем. Метка «в списке» значит, что место уже есть среди баров или магазинов. Знаете, что стоит добавить, — напишите Олегу.</p>
       <ul id="venues" class="cards"></ul>
     </section>
   </main>
@@ -211,7 +213,7 @@ const STALE_HOURS = 36;
 const CONTAINER_RU = { can: "банка", bottle: "бутылка", keg: "кег", draft: "разлив" };
 const SERVING_RU = { Draft: "разлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
 const wide = window.matchMedia("(min-width: 700px)");
-const ui = { data: null, places: new Map(), section: "bars", place: null };
+const ui = { data: null, places: new Map(), section: "all", place: null };
 const $ = (id) => document.getElementById(id);
 
 // Date parts in Yerevan time: {ymd: "2026-09-23", dm: "23.09", hm: "14:17"}.
@@ -341,10 +343,13 @@ function cmpDesc(a, b) {  // descending, empty values last
   if (a == null || b == null) return (a == null) - (b == null);
   return a < b ? 1 : a > b ? -1 : 0;
 }
+function inSection(r) {   // the "all" tab searches bars and shops together
+  return ui.section === "all" || r.section === ui.section;
+}
 function filteredRows() {
   const q = $("search").value.trim().toLowerCase();
   const onlyNew = $("only-new").checked;
-  return ui.data.rows.filter((r) => r.section === ui.section
+  return ui.data.rows.filter((r) => inSection(r)
     && (!onlyNew || r.new)
     && (!ui.place || r.place_id === ui.place)
     && (!q || [r.name, r.style, r.brewery].some((s) => s && String(s).toLowerCase().includes(q))));
@@ -442,7 +447,7 @@ function cards(groups) {
 function render() {
   if (!ui.data) return;
   const groups = visibleGroups();
-  const total = groupBeers(ui.data.rows.filter((r) => r.section === ui.section)).length;
+  const total = groupBeers(ui.data.rows.filter(inSection)).length;
   $("count").textContent = groups.length === total ? `Позиций: ${total}` : `Показано ${groups.length} из ${total}`;
   if (!groups.length) {
     $("rows").replaceChildren(el("p", { class: "empty" }, total ? "Ничего не нашлось — попробуйте другой запрос или фильтр." : "Пока пусто."));
@@ -485,8 +490,8 @@ function renderPlaces() {
     return button;
   };
   $("places").replaceChildren(
-    chip(null, el("b", null, "Все места")),
-    ...ui.data.places.filter((p) => p.section === ui.section).map((p) => {
+    chip(null, el("b", null, "Все")),
+    ...ui.data.places.filter((p) => ui.section === "all" || p.section === ui.section).map((p) => {
       // compact chip: one line; status goes to the tooltip, only a warning stays visible
       const status = placeStatus(p, now);
       const warn = status.some((line) => line.warn);

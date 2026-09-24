@@ -48,15 +48,22 @@ def test_required_elements_exist():
         assert soup.find(id=element_id) is not None, element_id
 
 
-def test_tabs_are_toggle_buttons_with_bars_selected():
+def test_tabs_are_toggle_buttons_with_all_beer_selected():
     soup = _soup()
-    bars, shops, venues = soup.find(id="tab-bars"), soup.find(id="tab-shops"), soup.find(id="tab-venues")
-    assert bars.name == shops.name == venues.name == "button"
+    everything, bars, shops, venues = (soup.find(id=i) for i in ("tab-all", "tab-bars", "tab-shops", "tab-venues"))
+    assert everything.name == bars.name == shops.name == venues.name == "button"
+    assert "🔎" in everything.get_text() and "Всё пиво" in everything.get_text()
     assert "🍻" in bars.get_text() and "Бары" in bars.get_text()
     assert "🛒" in shops.get_text() and "Магазины" in shops.get_text()
-    assert "📍" in venues.get_text() and "Все места" in venues.get_text()
-    assert (bars["data-section"], shops["data-section"], venues["data-section"]) == ("bars", "shops", "venues")
-    assert (bars["aria-pressed"], shops["aria-pressed"], venues["aria-pressed"]) == ("true", "false", "false")
+    assert "📍" in venues.get_text() and "Где пьют" in venues.get_text()
+    assert [t["data-section"] for t in (everything, bars, shops, venues)] == ["all", "bars", "shops", "venues"]
+    assert [t["aria-pressed"] for t in (everything, bars, shops, venues)] == ["true", "false", "false", "false"]
+
+
+def test_all_tab_searches_bars_and_shops_together():
+    js = _js(_soup())
+    assert 'section: "all"' in js
+    assert re.search(r'function inSection\(r\)\s*\{[^}]*ui\.section === "all"', js)
 
 
 def test_venues_section_starts_hidden():
@@ -175,9 +182,9 @@ def test_places_scroll_horizontally_on_narrow_screens():
 
 
 def test_tabs_dont_wrap_on_narrow_screens():
-    """The three tab labels (e.g. "Магазины") must not wrap letter-by-letter at 360-375px."""
+    """The four tab labels (e.g. "Магазины") must not wrap letter-by-letter at 360-375px."""
     css = _css(_soup())
-    idx = css.find("max-width: 400px")
+    idx = css.find("max-width: 560px")
     assert idx != -1, "no narrow-screen media query found for .tab"
     block = css[idx:idx + 200]
     assert "white-space: nowrap" in block
