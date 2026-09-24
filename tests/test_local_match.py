@@ -1,0 +1,113 @@
+from taps.sources.local_match import KnownBeer, clean_query, clean_text, local_match
+
+
+def test_clean_text_strips_colour_suffix_case_preserved():
+    assert clean_text("379 Dunkel dark") == "379 Dunkel"
+
+
+def test_clean_text_strips_accented_generic_brewery_words():
+    assert clean_text("Bières de Chimay") == "Chimay"
+
+
+def test_clean_text_strips_glass_bottle_marker():
+    assert clean_text('Beer "Dargett" Apricot Ale g/b 0.33l') == 'Beer "Dargett" Apricot Ale'
+
+
+def test_clean_text_strips_abv_percent():
+    assert clean_text("Dargett Wheat 5.2%") == "Dargett Wheat"
+
+
+def test_clean_text_strips_volume_ml_and_cyrillic_litre():
+    assert clean_text('Beer «Bavik Super pils» 0,33л') == 'Beer «Bavik Super pils»'
+    assert clean_text("379 Dunkel 0.33l") == "379 Dunkel"
+
+
+def test_clean_text_preserves_meaningful_words():
+    """Real style/variant words must survive: "dunkel" (German for dark, but the beer's own name),
+    "cherry" (a flavour), "blue" (Chimay's own colour-coded product line) are not noise."""
+    assert clean_text("Dunkel Cherry Blue") == "Dunkel Cherry Blue"
+
+
+# --- clean_query: the same noise-cleaning applied to the Untappd search query ------------
+
+def test_clean_query_joins_brand_and_name_and_cleans_noise():
+    assert clean_query("379", "Dunkel dark") == "379 Dunkel"
+
+
+def test_clean_query_without_brand_uses_name_alone():
+    assert clean_query(None, "Dunkel dark") == "Dunkel"
+
+
+# --- local_match(): the three worked examples from the beer-identity task ----------------
+
+APRICOT = KnownBeer(untappd_id=1674726, name="Apricot Ale (Prunus Armeniaca)", brewery="Dargett Brewery")
+BAVIK_PILS = KnownBeer(untappd_id=17265, name="Bavik Super Pils", brewery="Brouwerij De Brabandere")
+BAVIK_ZERO = KnownBeer(untappd_id=6569311, name="Bavik 0.0%", brewery="Brouwerij De Brabandere")
+CHIMAY_BLUE = KnownBeer(untappd_id=34039, name="Chimay Grande Réserve (Blue)", brewery="Bières de Chimay")
+CHIMAY_RED = KnownBeer(untappd_id=4072, name="Chimay Première (Red)", brewery="Bières de Chimay")
+CHIMAY_WHITE = KnownBeer(untappd_id=10049, name="Chimay Cinq Cents (White)", brewery="Bières de Chimay")
+CHIMAY_GOLD = KnownBeer(untappd_id=4702, name="Chimay Dorée (Gold)", brewery="Bières de Chimay")
+
+
+def test_local_match_finds_apricot_ale_by_brewery_and_name_overlap():
+    """beer-city/yerevan-city/buyam all call it "Dargett"/"Apricot Ale"; Untappd (via a bar's own
+    menu) has it as "Dargett Brewery"/"Apricot Ale (Prunus Armeniaca)"."""
+    found = local_match("Dargett", "Dargett apricot ale", [APRICOT])
+    assert found is APRICOT
+
+
+def test_local_match_finds_bavik_via_untappd_name_when_brewery_differs():
+    """The shop only knows the brand "Bavik"; Untappd's brewery is "Brouwerij De Brabandere" (no
+    overlap), but the beer's own name "Bavik Super Pils" contains it."""
+    found = local_match("Bavik", "Bavik Super pils", [BAVIK_PILS, BAVIK_ZERO])
+    assert found is BAVIK_PILS
+
+
+def test_local_match_rejects_chimay_as_too_different():
+    """"Chimay peres trappistes blue" (beer-city) is too different from any of Chimay's own Untappd
+    names for local matching -- brewery matches every one of the four, but "peres"/"trappistes"
+    aren't in any of their names, so none passes and search is left to try instead."""
+    found = local_match("Chimay", "Chimay peres trappistes blue",
+                        [CHIMAY_BLUE, CHIMAY_RED, CHIMAY_WHITE, CHIMAY_GOLD])
+    assert found is None
+
+
+# --- local_match(): negative/edge cases ---------------------------------------------------
+
+def test_local_match_ambiguous_colour_suffix_does_not_pick_either_beer():
+    """"Dargett Pilsner light" strips to "Dargett Pilsner", but if Dargett has BOTH a "Pilsner Dark"
+    and a "Pilsner Light" as distinct, already-known Untappd beers, we cannot tell which one the shop
+    meant (was "light" the shop's own bottle-colour suffix, or the beer's real name?) -- ambiguous,
+    so neither is picked, unlike a false merge onto the wrong one."""
+    pilsner_dark = KnownBeer(untappd_id=100, name="Pilsner Dark", brewery="Dargett Brewery")
+    pilsner_light = KnownBeer(untappd_id=200, name="Pilsner Light", brewery="Dargett Brewery")
+    found = local_match("Dargett", "Dargett Pilsner light", [pilsner_dark, pilsner_light])
+    assert found is None
+
+
+def test_local_match_prefers_exact_name_over_a_superset_when_several_pass():
+    """A plain, unsuffixed shop title ("Dargett Pilsner") that happens to also be a token subset of
+    a differently-named sibling beer ("Pilsner Light") still resolves to the exact beer it named."""
+    pilsner = KnownBeer(untappd_id=100, name="Pilsner", brewery="Dargett Brewery")
+    pilsner_light = KnownBeer(untappd_id=200, name="Pilsner Light", brewery="Dargett Brewery")
+    found = local_match("Dargett", "Dargett Pilsner", [pilsner, pilsner_light])
+    assert found is pilsner
+
+
+def test_local_match_falls_back_to_name_first_token_when_brewery_is_non_latin():
+    """Parma's own "brewery" field is often the importer's Armenian legal-entity name, not the real
+    brewery -- when it has no Latin letters at all, fall back to the shop name's own first word."""
+    found = local_match("Բիթեր Ռիվեր ՍՊԸ", "Dargett Apricot Ale light", [APRICOT])
+    assert found is APRICOT
+
+
+def test_local_match_does_not_fall_back_when_brewery_is_latin_but_wrong():
+    """Parma's "brewery" field is sometimes a real (Latin) importer/distributor name, unrelated to
+    the actual brewery -- that must stay a miss, not trigger the non-latin fallback."""
+    found = local_match("Haigen LLC", "379 American Wheat Ale light",
+                        [KnownBeer(untappd_id=1, name="379 American Wheat Ale", brewery="379 Torch & Brew")])
+    assert found is None
+
+
+def test_local_match_with_no_known_beers_is_none():
+    assert local_match("Dargett", "Apricot Ale", []) is None
