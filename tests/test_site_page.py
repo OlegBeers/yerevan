@@ -6,7 +6,8 @@ from bs4 import BeautifulSoup
 PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
-              "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by")
+              "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by",
+              "beer_logo", "shop_url")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
