@@ -4,8 +4,10 @@ from bs4 import BeautifulSoup
 
 from taps.config import Config, Place, Settings
 from taps.fetch import FetchError
+from taps.model import VenueCheckin
 from taps.sources.untappd_checkins import (
-    Checkin, checkins_to_sightings, fetch_venue_checkins, parse_checkins,
+    Checkin, checkins_to_sightings, checkins_to_venue_checkins, fetch_venue_checkins, parse_checkins,
+    parse_venue_meta,
 )
 from tests.helpers import fixture_text
 
@@ -67,6 +69,7 @@ def test_craft_story_checkin_fields():
         checkin_id=1429774602, beer_id=5698328, beer_name="Black Is Beautiful Volume 2",
         brewery="Omnipollo", venue_id=12281551, venue_name="Craft Story", serving="Can",
         at_home=False, created_at=datetime(2024, 10, 31, 15, 50, 9, tzinfo=timezone.utc),
+        venue_url="https://untappd.com/v/craft-story/12281551",
     )
 
 
@@ -173,6 +176,12 @@ def test_fetch_ok():
     assert len(result.sightings) == 20
     assert {s.place_id for s in result.sightings} == {"craft-story"}
     assert result.sightings[0].checkin_id == 1429774602
+    assert result.venue_meta == {
+        "venue_id": 12281551, "name": "Craft-Story", "url": CRAFT_STORY_URL,
+        "logo": "https://ss3.4sqi.net/img/categories_v2/nightlife/pub_bg_512.png", "verified": False,
+    }
+    assert len(result.venue_checkins) == 20
+    assert all(vc.venue_id == 12281551 for vc in result.venue_checkins)
 
 
 def test_fetch_error():
@@ -186,6 +195,38 @@ def test_fetch_empty_page():
     result = fetch_venue_checkins(FakeClient("<html><body></body></html>"), CRAFT_STORY, CONFIG, NOW, {})
     assert (result.key, result.source, result.ok, result.error, result.sightings) == (
         "untappd_checkins:craft-story", "untappd_checkins", False, "empty", [])
+    assert result.venue_meta is None and result.venue_checkins == []
+
+
+def test_checkins_to_venue_checkins():
+    checkins = parse_checkins(fixture_text("untappd/craftstory_checkins.html"))
+    checkins += parse_checkins(AT_HOME_HTML)   # at-home checkin must be dropped
+    checkins += [Checkin(1, 2, "X", "Y", None, None, None, False, NOW)]   # no venue must be dropped
+    vcs = checkins_to_venue_checkins(checkins)
+    assert len(vcs) == 20
+    assert all(isinstance(vc, VenueCheckin) for vc in vcs)
+    vc = next(vc for vc in vcs if vc.checkin_id == 1429774602)
+    assert (vc.venue_id, vc.venue_name, vc.venue_url, vc.at) == (
+        12281551, "Craft Story", "https://untappd.com/v/craft-story/12281551",
+        datetime(2024, 10, 31, 15, 50, 9, tzinfo=timezone.utc))
+
+
+def test_parse_venue_meta_verified_with_photo_logo():
+    meta = parse_venue_meta(fixture_text("untappd/vertigo_checkins.html"))
+    assert meta == {
+        "logo": "https://assets.untappd.com/venuelogos/venue_11856429_fb656e75_bg_176.png?v=1",
+        "verified": True,
+    }
+
+
+def test_parse_venue_meta_unverified():
+    meta = parse_venue_meta(fixture_text("untappd/craftstory_checkins.html"))
+    assert meta["verified"] is False
+    assert meta["logo"] == "https://ss3.4sqi.net/img/categories_v2/nightlife/pub_bg_512.png"
+
+
+def test_parse_venue_meta_missing_header_is_none():
+    assert parse_venue_meta("<html><body>Nothing</body></html>") is None
 
 
 def test_fetch_other_venue_is_bad_response():

@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup, Tag
 
 from taps.config import Config, Place
 from taps.fetch import FetchError, UntappdClient
-from taps.model import Sighting, SourceResult, u_key
+from taps.model import Sighting, SourceResult, VenueCheckin, u_key
 
 BEER_HREF_RE = re.compile(r"^/b/[^/]+/(\d+)/?$")
 VENUE_HREF_RE = re.compile(r"^/v/[^/]+/(\d+)/?$")
@@ -27,6 +27,7 @@ class Checkin:
     serving: str | None
     at_home: bool
     created_at: datetime
+    venue_url: str | None = None
 
 
 def _text(tag: Tag | None) -> str:
@@ -63,7 +64,7 @@ def _parse_item(item: Tag) -> Checkin | None:
             if m := BEER_HREF_RE.match(a["href"]):
                 beer = (int(m.group(1)), _text(a))
         elif m := VENUE_HREF_RE.match(a["href"]):
-            venue = (int(m.group(1)), _text(a))
+            venue = (int(m.group(1)), _text(a), a["href"])
         elif brewery is None:
             brewery = _text(a)
     if beer is None:
@@ -79,6 +80,7 @@ def _parse_item(item: Tag) -> Checkin | None:
         serving=serving,
         at_home=venue is not None and AT_HOME in venue[1].lower(),
         created_at=created_at,
+        venue_url=f"https://untappd.com{venue[2]}" if venue else None,
     )
 
 
@@ -97,6 +99,26 @@ def parse_checkins(html: str) -> list[Checkin]:
             seen.add(cid)
             out.append(checkin)
     return out
+
+
+def checkins_to_venue_checkins(checkins: list[Checkin]) -> list[VenueCheckin]:
+    """Every venue seen in check-ins (v1.1 discovery), tracked or not; "Untappd at Home" is skipped."""
+    return [
+        VenueCheckin(venue_id=c.venue_id, venue_name=c.venue_name, venue_url=c.venue_url,
+                    checkin_id=c.checkin_id, at=c.created_at)
+        for c in checkins if c.venue_id is not None and not c.at_home
+    ]
+
+
+def parse_venue_meta(html: str) -> dict | None:
+    """logo and the Untappd "Verified" badge from a venue page's own header; None if the header is missing."""
+    soup = BeautifulSoup(html, "html.parser")
+    logo_div = soup.select_one("div.venue-header div.logo")
+    if logo_div is None:
+        return None
+    img = logo_div.select_one("img[src]")
+    verified = logo_div.find("span", string="Verified") is not None
+    return {"logo": img["src"] if img else None, "verified": verified}
 
 
 def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, now: datetime,
@@ -122,10 +144,11 @@ def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, 
 def fetch_venue_checkins(client: UntappdClient, place: Place, config: Config, now: datetime,
                          brewery_aliases: Mapping[str, str]) -> SourceResult:
     params = place.sources["untappd_checkins"]
+    url = f"https://untappd.com/v/{params['slug']}/{params['venue_id']}"
     result = SourceResult(key=f"untappd_checkins:{place.id}", source="untappd_checkins", ok=False,
                           place_id=place.id)
     try:
-        html = client.get(f"https://untappd.com/v/{params['slug']}/{params['venue_id']}")
+        html = client.get(url)
     except FetchError as e:
         result.error = e.kind
         return result
@@ -137,5 +160,9 @@ def fetch_venue_checkins(client: UntappdClient, place: Place, config: Config, no
         result.error = "bad_response"   # e.g. Untappd merged the venue and redirected to a new id
         return result
     result.sightings = checkins_to_sightings(checkins, config, "untappd_checkins", now, brewery_aliases)
+    result.venue_checkins = checkins_to_venue_checkins(checkins)
+    meta = parse_venue_meta(html)
+    if meta is not None:
+        result.venue_meta = {"venue_id": params["venue_id"], "name": place.name, "url": url, **meta}
     result.ok = True
     return result
