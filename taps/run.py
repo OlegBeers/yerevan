@@ -16,7 +16,7 @@ from typing import Callable, Mapping, Sequence
 from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
 from taps.digest import build_digest, drop_stale_events, is_due, mark_sent, rollback
-from taps.fetch import Http, PageFetcher, UntappdClient, playwright_fetcher, untappd_due
+from taps.fetch import FetchError, Http, PageFetcher, UntappdClient, playwright_fetcher, untappd_due
 from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome, merge_results
@@ -26,7 +26,9 @@ from taps.sources.buyam import fetch_buyam
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
 from taps.sources.untappd_brewery import fetch_brewery_checkins, fetch_brewery_list
-from taps.sources.untappd_checkins import fetch_venue_checkins
+from taps.sources.untappd_checkins import (
+    fetch_venue_checkins, is_armenia_location, parse_venue_location, parse_venue_meta,
+)
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.yerevan_city import fetch_yerevan_city
 from taps.state import VENUE_KEEP_DAYS, State, apply_aliases, load_state, prune, record_venues, save_state
@@ -49,6 +51,9 @@ CLOUDFLARE_ALERT = "Untappd показал проверку Cloudflare: сбор
 DISCOVERY_MIN_CHECKINS = 3   # v1.1: untracked venues below this are not worth mentioning
 DISCOVERY_HOUR = 9           # weekly report: first successful run on or after Monday 09:00 Yerevan
 DISCOVERY_MAX_VENUES = 20    # cap on lines in the weekly report, besides the MAX_TEXT length cap below
+LOCATION_CANDIDATES_PER_RUN = 3   # v1.1 city check (§4): at most this many untracked venue pages per run
+LOCATION_MIN_CHECKINS = 2         # below this, not worth spending a page on
+LOCATION_RECHECK_DAYS = 90        # a failed/unknown check is retried after this many days
 
 
 @dataclass
@@ -74,7 +79,8 @@ def _guard(key: str, place_id: str | None, fetch: Callable[[], SourceResult]) ->
 
 def collect_untappd(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
                     alerter: Alerter) -> tuple[list[SourceResult], UntappdClient | None]:
-    """Menus -> brewery check-ins -> venue check-ins -> 1-2 brewery lists; at most once per 20 h."""
+    """Menus -> brewery check-ins -> venue check-ins -> 1-2 brewery lists -> city check for a few
+    discovered venues (v1.1, §4); at most once per 20 h."""
     if not untappd_due(state.untappd, now):
         return [], None
     ba = corrections.brewery_aliases
@@ -103,6 +109,7 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
         client = UntappdClient(state.untappd, config.settings.untappd_daily_pages, now, fetch_page, sleep=deps.sleep)
         # once blocked, the sources themselves return error "blocked" without spending pages
         results = [_guard(key, place_id, lambda: job(client)) for key, place_id, job in jobs]
+        discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
     finally:
         close()
     if client.responded:
@@ -135,6 +142,47 @@ def collect_shops(state: State, config: Config, corrections: Corrections, now: d
     }
     return [_guard(f"{name}:{p.id}", p.id, lambda: fetch(p))
             for name, fetch in fetchers.items() for p in config.places.values() if name in p.sources]
+
+
+# --- v1.1: city check for discovered venues (§4) ------------------------------
+
+def _location_candidates(state: State, config: Config, now: datetime) -> list:
+    """Untracked venues with >= LOCATION_MIN_CHECKINS check-ins in the last 30 days and no known
+    location yet -- never checked, or checked long enough ago to deserve a retry (a location once
+    known, Armenian or not, is never rechecked). Most check-ins first, capped per run."""
+    due = []
+    for vid_str, rec in state.venues.items():
+        if int(vid_str) in config.known_venue_ids or rec.city is not None:
+            continue
+        checked = rec.location_checked_at
+        if checked is not None and age_days(parse_iso(checked), now) <= LOCATION_RECHECK_DAYS:
+            continue
+        recent = len([c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS])
+        if recent >= LOCATION_MIN_CHECKINS:
+            due.append((recent, rec))
+    due.sort(key=lambda t: -t[0])
+    return [rec for _, rec in due[:LOCATION_CANDIDATES_PER_RUN]]
+
+
+def discover_venue_locations(state: State, config: Config, client: UntappdClient, now: datetime) -> None:
+    """Fetch up to LOCATION_CANDIDATES_PER_RUN untracked venue pages to learn their city/country, so a
+    foreign venue -- seen worldwide on an Armenian brewery's check-in page -- can be excluded from the
+    weekly report and the site's "Все места" tab. Any fetch failure (network, Cloudflare, out of
+    budget) stops the whole step for this run without marking the venue checked, so it is retried next
+    run; a page that loads but carries no parseable location is marked checked and only retried after
+    LOCATION_RECHECK_DAYS."""
+    for rec in _location_candidates(state, config, now):
+        try:
+            html = client.get(rec.url)
+        except FetchError:
+            break
+        loc = parse_venue_location(html)
+        rec.city = loc["locality"] if loc else None
+        rec.country = "Armenia" if is_armenia_location(loc) else (loc["country"] if loc else None)
+        rec.location_checked_at = iso(now)
+        meta = parse_venue_meta(html)
+        if meta is not None:
+            rec.logo, rec.verified = meta["logo"], meta["verified"]
 
 
 # --- alerts ------------------------------------------------------------------
@@ -216,7 +264,7 @@ def build_discovery_report(state: State, config: Config, now: datetime) -> tuple
     candidates = []
     for vid_str, rec in state.venues.items():
         vid = int(vid_str)
-        if vid in config.known_venue_ids or vid in reported:
+        if vid in config.known_venue_ids or vid in reported or rec.country != "Armenia":
             continue
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if len(recent) >= DISCOVERY_MIN_CHECKINS:

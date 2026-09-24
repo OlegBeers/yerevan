@@ -42,14 +42,18 @@ def _place(place: Place, state: State, now: datetime) -> dict:
 
 
 def _venues(state: State, config: Config, now: datetime) -> list[dict]:
-    """v1.1 "Все места" tab: every venue seen in check-ins with at least one in the last 30 days."""
+    """v1.1 "Все места" tab: every venue seen in check-ins with at least one in the last 30 days.
+    A place not in places.yaml is shown only once its location is known to be in Armenia (city check,
+    §4): a foreign or not-yet-checked venue surfacing on an Armenian brewery's page stays hidden."""
     tracked = {p.venue_id: p.id for p in config.places.values() if p.venue_id is not None}
     out = []
     for vid_str, rec in state.venues.items():
+        vid = int(vid_str)
+        if vid not in tracked and rec.country != "Armenia":
+            continue
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if not recent:
             continue
-        vid = int(vid_str)
         out.append({
             "venue_id": vid, "name": rec.name, "url": rec.url, "logo": rec.logo, "verified": rec.verified,
             "checkins_30d": len(recent), "last_checkin": max(c["at"] for c in recent),

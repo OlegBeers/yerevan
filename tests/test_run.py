@@ -74,6 +74,16 @@ UNTAPPD_PAGES = {
 WITH_EXTRA_BEER = {**UNTAPPD_PAGES, BEATLES: BEATLES_HTML.replace(FIRST_LI, EXTRA_LI + FIRST_LI, 1)}
 CHALLENGE = HttpResponse(403, {"cf-mitigated": "challenge", "server": "cloudflare"},
                          fixture_text("untappd/cloudflare_challenge.html"))
+CLOUDFLARE_BODY = fixture_text("untappd/cloudflare_challenge.html")   # a 200 page whose body is the challenge
+
+# v1.1 city check (§4): a foreign venue's page, JSON-LD only (no venue-header: logo/verified stay unset)
+FOREIGN_VENUE_HTML = """
+<script type="application/ld+json">
+{"@context":"http:\\/\\/schema.org\\/","@type":"Location","name":"Old Tbilisi Brewery",
+ "address":{"@type":"PostalAddress","streetAddress":"1 Rustaveli Ave","addressLocality":"Tbilisi",
+ "addressCountry":"Georgia"}}
+</script>
+"""
 
 
 class FakeUntappd:
@@ -248,7 +258,7 @@ def test_weekly_discovery_report_lists_untracked_venues_with_enough_checkins(wor
 
     def add_venues(state):
         state.venues["99999"] = VenueRec(
-            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999",
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999", country="Armenia",
             checkins=[{"id": 1, "at": iso(MONDAY_MORNING - timedelta(days=1))},
                      {"id": 2, "at": iso(MONDAY_MORNING - timedelta(days=2))},
                      {"id": 3, "at": iso(MONDAY_MORNING - timedelta(days=3))}])
@@ -341,15 +351,118 @@ def test_prune_keeps_a_disabled_known_place_venue_without_recent_checkins(world)
     assert "88888" in world.state().venues
 
 
+# --- v1.1: city check for discovered venues (§4) ------------------------------------
+
+def test_city_check_learns_an_armenian_venues_location_and_never_rechecks_it(world):
+    first_run(world)
+
+    def add_venue(state):
+        state.venues["70001"] = VenueRec(
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/70001",
+            checkins=[{"id": i, "at": iso(NEXT_EVENING - timedelta(days=1))} for i in range(2)])
+    world.edit_state(add_venue)
+    pages = {**UNTAPPD_PAGES, "https://untappd.com/v/ker-u-sus/70001": fixture_text("untappd/vertigo_checkins.html")}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(NEXT_EVENING) == 0
+
+    rec = world.state().venues["70001"]
+    assert rec.country == "Armenia" and rec.city and rec.location_checked_at == iso(NEXT_EVENING)
+    assert rec.logo and rec.verified is True   # vertigo_checkins.html's own venue-header, read along the way
+
+    # a second run, well past LOCATION_RECHECK_DAYS, must not fetch it again: the location is known
+    world.next_run(untappd=FakeUntappd(pages))
+    later = NEXT_EVENING + timedelta(days=200)
+    assert world.run(later) == 0
+    assert "https://untappd.com/v/ker-u-sus/70001" not in world.untappd.urls
+
+
+def test_city_check_marks_a_foreign_venue_and_excludes_it_from_report_and_site(world):
+    first_run(world)
+
+    def add_venue(state):
+        state.venues["54321"] = VenueRec(
+            name="Old Tbilisi Brewery", url="https://untappd.com/v/old-tbilisi/54321",
+            checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(5)])
+    world.edit_state(add_venue)
+    pages = {**UNTAPPD_PAGES, "https://untappd.com/v/old-tbilisi/54321": FOREIGN_VENUE_HTML}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(MONDAY_MORNING, no_digest=True) == 0
+
+    state = world.state()
+    assert state.venues["54321"].country == "Georgia" and state.venues["54321"].city == "Tbilisi"
+    assert not any("Old Tbilisi" in s["text"] for s in world.sends)
+    data = json.loads((world.repo / "site" / "data.json").read_text(encoding="utf-8"))
+    assert not any(v["name"] == "Old Tbilisi Brewery" for v in data["venues"])
+
+
+def test_city_check_picks_up_to_3_untracked_venues_most_checkins_first(world):
+    first_run(world)
+    counts = [5, 4, 3, 2, 1]   # only the top 3 by count qualify as candidates and fit the per-run cap
+
+    def add_venues(state):
+        for i, n in enumerate(counts):
+            vid = 80000 + i
+            state.venues[str(vid)] = VenueRec(
+                name=f"Venue {i}", url=f"https://untappd.com/v/venue-{i}/{vid}",
+                checkins=[{"id": j, "at": iso(NEXT_EVENING - timedelta(days=1))} for j in range(n)])
+    world.edit_state(add_venues)
+    pages = {**UNTAPPD_PAGES, **{f"https://untappd.com/v/venue-{i}/{80000 + i}": fixture_text("untappd/gargoyle_menu.html")
+                                 for i in range(len(counts))}}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(NEXT_EVENING) == 0
+
+    state = world.state()
+    checked = {i: state.venues[str(80000 + i)].location_checked_at is not None for i in range(len(counts))}
+    assert checked == {0: True, 1: True, 2: True, 3: False, 4: False}
+
+
+def test_city_check_stops_on_a_cloudflare_block_without_marking_checked(world):
+    first_run(world)
+
+    def add_venue(state):
+        state.venues["54321"] = VenueRec(
+            name="Blocked Venue", url="https://untappd.com/v/blocked/54321",
+            checkins=[{"id": i, "at": iso(NEXT_EVENING - timedelta(days=1))} for i in range(2)])
+    world.edit_state(add_venue)
+    pages = {**UNTAPPD_PAGES, "https://untappd.com/v/blocked/54321": CLOUDFLARE_BODY}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(NEXT_EVENING) == 0
+
+    rec = world.state().venues["54321"]
+    assert rec.city is None and rec.country is None and rec.location_checked_at is None
+    assert "https://untappd.com/v/blocked/54321" in world.untappd.urls   # it was attempted
+
+
+def test_city_check_respects_the_untappd_budget(world):
+    """The daily budget runs out during the main jobs (as in test_sources_out_of_untappd_budget_are_
+    skipped_without_failure): the city check must not spend a page either, and stays unchecked."""
+    state = empty_state(NOW)
+    state.untappd.pages_today, state.untappd.pages_date = 29, "2026-09-24"   # 1 of 30 pages left
+    state.venues["54321"] = VenueRec(
+        name="Never Reached", url="https://untappd.com/v/never/54321",
+        checkins=[{"id": i, "at": iso(NOW - timedelta(days=1))} for i in range(2)])
+    save_state(world.repo / "state.json", state)
+
+    assert world.run(NOW) == 0
+
+    rec = world.state().venues["54321"]
+    assert rec.location_checked_at is None
+    assert world.untappd.urls == [GARGOYLE]   # the one page the budget allowed; nothing after it
+
+
 def test_discovery_report_pluralizes_checkins_correctly(world):
     first_run(world)
 
     def add_venues(state):
         state.venues["1"] = VenueRec(
-            name="Four Checkins", url="https://untappd.com/v/four/1",
+            name="Four Checkins", url="https://untappd.com/v/four/1", country="Armenia",
             checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(4)])
         state.venues["2"] = VenueRec(
-            name="Eleven Checkins", url="https://untappd.com/v/eleven/2",
+            name="Eleven Checkins", url="https://untappd.com/v/eleven/2", country="Armenia",
             checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(11)])
     world.edit_state(add_venues)
     world.next_run()
@@ -367,7 +480,7 @@ def test_weekly_discovery_report_caps_at_20_venues_and_marks_only_those_reported
     def add_many(state):
         for i in range(25):
             state.venues[str(90000 + i)] = VenueRec(
-                name=f"Venue {i:02d}", url=f"https://untappd.com/v/venue-{i:02d}/{90000 + i}",
+                name=f"Venue {i:02d}", url=f"https://untappd.com/v/venue-{i:02d}/{90000 + i}", country="Armenia",
                 checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for _ in range(3)])
     world.edit_state(add_many)
     world.next_run()
@@ -389,7 +502,7 @@ def test_weekly_discovery_report_stays_under_telegram_text_limit_with_long_names
         for i in range(20):
             long_name = "Очень Длинное Название Заведения " * 6 + str(i)
             state.venues[str(91000 + i)] = VenueRec(
-                name=long_name, url=f"https://untappd.com/v/venue-{i:02d}/{91000 + i}",
+                name=long_name, url=f"https://untappd.com/v/venue-{i:02d}/{91000 + i}", country="Armenia",
                 checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for _ in range(3)])
     world.edit_state(add_many)
     world.next_run()
@@ -411,7 +524,7 @@ def test_discovery_report_send_failure_alerts_admin(world, status, code):
 
     def add_venue(state):
         state.venues["99999"] = VenueRec(
-            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999",
+            name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99999", country="Armenia",
             checkins=[{"id": i, "at": iso(MONDAY_MORNING - timedelta(days=1))} for i in range(3)])
     world.edit_state(add_venue)
     world.next_run(send=[SendOutcome("rejected", "Bad Request: chat not found"),

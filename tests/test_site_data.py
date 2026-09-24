@@ -216,9 +216,10 @@ def test_venues_list_sorted_by_checkins_then_name():
     st = state({}, venues={
         "1": VenueRec(name="Gargoyle Bar", url="https://untappd.com/v/gargoyle/1", logo="https://x/g.jpg",
                      verified=True, checkins=[{"id": 1, "at": ago(1)}, {"id": 2, "at": ago(2)}]),
-        "99": VenueRec(name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99",
+        "99": VenueRec(name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99", country="Armenia",
                       checkins=[{"id": 3, "at": ago(1)}, {"id": 4, "at": ago(2)}, {"id": 5, "at": ago(3)}]),
-        "50": VenueRec(name="Old Bar", url="https://untappd.com/v/old/50", checkins=[{"id": 6, "at": ago(40)}]),
+        "50": VenueRec(name="Old Bar", url="https://untappd.com/v/old/50", country="Armenia",
+                      checkins=[{"id": 6, "at": ago(40)}]),
     })
     venues = build(st)["venues"]
     assert [v["name"] for v in venues] == ["KER U SUS", "Gargoyle Bar"]   # Old Bar has no checkin within 30d
@@ -235,7 +236,25 @@ def test_venues_list_sorted_by_checkins_then_name():
 
 def test_venues_list_ties_break_by_name():
     st = state({}, venues={
-        "2": VenueRec(name="Beatles Pub", url="u2", checkins=[{"id": 1, "at": ago(1)}]),
-        "1": VenueRec(name="Ambient Bar", url="u1", checkins=[{"id": 2, "at": ago(1)}]),
+        "2": VenueRec(name="Beatles Pub", url="u2", country="Armenia", checkins=[{"id": 1, "at": ago(1)}]),
+        "1": VenueRec(name="Ambient Bar", url="u1", country="Armenia", checkins=[{"id": 2, "at": ago(1)}]),
     })
     assert [v["name"] for v in build(st)["venues"]] == ["Ambient Bar", "Beatles Pub"]
+
+
+def test_venues_list_excludes_untracked_venue_with_foreign_or_unknown_location():
+    """v1.1 city check (§4): a venue not in places.yaml is hidden until known to be in Armenia."""
+    st = state({}, venues={
+        "500": VenueRec(name="Old Tbilisi Brewery", url="u1", country="Georgia",
+                       checkins=[{"id": 1, "at": ago(1)}]),
+        "501": VenueRec(name="Not Yet Checked", url="u2", checkins=[{"id": 2, "at": ago(1)}]),   # country=None
+    })
+    assert build(st)["venues"] == []
+
+
+def test_venues_list_includes_tracked_venue_regardless_of_location():
+    """Tracked places (in places.yaml) are always shown, location known or not."""
+    st = state({}, venues={"1": VenueRec(name="Gargoyle Bar", url="u1", checkins=[{"id": 1, "at": ago(1)}])})
+    venues = build(st)["venues"]
+    assert [v["name"] for v in venues] == ["Gargoyle Bar"]
+    assert venues[0]["tracked"] is True
