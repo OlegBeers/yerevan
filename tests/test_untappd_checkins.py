@@ -178,7 +178,7 @@ def test_fetch_ok():
     assert result.sightings[0].checkin_id == 1429774602
     assert result.venue_meta == {
         "venue_id": 12281551, "name": "Craft-Story", "url": CRAFT_STORY_URL,
-        "logo": "https://ss3.4sqi.net/img/categories_v2/nightlife/pub_bg_512.png", "verified": False,
+        "logo": None, "verified": False,   # M-6: a generic Foursquare category icon is not a real logo
     }
     assert len(result.venue_checkins) == 20
     assert all(vc.venue_id == 12281551 for vc in result.venue_checkins)
@@ -222,7 +222,13 @@ def test_parse_venue_meta_verified_with_photo_logo():
 def test_parse_venue_meta_unverified():
     meta = parse_venue_meta(fixture_text("untappd/craftstory_checkins.html"))
     assert meta["verified"] is False
-    assert meta["logo"] == "https://ss3.4sqi.net/img/categories_v2/nightlife/pub_bg_512.png"
+    assert meta["logo"] is None   # M-6: generic Foursquare category icon, not a real venue logo
+
+
+def test_parse_venue_meta_generic_category_icon_is_not_a_logo():
+    html = ('<div class="venue-header"><div class="logo">'
+           '<img src="https://ss3.4sqi.net/img/categories_v2/nightlife/pub_bg_512.png"></div></div>')
+    assert parse_venue_meta(html) == {"logo": None, "verified": False}
 
 
 def test_parse_venue_meta_missing_header_is_none():

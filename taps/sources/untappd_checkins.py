@@ -110,15 +110,25 @@ def checkins_to_venue_checkins(checkins: list[Checkin]) -> list[VenueCheckin]:
     ]
 
 
+GENERIC_LOGO_HOST = "ss3.4sqi.net"           # Foursquare's generic category icon, not a real venue logo
+GENERIC_LOGO_PATH = "/img/categories_v2/"
+
+
+def _is_generic_category_icon(url: str) -> bool:
+    return GENERIC_LOGO_HOST in url and GENERIC_LOGO_PATH in url
+
+
 def parse_venue_meta(html: str) -> dict | None:
-    """logo and the Untappd "Verified" badge from a venue page's own header; None if the header is missing."""
+    """logo and the Untappd "Verified" badge from a venue page's own header; None if the header is missing.
+    A generic Foursquare category icon (venues Untappd has no real photo for) is reported as no logo (M-6)."""
     soup = BeautifulSoup(html, "html.parser")
     logo_div = soup.select_one("div.venue-header div.logo")
     if logo_div is None:
         return None
     img = logo_div.select_one("img[src]")
+    src = img["src"] if img else None
     verified = logo_div.find("span", string="Verified") is not None
-    return {"logo": img["src"] if img else None, "verified": verified}
+    return {"logo": None if src and _is_generic_category_icon(src) else src, "verified": verified}
 
 
 def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, now: datetime,
