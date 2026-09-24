@@ -388,10 +388,6 @@ IGNORED_CHECKINS = {
     "place-with-menu": brewery_checkins(checkin(1, "gargoyle")),
     "brewpub-with-buyam-menu": brewery_checkins(checkin(1, "dargett-brewpub", serving=None), brewery_id=265165),
     "untappd-at-home": venue_checkins(checkin(1, at_home=True)),
-    "bottle": venue_checkins(checkin(1, serving="Bottle")),
-    "no-serving-at-a-bar": venue_checkins(checkin(1, serving=None)),
-    "no-serving-other-brewery-at-a-brewpub": venue_checkins(
-        checkin(1, "dors", serving=None, brewery="Pulpulak Brewery"), place="dors"),
     "25-days-old": venue_checkins(checkin(1, days=25)),
 }
 
@@ -404,35 +400,29 @@ def test_ignored_checkins_leave_no_trace(result):
     assert state.pairs == {} and state.beers == {}
 
 
-def test_checkin_without_serving_counts_at_the_brewerys_own_brewpub():
-    state = ready("untappd_brewery:441775", "untappd_checkins:dors", "untappd_checkins:379-torch-brew")
-    out = merge(state,
-                brewery_checkins(checkin(1, "dors", serving=None, brewery=None)),      # by brewery id
-                venue_checkins(checkin(2, "379-torch-brew", serving=None, brewery="379 Torch & Brew"),
-                               place="379-torch-brew"),                                # by name prefix
-                venue_checkins(checkin(3, "dors", serving=None, brewery="Dors Brewery"),
-                               checkin(4, "dors", serving=None, brewery="Dorsia Brewing"), place="dors"))
-    assert out.events == [("dors", "u:1"), ("379-torch-brew", "u:2"), ("dors", "u:3")]
-    info = state.pairs["dors"]["u:1"].info
-    assert info["kind"] == "checkin" and info["source"] == "untappd_brewery" and "serving" not in info
-    assert info["checkin_at"] == iso(NOW - DAY)
+@pytest.mark.parametrize("serving", ["Bottle", "Can", None, "Draft"])
+def test_checkins_count_regardless_of_serving_at_a_bar(serving):
+    """v1.1 owner decision: bars no longer require Draft or an empty serving."""
+    state = ready("untappd_checkins:tap-station")
+    out = merge(state, venue_checkins(checkin(1, serving=serving), place="tap-station"))
+    assert out.events == [("tap-station", "u:1")]
+
+
+@pytest.mark.parametrize("serving", ["Bottle", "Can", None, "Draft"])
+def test_checkins_count_regardless_of_serving_or_brewery_at_a_brewpub(serving):
+    """v1.1 owner decision: a brewpub counts any check-in, even another brewery's, regardless of serving."""
+    state = ready("untappd_checkins:dors")
+    out = merge(state, venue_checkins(checkin(1, "dors", serving=serving, brewery="Pulpulak Brewery"),
+                                      place="dors"))
+    assert out.events == [("dors", "u:1")]
 
 
 @pytest.mark.parametrize("serving", ["Bottle", "Can", None, "Draft"])
 def test_shop_checkins_count_regardless_of_serving(serving):
-    """v1.1: a shop (e.g. Houl) is not a brewpub, so a bottle/can/unlabelled check-in counts too."""
+    """v1.1: a shop (e.g. Houl) counts a bottle/can/unlabelled check-in too."""
     state = ready("untappd_checkins:houl")
     out = merge(state, venue_checkins(checkin(1, "houl", serving=serving), place="houl"))
     assert out.events == [("houl", "u:1")]
-
-
-def test_own_beer_matches_brewery_name_prefix_without_brewery_id():
-    """v1.1: Alpenberg has no known brewery_id; its own check-ins are still recognised by name prefix
-    ("Alpenberg" vs. the check-in's "Alpenberg Yerevan")."""
-    state = ready("untappd_checkins:alpenberg")
-    out = merge(state, venue_checkins(checkin(1, "alpenberg", serving=None, brewery="Alpenberg Yerevan"),
-                                      place="alpenberg"))
-    assert out.events == [("alpenberg", "u:1")]
 
 
 def test_checkin_age_limits():
@@ -463,6 +453,26 @@ def test_checkin_backfills_style_and_abv_from_a_menu_pair_with_the_same_key():
     assert out.events == [("dors", "u:5")]
     info = state.pairs["dors"]["u:5"].info
     assert info["style"] == "Porter" and info["abv"] == 5.5
+
+
+def test_merged_multi_venue_place_first_run_after_state_merge_is_silent():
+    """v1.1: beer-academy-ethnograph's pairs were folded into beer-academy (state.merge_places). A run
+    that now fetches both venues as one merged result must not re-flood events for beers already known
+    there under the old place id -- the source key ("untappd_checkins:beer-academy") already had its
+    baseline before the merge, so the place is not "new"."""
+    ba = place("beer-academy", "brewpub", {"untappd_checkins": {
+        "venues": [{"slug": "beer-academy", "venue_id": 100}, {"slug": "beer-academy-ethnograph", "venue_id": 200}],
+    }}, brewery_id=143586, brewery_name="Beer Academy")
+    config = Config(places={"beer-academy": ba}, breweries=(), settings=Settings())
+    state = ready("untappd_checkins:beer-academy")
+    state.pairs["beer-academy"] = {"u:1": PairRec(first_seen=iso(NOW - 9 * DAY), last_seen=iso(NOW - 9 * DAY),
+                                                  notified_at="baseline")}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW - 9 * DAY))
+    result = SourceResult(key="untappd_checkins:beer-academy", source="untappd_checkins", ok=True,
+                          place_id="beer-academy", sightings=[checkin(1, "beer-academy", serving=None)])
+    out = merge_results(state, [result], config, Corrections(), NOW)
+    assert out.events == []
+    assert state.pairs["beer-academy"]["u:1"].notified_at == "baseline"
 
 
 # --- manual ------------------------------------------------------------------

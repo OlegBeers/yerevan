@@ -199,6 +199,52 @@ def test_fetch_empty_page():
     assert result.venue_meta is None and result.venue_checkins == []
 
 
+# --- multi-venue places (v1.1) -------------------------------------------------
+
+class FakeMultiClient:
+    """Like FakeClient, but returns different html per url (each venue page of a multi-venue place)."""
+
+    def __init__(self, by_url: dict[str, str]):
+        self.by_url, self.urls = by_url, []
+
+    def get(self, url):
+        self.urls.append(url)
+        return self.by_url[url]
+
+
+MULTI = Place(id="beer-academy", name="Beer Academy", kind="brewpub", sources={
+    "untappd_checkins": {"venues": [
+        {"slug": "beer-academy", "venue_id": 12281551, "address": "Московян 8"},
+        {"slug": "vertigo", "venue_id": 11856429, "address": "Абовяна 10"},
+    ]},
+})
+MULTI_CONFIG = Config(places={"beer-academy": MULTI}, breweries=(), settings=Settings())
+MAIN_URL, BRANCH_URL = "https://untappd.com/v/beer-academy/12281551", "https://untappd.com/v/vertigo/11856429"
+
+
+def test_fetch_multi_venue_merges_both_venues():
+    client = FakeMultiClient({
+        MAIN_URL: fixture_text("untappd/craftstory_checkins.html"),   # its own check-ins carry venue_id 12281551
+        BRANCH_URL: fixture_text("untappd/vertigo_checkins.html"),
+    })
+    result = fetch_venue_checkins(client, MULTI, MULTI_CONFIG, NOW, {})
+    assert client.urls == [MAIN_URL, BRANCH_URL]                      # both venues fetched (Untappd budget)
+    assert result.ok and result.error is None
+    assert len(result.sightings) == 25                                # 20 + 5, all mapped to the one place
+    assert {s.place_id for s in result.sightings} == {"beer-academy"}
+    assert len(result.venue_checkins) == 25
+    assert result.venue_meta == {                                     # the main (first) venue's own page
+        "venue_id": 12281551, "name": "Beer Academy", "url": MAIN_URL, "logo": None, "verified": False,
+    }
+
+
+def test_fetch_multi_venue_second_venue_failure_fails_the_whole_result():
+    client = FakeMultiClient({MAIN_URL: fixture_text("untappd/craftstory_checkins.html"),
+                              BRANCH_URL: "<html><body></body></html>"})
+    result = fetch_venue_checkins(client, MULTI, MULTI_CONFIG, NOW, {})
+    assert (result.ok, result.error, result.sightings) == (False, "empty", [])
+
+
 def test_checkins_to_venue_checkins():
     checkins = parse_checkins(fixture_text("untappd/craftstory_checkins.html"))
     checkins += parse_checkins(AT_HOME_HTML)   # at-home checkin must be dropped

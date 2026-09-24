@@ -6,7 +6,7 @@ from datetime import date, datetime
 from taps.breaker import evaluate, result_keys
 from taps.config import Config, Place
 from taps.corrections import Corrections
-from taps.model import Sighting, SourceResult, normalize_title, strip_color, u_key, untappd_n_key
+from taps.model import Sighting, SourceResult, strip_color, u_key, untappd_n_key
 from taps.shop_filter import classify
 from taps.state import BeerRec, BreweryNewRec, PairRec, SourceRec, State, resolve_alias
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan
@@ -135,22 +135,12 @@ class _Merger:
                     pair.last_in_result = (result.place_id, key) in touched
 
     def _ignored_checkin(self, s: Sighting, place: Place) -> bool:
-        """A check-in counts only when poured at a place without a menu (spec §6). A shop's check-ins
-        count regardless of serving (v1.1): a bottle bought there is as good a sighting as a draft pour."""
+        """A check-in counts only when poured at a place without a menu (spec §6). The serving no longer
+        matters in any kind of place (v1.1): a bottle, can or unlabelled check-in is as good a sighting
+        as a draft pour, in a bar or brewpub just like it already was in a shop."""
         if s.kind != "checkin":
             return False
-        if place.has_menu or s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS:
-            return True
-        if place.kind == "shop" or s.serving == "Draft":
-            return False
-        return not (s.serving is None and place.kind == "brewpub" and self._own_beer(s, place))
-
-    def _own_beer(self, s: Sighting, place: Place) -> bool:
-        if s.brewery_id is not None and s.brewery_id == place.brewery_id:
-            return True
-        aliases = self.corrections.brewery_aliases
-        own = normalize_title(place.brewery_name or "", aliases)
-        return bool(own) and f"{normalize_title(s.brewery or '', aliases)} ".startswith(f"{own} ")
+        return place.has_menu or s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS
 
     def _key(self, s: Sighting) -> str:
         key = resolve_alias(s.beer_key, self.corrections.aliases)

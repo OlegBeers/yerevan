@@ -235,6 +235,19 @@ def apply_aliases(state: State, aliases: Mapping[str, str]) -> None:
             items[item_id] = resolve_alias(key, aliases)
 
 
+def merge_places(state: State, merges: Mapping[str, str]) -> None:
+    """v1.1: one-time merge of an old place id's pairs into its replacement (places.yaml `merged_from`,
+    e.g. two Untappd venues folded into one place). Once an old id's pairs are moved, it is gone from
+    state.pairs, so a later run's call is a no-op -- no flag needed. Colliding beer keys use the same
+    never-re-announce merge as aliases (_merge_pair), so the merge itself never creates a fresh event."""
+    for old, new in merges.items():
+        if old == new or old not in state.pairs:
+            continue
+        new_pairs = state.pairs.setdefault(new, {})
+        for key, rec in state.pairs.pop(old).items():
+            new_pairs[key] = _merge_pair(new_pairs[key], rec) if key in new_pairs else rec
+
+
 def prune(state: State, now: datetime) -> int:
     healthy = {
         key.partition(":")[2]

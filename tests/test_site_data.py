@@ -79,6 +79,7 @@ def test_checkin_row_visible_21_days_after_checkin():
     assert rows["u:20"]["seen_days_ago"] == 20
     assert rows["u:0"]["seen_days_ago"] == 0
     assert rows["u:20"]["badge"] == "checkin"
+    assert rows["u:20"]["serving"] == "Draft" and rows["u:0"]["serving"] is None
 
 
 def test_manual_row_visible_14_days_from_date():
@@ -146,7 +147,7 @@ def test_row_carries_display_fields():
         "place_id": "gargoyle", "section": "bars", "beer_key": "u:4280", "name": "Celebrator",
         "brewery": "Ayinger", "style": "Doppelbock", "abv": 6.7, "ibu": 24, "rating": 3.76,
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
-        "url": "https://untappd.com/b/ayinger-celebrator/4280",
+        "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None,
         "badge": "menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
         "seen_days_ago": None, "new": False, "star": False, "by": None,
     }]
@@ -164,7 +165,7 @@ def test_places_status():
         "id": "gargoyle", "name": "Gargoyle Bar", "kind": "bar", "section": "bars",
         "last_ok": ago(0.2), "menu_updated_at": "2026-10-08T09:00:00+00:00",
         "failing": False, "failing_days": 0,
-        "logo": None, "verified": False, "untappd_url": None}
+        "logo": None, "verified": False, "untappd_url": None, "addresses": []}
     assert (places["dors"]["failing"], places["dors"]["failing_days"]) == (True, 3)
     assert places["dors"]["menu_updated_at"] is None
     # never succeeded: days counted from started_at
@@ -205,11 +206,21 @@ def test_place_carries_venue_logo_and_verified_from_state():
     assert places["gargoyle"] == {
         "logo": "https://x/logo.jpg", "verified": True, "untappd_url": "https://untappd.com/v/gargoyle/1",
         "id": "gargoyle", "name": "Gargoyle Bar", "kind": "bar", "section": "bars",
-        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0}
+        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0, "addresses": []}
     assert places["parma"] == {
         "logo": None, "verified": False, "untappd_url": None,
         "id": "parma", "name": "Парма", "kind": "shop", "section": "shops",
-        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0}
+        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0, "addresses": []}
+
+
+def test_place_carries_addresses_of_a_multi_venue_place():
+    ba = Place(id="beer-academy", name="Beer Academy", kind="brewpub", sources={"untappd_checkins": {
+        "venues": [{"slug": "beer-academy", "venue_id": 1, "address": "Московян 8"},
+                   {"slug": "beer-academy-ethnograph", "venue_id": 2, "address": "Абовяна 10"}],
+    }})
+    config = Config(places={"beer-academy": ba}, breweries=(), settings=Settings())
+    places = {p["id"]: p for p in build_site_data(state({}), config, NOW)["places"]}
+    assert places["beer-academy"]["addresses"] == ["Московян 8", "Абовяна 10"]
 
 
 def test_venues_list_sorted_by_checkins_then_name():

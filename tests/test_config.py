@@ -173,6 +173,49 @@ def test_missing_file_raises(tmp_path):
         load_config(tmp_path / "nope.yaml")
 
 
+def test_multi_venue_checkin_place(tmp_path):
+    """v1.1: one place may list several Untappd venues (e.g. two branches sharing one brand)."""
+    extra = MINIMAL + """
+  - id: beer-academy
+    name: Beer Academy
+    kind: brewpub
+    brewery_id: 143586
+    brewery_name: Beer Academy
+    merged_from: [beer-academy-ethnograph]
+    sources:
+      untappd_checkins:
+        venues:
+          - {slug: beer-academy, venue_id: 368914, address: "Московян 8"}
+          - {slug: beer-academy-ethnograph, venue_id: 10274653, address: "Абовяна 10"}
+"""
+    cfg = load_config(write(tmp_path, extra))
+    ba = cfg.places["beer-academy"]
+    assert ba.venue_ids == [368914, 10274653]
+    assert ba.venue_id == 368914                                    # primary venue for logo/verified lookups
+    assert ba.addresses == ["Московян 8", "Абовяна 10"]
+    assert ba.merged_from == ("beer-academy-ethnograph",)
+    assert cfg.place_by_venue(368914).id == cfg.place_by_venue(10274653).id == "beer-academy"
+    assert {368914, 10274653} <= cfg.known_venue_ids
+
+
+def test_multi_venue_missing_slug_raises(tmp_path):
+    extra = MINIMAL + """
+  - id: beer-academy
+    name: Beer Academy
+    kind: brewpub
+    sources:
+      untappd_checkins:
+        venues:
+          - {venue_id: 368914}
+"""
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, extra))
+
+
+def test_place_without_merged_from_has_empty_tuple(cfg):
+    assert cfg.places["gargoyle"].merged_from == ()
+
+
 def test_shop_with_untappd_checkins_source_is_valid(tmp_path):
     """v1.1: a craft beer shop (e.g. Houl) tracked by check-ins rather than a shop-list source."""
     extra = MINIMAL + """

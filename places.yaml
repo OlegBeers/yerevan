@@ -7,6 +7,8 @@
 #   (они видны в адресе untappd.com/v/<slug>/<venue_id>). Первый прогон по нему пройдёт молча.
 # id — строчная латиница, цифры и дефис. id существующего места не меняйте: бот примет его за новое.
 # Источники: untappd_menu и untappd_checkins {slug, venue_id}, buyam {url}, beercity / yerevan_city / parma {}.
+# Место с несколькими барами на Untappd: untappd_checkins: {venues: [{slug, venue_id, address}, ...]} — см. beer-academy.
+# Объединение старого id места в новый: merged_from: [старый-id] — пары старого места молча переносятся в новое.
 # Пивоварни: list_enabled: true (список сортов, 🏭) — только после проверки на первом ручном прогоне.
 # Числа-названия ("379") и время ("17:00") пишите в кавычках.
 
@@ -56,22 +58,16 @@ places:
   - id: beer-academy
     name: Beer Academy
     kind: brewpub
-    # главный бар на Московян 8 (найден по чекинам пивоварни, адрес проверен 2026-09-24)
+    # два бара одной сети на Untappd, объединены в одно место 2026-09-24 (адреса проверены)
     enabled: true
     brewery_id: 143586
     brewery_name: Beer Academy
+    merged_from: [beer-academy-ethnograph]
     sources:
-      untappd_checkins: {slug: beer-academy, venue_id: 368914}
-
-  - id: beer-academy-ethnograph
-    name: Beer Academy Ethnograph
-    kind: brewpub
-    # филиал на Абовяна 10; главный бар (Московян 8) — отдельное место beer-academy ниже
-    enabled: true
-    brewery_id: 143586
-    brewery_name: Beer Academy
-    sources:
-      untappd_checkins: {slug: beer-academy-ethnograph, venue_id: 10274653}
+      untappd_checkins:
+        venues:
+          - {slug: beer-academy, venue_id: 368914, address: "Московян 8"}
+          - {slug: beer-academy-ethnograph, venue_id: 10274653, address: "Абовяна 10"}
 
   - id: alpenberg
     name: Alpenberg
