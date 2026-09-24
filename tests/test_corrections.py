@@ -171,6 +171,19 @@ def test_parse_same_as_entry():
     assert corrections.same_as == {("gargoyle", "n:chimay peres trappistes blue"): 34039}
 
 
+def test_parse_same_as_entry_with_null_untappd_id_is_a_not_the_same_override():
+    """v1.2 beer identity: untappd_id: null blocks local/search matching for that key ("не то же")
+    without claiming a (possibly wrong) Untappd id, unlike a normal same_as override."""
+    corrections, errors = parse(
+        "same_as:\n"
+        "  - place: gargoyle\n"
+        "    beer: 'n:x'\n"
+        "    untappd_id: null\n"
+    )
+    assert errors == []
+    assert corrections.same_as == {("gargoyle", "n:x"): None}
+
+
 @pytest.mark.parametrize(
     "entry, fragment",
     [
@@ -181,6 +194,7 @@ def test_parse_same_as_entry():
         ("{place: gargoyle, beer: 'n:x'}", "untappd_id None"),
         ("{place: nowhere, beer: 'n:x', untappd_id: 1}", "место 'nowhere' не найдено"),
         ("{place: gargoyle, beer: 'n:x', untappd_id: 1, extra: 1}", "неизвестные поля: extra"),
+        ("{place: gargoyle, beer: 'u:1', untappd_id: 2}", "только n:-ключ"),
     ],
 )
 def test_bad_same_as_entry_is_skipped(entry, fragment):

@@ -33,7 +33,7 @@ class ManualEntry:
 class Corrections:
     sightings: tuple[ManualEntry, ...] = ()
     hide: frozenset[tuple[str, str]] = frozenset()                   # (place_id, beer_key)
-    same_as: Mapping[tuple[str, str], int] = field(default_factory=dict)   # (place_id, beer_key) -> untappd_id
+    same_as: Mapping[tuple[str, str], int | None] = field(default_factory=dict)   # (place_id, beer_key) -> untappd_id
     aliases: Mapping[str, str] = field(default_factory=dict)          # beer_key -> beer_key
     brewery_aliases: Mapping[str, str] = field(default_factory=dict)  # text -> text
     not_craft: tuple[str, ...] = ()
@@ -140,12 +140,16 @@ def _hide(entry: Any, place_ids: Collection[str]) -> tuple[str, str]:
     return place, _beer_key(entry["beer"])
 
 
-def _same_as(entry: Any, place_ids: Collection[str]) -> tuple[tuple[str, str], int]:
+def _same_as(entry: Any, place_ids: Collection[str]) -> tuple[tuple[str, str], int | None]:
     entry = _fields(entry, SAME_AS_FIELDS)
     place = _place(entry, place_ids)
     if entry.get("beer") is None:
         raise _Skip("нет поля beer")
     key = _beer_key(entry["beer"])
+    if key.startswith("u:"):
+        raise _Skip(f"beer {key!r}: same_as принимает только n:-ключ (магазинное название), не u:")
+    if "untappd_id" in entry and entry["untappd_id"] is None:
+        return (place, key), None   # "не то же": blocks local/search matching without claiming an id
     untappd_id = entry.get("untappd_id")
     if type(untappd_id) is not int or untappd_id <= 0:
         raise _Skip(f"untappd_id {untappd_id!r}: нужно число из адреса пива на Untappd")
