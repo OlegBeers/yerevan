@@ -2,10 +2,13 @@ from datetime import time
 from pathlib import Path
 
 import pytest
+import yaml
 
 from taps.config import Brewery, ConfigError, Settings, load_config
 
-PLACES_YAML = Path(__file__).parent.parent / "places.yaml"
+ROOT = Path(__file__).parent.parent
+LIVE_PLACES_YAML = ROOT / "places.yaml"                              # hand-edited: invariants only
+PLACES_YAML = Path(__file__).parent / "fixtures" / "config" / "places.yaml"   # frozen copy for exact asserts
 
 MINIMAL = """
 places:
@@ -34,7 +37,7 @@ def cfg():
     return load_config(PLACES_YAML)
 
 
-def test_real_file_counts_and_order(cfg):
+def test_fixture_file_counts_and_order(cfg):
     assert len(cfg.places) == 17
     kinds = [p.kind for p in cfg.places.values()]
     assert (kinds.count("bar"), kinds.count("brewpub"), kinds.count("shop")) == (10, 4, 3)
@@ -42,6 +45,20 @@ def test_real_file_counts_and_order(cfg):
     assert list(cfg.places)[-3:] == ["beer-city", "yerevan-city", "parma"]
     assert len(cfg.breweries) == 8
     assert not any(b.list_enabled for b in cfg.breweries)
+
+
+def test_live_places_file_invariants():
+    """Whatever Oleg edits, these must always hold (no exact counts, names or ids)."""
+    raw = yaml.safe_load(LIVE_PLACES_YAML.read_text(encoding="utf-8"))
+    ids = [p["id"] for p in raw["places"]]
+    assert len(ids) == len(set(ids))                              # unique, disabled ones included
+    live = load_config(LIVE_PLACES_YAML)                          # no ConfigError
+    assert live.places and set(live.places) <= set(ids)
+    assert all(b.slug and b.brewery_id for b in live.breweries)
+    assert len({b.brewery_id for b in live.breweries}) == len(live.breweries)
+    venues = [p.venue_id for p in live.places.values() if p.venue_id]
+    assert len(venues) == len(set(venues))
+    assert live.settings.digest_time < time(18, 17)               # before the evening run (README)
 
 
 def test_menu_places(cfg):

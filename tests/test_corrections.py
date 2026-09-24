@@ -9,6 +9,7 @@ from taps.config import load_config
 from taps.corrections import Corrections, CorrectionsLoad, ManualEntry, load_corrections, parse_corrections
 
 ROOT = Path(__file__).parent.parent
+FIXTURES = Path(__file__).parent / "fixtures" / "config"
 PLACE_IDS = {"tap-station", "gargoyle", "dors"}
 
 SPEC_EXAMPLE = """
@@ -246,13 +247,23 @@ def test_missing_or_empty_file_is_empty_corrections(tmp_path):
     assert load_corrections(write(tmp_path, "# только комментарии\n"), None, PLACE_IDS) == empty
 
 
-def test_real_corrections_file_loads_clean():
-    place_ids = set(load_config(ROOT / "places.yaml").places)
-    load = load_corrections(ROOT / "corrections.yaml", None, place_ids)
+def test_fixture_corrections_file_loads_clean():
+    """The frozen copy: exact asserts are safe here."""
+    place_ids = set(load_config(FIXTURES / "places.yaml").places)
+    load = load_corrections(FIXTURES / "corrections.yaml", None, place_ids)
     assert load.errors == []
     c = load.corrections
     assert (c.sightings, c.hide, c.aliases) == ((), frozenset(), {})
     assert c.brewery_aliases == {"v engelman": "volfas engelman"}
-    assert "Kilikia" in c.not_craft and "Baltika" in c.not_craft
     assert set(c.not_craft) == SPEC_NOT_CRAFT
     assert len(c.not_craft) == len(SPEC_NOT_CRAFT)  # no duplicates
+
+
+def test_live_corrections_file_invariants():
+    """The hand-edited file: only what must hold whatever Oleg adds (sightings, hide, aliases are his)."""
+    place_ids = set(load_config(ROOT / "places.yaml").places)
+    load = load_corrections(ROOT / "corrections.yaml", None, place_ids)
+    assert load.errors == []
+    c = load.corrections
+    assert SPEC_NOT_CRAFT <= set(c.not_craft)
+    assert len(c.not_craft) == len(set(c.not_craft))

@@ -1,0 +1,159 @@
+# Frozen copy for tests: the live places.yaml is hand-edited and must not be pinned by tests.
+# Места, пивоварни и настройки «Ереван на кранах».
+# Править можно прямо на GitHub: значок карандаша → правка → «Commit changes».
+# Следующий прогон подхватит изменения. Если файл сломан, прогон остановится с ошибкой.
+#
+# Выключить место: enabled: false (блок не удаляйте). Включить обратно: enabled: true.
+# Новое место: скопируйте блок похожего места, поменяйте id, name, slug и venue_id
+#   (они видны в адресе untappd.com/v/<slug>/<venue_id>). Первый прогон по нему пройдёт молча.
+# id — строчная латиница, цифры и дефис. id существующего места не меняйте: бот примет его за новое.
+# Источники: untappd_menu и untappd_checkins {slug, venue_id}, buyam {url}, beercity / yerevan_city / parma {}.
+# Пивоварни: list_enabled: true (список сортов, 🏭) — только после проверки на первом ручном прогоне.
+# Числа-названия ("379") и время ("17:00") пишите в кавычках.
+
+places:
+  - id: gargoyle
+    name: Gargoyle Bar
+    kind: bar
+    enabled: true
+    sources:
+      untappd_menu: {slug: gargoyle-bar, venue_id: 12252462}
+
+  - id: beatles
+    name: Beatles Pub
+    kind: bar
+    enabled: true
+    sources:
+      untappd_menu: {slug: beatles-pub-yerevan, venue_id: 2162817}
+
+  - id: dargett-brewpub
+    name: Dargett Brewpub
+    kind: brewpub
+    enabled: true
+    brewery_id: 265165
+    brewery_name: Dargett
+    untappd_venue_id: 4640403
+    sources:
+      buyam: {url: "https://buy.am/en/restaurants/dargett"}
+
+  - id: dors
+    name: Dors Craft Beer & Kitchen
+    kind: brewpub
+    enabled: true
+    brewery_id: 441775
+    brewery_name: Dors
+    sources:
+      untappd_checkins: {slug: dors-craft-beer-kitchen, venue_id: 9312556}
+
+  - id: pulpulak
+    name: Pulpulak Craft Beer & Kitchen
+    kind: brewpub
+    enabled: true
+    brewery_id: 573921
+    brewery_name: Pulpulak
+    sources:
+      untappd_checkins: {slug: pulpulak-craft-beer-kitchen, venue_id: 12734409}
+
+  - id: 379-torch-brew
+    name: "379 Torch & Brew"
+    kind: brewpub
+    enabled: true
+    brewery_id: 518994
+    brewery_name: "379"
+    sources:
+      untappd_checkins: {slug: 379-torch-and-brew, venue_id: 11198162}
+
+  - id: tap-station
+    name: Tap Station
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: tap-station, venue_id: 8234456}
+
+  - id: tuf
+    name: Tuf
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: tuf, venue_id: 11284746}
+
+  - id: izh
+    name: Izh
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: izh, venue_id: 12246294}
+
+  - id: beer-point
+    name: Beer Point Pub
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: beer-point-pub, venue_id: 12348951}
+
+  - id: ker-u-sus
+    name: KER U SUS
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: ker-u-sus, venue_id: 13968261}
+
+  - id: tavern
+    name: Tavern Yerevan
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: tavern-yerevan-khorenatsi, venue_id: 13298511}
+
+  - id: shame
+    name: Shame Bar
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: shame-bar, venue_id: 9324104}
+
+  - id: punk-photo
+    name: Punk Photo Bar
+    kind: bar
+    enabled: true
+    sources:
+      untappd_checkins: {slug: punk-photo-bar, venue_id: 12455977}
+
+  - id: beer-city
+    name: Beer City
+    kind: shop
+    enabled: true
+    sources:
+      beercity: {}
+
+  - id: yerevan-city
+    name: Yerevan City
+    kind: shop
+    enabled: true
+    sources:
+      yerevan_city: {}
+
+  - id: parma
+    name: Parma
+    kind: shop
+    enabled: true
+    sources:
+      parma: {}
+
+# slug: из адреса списка сортов https://untappd.com/w/<slug>/<brewery_id>/beer — проверить при запуске
+breweries:
+  - {id: dargett, name: Dargett, brewery_id: 265165, slug: dargett-brewery, list_enabled: false}
+  - {id: dors, name: Dors, brewery_id: 441775, slug: dors-craft-beer, list_enabled: false}
+  - {id: pulpulak, name: Pulpulak, brewery_id: 573921, slug: pulpulak-craft-beer, list_enabled: false}
+  - {id: 379-torch-brew, name: "379 Torch & Brew", brewery_id: 518994, slug: 379-torch-and-brew, list_enabled: false}
+  - {id: dahook, name: Dahook, brewery_id: 559009, slug: dahook, list_enabled: false}
+  - {id: beer-academy, name: Beer Academy, brewery_id: 143586, slug: beer-academy, list_enabled: false}
+  - {id: bever, name: Bever, brewery_id: 520321, slug: bever-brewery, list_enabled: false}
+  - {id: tovmas, name: Tovmas, brewery_id: 321115, slug: tovmas-brewery, list_enabled: false}
+
+settings:
+  preview_digests: 2
+  digest_time: "17:00"        # раньше вечернего запуска (18:17 по Еревану)
+  digest_max_lines: 15
+  hot_rating: 3.75
+  untappd_daily_pages: 30

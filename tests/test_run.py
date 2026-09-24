@@ -20,7 +20,7 @@ from taps.telegram import Alerter, SendOutcome, send_message
 from taps.timeutil import iso
 from tests.helpers import fixture_json, fixture_text
 
-ROOT = Path(__file__).parent.parent
+CONFIG_FIXTURES = Path(__file__).parent / "fixtures" / "config"   # frozen: never the live hand-edited files
 NOW = datetime(2026, 9, 24, 14, 17, tzinfo=timezone.utc)       # Thu 18:17 in Yerevan
 NEXT_EVENING = NOW + timedelta(days=1)
 ENV = {"TELEGRAM_BOT_TOKEN": "tok", "TELEGRAM_CHAT_ID": "-100chat", "TELEGRAM_ADMIN_CHAT_ID": "42",
@@ -153,7 +153,7 @@ class World:
         self.repo = tmp_path
         (tmp_path / "site").mkdir(exist_ok=True)
         (tmp_path / "places.yaml").write_text(PLACES_YAML, encoding="utf-8")
-        shutil.copy(ROOT / "corrections.yaml", tmp_path / "corrections.yaml")
+        shutil.copy(CONFIG_FIXTURES / "corrections.yaml", tmp_path / "corrections.yaml")
         self.untappd = untappd or FakeUntappd()
         self.http = FakeHttp()
         self.sends, self.pushes, self.pulls = [], [], []
