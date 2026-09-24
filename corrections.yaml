@@ -1,0 +1,98 @@
+# Правки «Ереван на кранах»: друзья пишут Олегу, Олег правит этот файл.
+# Править можно прямо на GitHub: значок карандаша → правка → «Commit changes». Следующий прогон подхватит изменения.
+# Если файл сломан (ошибка YAML), бот работает по последней удачной версии и пишет Олегу.
+# Ошибочная запись (неизвестное место, нет даты или автора) пропускается, Олегу приходит предупреждение.
+# Примеры ниже: скопируйте строки под нужный раздел и уберите # в начале.
+# place — id места из places.yaml. Ключ пива: u:<число из адреса пива на Untappd> или n:<название> (n:-ключ спросите у Claude).
+#
+# sightings — ✍️ «со слов»: друг видел пиво в месте. В сводку попадает, если date не старше 3 дней; на сайте держится 14 дней.
+#   Вместо brewery и beer можно написать untappd: 1234567.
+#   Несколько сортов из одного похода — несколько записей с одинаковыми place, date и by.
+#   Исправить название в уже объявленной записи можно, повторно она не объявится.
+#   - place: tap-station
+#     brewery: "379"
+#     beer: "Hazy Pale"
+#     by: Аня
+#     date: 2026-09-24
+#
+# hide — «этого уже нет» или мусор: строка пропадает с сайта.
+#   - place: gargoyle
+#     beer: u:3539672
+#
+# aliases — одно и то же пиво из разных источников, "ключ из магазина": ключ Untappd. Новинок в чат не даёт.
+#   "n:konix bronx": u:3539672
+#
+# brewery_aliases — разные написания одной пивоварни, "как пишут": "как правильно".
+# not_craft — бренды, которые не показывать в магазинах. Сравнивается целым словом: Bud не прячет Budvar.
+#   Если в названии есть стиль (IPA, Stout, Porter…), пиво показывается всё равно.
+
+sightings:
+
+hide:
+
+aliases:
+
+brewery_aliases:
+  "v engelman": "volfas engelman"
+
+not_craft:
+  # Армения
+  - Kotayk
+  - Kotayq
+  - Gyumri
+  - Kilikia
+  - Ararat
+  - Alexandrapol
+  - Aleksandrapol
+  - Erebuni
+  - Dilijan
+  - Debed
+  - Lincoln
+  # Россия и СНГ
+  - Baltika
+  - Zhigulevskoe
+  - Zhiguli
+  - Zolotaya Bochka
+  - Beliy Medved
+  - Motor
+  - Zatecky Gus
+  - Kozel
+  - Lvivske
+  - Vimpel
+  - Brander Bier
+  - Platina Latina
+  # Международные лагеры
+  - Heineken
+  - Stella Artois
+  - Corona
+  - Bud
+  - Budweiser
+  - Miller
+  - Carlsberg
+  - Tuborg
+  - Efes
+  - Amstel
+  - Hoegaarden
+  - Estrella Damm
+  - Kuler
+  - Almaza
+  - Peroni
+  - Grolsch
+  - Kronenbourg
+  - Asahi
+  - Modelo
+  - Pilsner Urquell
+  - Birra Moretti
+  - Holsten
+  - Old Prague
+  - Dragon
+  - Krusovice
+  - Newcastle
+  # Грузия
+  - Natakhtari
+  - Kazbegi
+  - Zedazeni
+  # Чехия
+  - Pražečka
+  - Staročeské
+  - Santanos
