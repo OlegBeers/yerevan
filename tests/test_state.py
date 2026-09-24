@@ -411,3 +411,27 @@ def test_record_venues_ignores_results_without_venue_data():
     s = empty_state(NOW)
     record_venues(s, [SourceResult(key="parma:parma", source="parma", ok=True)], NOW)
     assert s.venues == {}
+
+
+def test_record_venues_drops_venues_with_no_recent_checkins_unless_known():
+    s = empty_state(NOW)
+    s.venues["1"] = VenueRec(name="Random Bar", url="u1", checkins=[{"id": 1, "at": ago(40)}])
+    s.venues["2"] = VenueRec(name="Closed Bar", url="u2", checkins=[{"id": 2, "at": ago(40)}])
+    record_venues(s, [], NOW, known_venue_ids=frozenset({2}))
+    assert "1" not in s.venues
+    assert "2" in s.venues
+
+
+def test_record_venues_does_not_let_checkins_overwrite_meta_name_and_url():
+    s = empty_state(NOW)
+    meta_result = SourceResult(
+        key="untappd_menu:gargoyle", source="untappd_menu", ok=True,
+        venue_meta={"venue_id": 1, "name": "Real Name", "url": "https://untappd.com/v/real/1",
+                   "logo": None, "verified": False})
+    record_venues(s, [meta_result], NOW, known_venue_ids=frozenset({1}))
+    checkin_result = SourceResult(
+        key="untappd_brewery:265165", source="untappd_brewery", ok=True,
+        venue_checkins=[VenueCheckin(venue_id=1, venue_name="Stale Name From Checkin",
+                                     venue_url="https://untappd.com/v/stale/1", checkin_id=5, at=NOW)])
+    record_venues(s, [checkin_result], NOW, known_venue_ids=frozenset({1}))
+    assert (s.venues["1"].name, s.venues["1"].url) == ("Real Name", "https://untappd.com/v/real/1")

@@ -81,6 +81,7 @@ class VenueRec:
     logo: str | None = None
     verified: bool = False
     checkins: list[dict] = field(default_factory=list)   # [{"id": int, "at": iso}], deduped by id
+    has_meta: bool = False   # name/url came from the venue's own page (untappd_menu/checkins): checkins must not overwrite them
 
 
 @dataclass
@@ -247,18 +248,32 @@ def prune(state: State, now: datetime) -> int:
     return removed
 
 
-def record_venues(state: State, results: Sequence[SourceResult], now: datetime) -> None:
+def record_venues(state: State, results: Sequence[SourceResult], now: datetime,
+                  known_venue_ids: frozenset[int] = frozenset()) -> None:
     """v1.1: state.venues from every fetch's venue_meta (own venue: logo/verified) and venue_checkins
-    (every venue seen in check-ins, tracked or not); check-ins deduped by id, pruned to 30 days."""
+    (every venue seen in check-ins, tracked or not); check-ins deduped by id, pruned to 30 days.
+
+    known_venue_ids: every place's venue id from places.yaml, enabled or disabled (Config.known_venue_ids).
+    A venue record left with no check-in in the last 30 days is dropped unless its id is known, so that
+    worldwide venues surfacing on brewery pages don't accumulate in state.json forever, while a disabled
+    place's own venue (kept for its logo/verified badge) survives a quiet spell."""
+    seen_ids: dict[str, set[int]] = {}
     for result in results:
         if result.venue_meta:
             m = result.venue_meta
             rec = state.venues.setdefault(str(m["venue_id"]), VenueRec(name=m["name"], url=m["url"]))
-            rec.name, rec.url, rec.logo, rec.verified = m["name"], m["url"], m["logo"], m["verified"]
+            rec.name, rec.url, rec.logo, rec.verified, rec.has_meta = (
+                m["name"], m["url"], m["logo"], m["verified"], True)
         for vc in result.venue_checkins:
-            rec = state.venues.setdefault(str(vc.venue_id), VenueRec(name=vc.venue_name, url=vc.venue_url))
-            rec.name, rec.url = vc.venue_name, vc.venue_url
-            if vc.checkin_id not in {c["id"] for c in rec.checkins}:
+            key = str(vc.venue_id)
+            rec = state.venues.setdefault(key, VenueRec(name=vc.venue_name, url=vc.venue_url))
+            if not rec.has_meta:
+                rec.name, rec.url = vc.venue_name, vc.venue_url
+            ids = seen_ids.setdefault(key, {c["id"] for c in rec.checkins})
+            if vc.checkin_id not in ids:
                 rec.checkins.append({"id": vc.checkin_id, "at": iso(vc.at)})
+                ids.add(vc.checkin_id)
     for rec in state.venues.values():
         rec.checkins = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
+    for vid in [v for v, rec in state.venues.items() if not rec.checkins and int(v) not in known_venue_ids]:
+        del state.venues[vid]
