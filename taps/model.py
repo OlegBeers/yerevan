@@ -50,6 +50,16 @@ class Sighting:
 
 
 @dataclass(frozen=True)
+class VenueCheckin:
+    """One check-in seen at some venue (4.2/4.3), tracked or not, for the venues discovery list (v1.1)."""
+    venue_id: int
+    venue_name: str
+    venue_url: str
+    checkin_id: int
+    at: datetime
+
+
+@dataclass(frozen=True)
 class BreweryBeer:
     brewery_id: int
     untappd_beer_id: int
@@ -72,6 +82,8 @@ class SourceResult:
     brewery_id: int | None = None
     menu_updated_at: datetime | None = None
     brewery_beers: list[BreweryBeer] = field(default_factory=list)
+    venue_meta: dict | None = None            # {"venue_id","name","url","logo","verified"} of this result's own venue
+    venue_checkins: list[VenueCheckin] = field(default_factory=list)   # every venue seen in check-ins (v1.1)
 
 
 def u_key(beer_id: int) -> str:

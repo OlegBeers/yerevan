@@ -8,6 +8,7 @@ from taps.model import (
     BreweryBeer,
     Sighting,
     SourceResult,
+    VenueCheckin,
     n_key,
     normalize_base,
     normalize_title,
@@ -141,3 +142,11 @@ def test_source_result_defaults():
     other = SourceResult(key="parma:parma", source="parma", ok=False, error="network")
     other.sightings.append(_sighting("parma"))
     assert r.sightings == []
+    assert r.venue_meta is None
+    assert r.venue_checkins == []
+
+
+def test_venue_checkin_fields():
+    vc = VenueCheckin(venue_id=1, venue_name="Bar", venue_url="https://untappd.com/v/bar/1",
+                      checkin_id=2, at=NOW)
+    assert (vc.venue_id, vc.venue_name, vc.venue_url, vc.checkin_id, vc.at) == (1, "Bar", "https://untappd.com/v/bar/1", 2, NOW)
