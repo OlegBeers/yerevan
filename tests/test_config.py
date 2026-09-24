@@ -1,0 +1,149 @@
+from datetime import time
+from pathlib import Path
+
+import pytest
+
+from taps.config import Brewery, ConfigError, Settings, load_config
+
+PLACES_YAML = Path(__file__).parent.parent / "places.yaml"
+
+MINIMAL = """
+places:
+  - id: gargoyle
+    name: Gargoyle Bar
+    kind: bar
+    sources:
+      untappd_menu: {slug: gargoyle-bar, venue_id: 12252462}
+  - id: tuf
+    name: Tuf
+    kind: bar
+    enabled: false
+    sources:
+      untappd_checkins: {slug: tuf, venue_id: 11284746}
+"""
+
+
+def write(tmp_path, text):
+    path = tmp_path / "places.yaml"
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+@pytest.fixture(scope="module")
+def cfg():
+    return load_config(PLACES_YAML)
+
+
+def test_real_file_counts_and_order(cfg):
+    assert len(cfg.places) == 17
+    kinds = [p.kind for p in cfg.places.values()]
+    assert (kinds.count("bar"), kinds.count("brewpub"), kinds.count("shop")) == (10, 4, 3)
+    assert list(cfg.places)[:2] == ["gargoyle", "beatles"]
+    assert list(cfg.places)[-3:] == ["beer-city", "yerevan-city", "parma"]
+    assert len(cfg.breweries) == 8
+    assert not any(b.list_enabled for b in cfg.breweries)
+
+
+def test_menu_places(cfg):
+    gargoyle = cfg.places["gargoyle"]
+    assert gargoyle.name == "Gargoyle Bar"
+    assert gargoyle.has_menu
+    assert gargoyle.venue_id == 12252462
+    assert gargoyle.sources["untappd_menu"]["slug"] == "gargoyle-bar"
+    dargett = cfg.places["dargett-brewpub"]
+    assert dargett.kind == "brewpub"
+    assert dargett.has_menu
+    assert dargett.sources == {"buyam": {"url": "https://buy.am/en/restaurants/dargett"}}
+    assert dargett.venue_id == 4640403
+    assert (dargett.brewery_id, dargett.brewery_name) == (265165, "Dargett")
+
+
+def test_checkin_brewpubs(cfg):
+    dors = cfg.places["dors"]
+    assert dors.brewery_name == "Dors"
+    assert dors.brewery_id == 441775
+    assert not dors.has_menu
+    assert dors.venue_id == 9312556
+    assert cfg.places["379-torch-brew"].brewery_name == "379"  # quoted, stays a string
+
+
+def test_place_by_venue(cfg):
+    assert cfg.place_by_venue(12252462).id == "gargoyle"
+    assert cfg.place_by_venue(4640403).id == "dargett-brewpub"
+    assert cfg.place_by_venue(12455977).id == "punk-photo"
+    assert cfg.place_by_venue(1) is None
+
+
+def test_source_keys(cfg):
+    assert cfg.places["gargoyle"].source_keys() == ["untappd_menu:gargoyle"]
+    assert cfg.places["dors"].source_keys() == ["untappd_checkins:dors"]
+    assert cfg.places["dargett-brewpub"].source_keys() == ["buyam:dargett-brewpub"]
+    assert cfg.places["beer-city"].source_keys() == ["beercity:beer-city"]
+    assert cfg.places["beer-city"].venue_id is None
+
+
+def test_breweries(cfg):
+    first = cfg.breweries[0]
+    assert first == Brewery(id="dargett", name="Dargett", brewery_id=265165, slug="dargett-brewery",
+                            list_enabled=False)
+    assert first.url == "https://untappd.com/brewery/265165"
+    assert [b.brewery_id for b in cfg.breweries] == [
+        265165, 441775, 573921, 518994, 559009, 143586, 520321, 321115]
+    assert cfg.breweries[3].name == "379 Torch & Brew"
+    assert [b.slug for b in cfg.breweries] == [
+        "dargett-brewery", "dors-craft-beer", "pulpulak-craft-beer", "379-torch-and-brew",
+        "dahook", "beer-academy", "bever-brewery", "tovmas-brewery"]
+
+
+def test_settings(cfg):
+    assert cfg.settings == Settings(preview_digests=2, digest_time=time(17, 0), digest_max_lines=15,
+                                    hot_rating=3.75, untappd_daily_pages=30)
+    assert cfg.settings.digest_time == time(17, 0)
+
+
+def test_disabled_place_is_excluded(tmp_path):
+    cfg = load_config(write(tmp_path, MINIMAL))
+    assert list(cfg.places) == ["gargoyle"]
+    assert cfg.place_by_venue(11284746) is None
+    assert cfg.breweries == ()
+    assert cfg.settings == Settings()
+
+
+@pytest.mark.parametrize("old, new", [
+    ("kind: bar", "kind: pub"),                                              # unknown kind
+    ("untappd_menu:", "untappd_venue:"),                                     # unknown source name
+    ("id: tuf", "id: gargoyle"),                                             # duplicate place id
+    ("{slug: gargoyle-bar, venue_id: 12252462}", "{slug: gargoyle-bar}"),     # missing venue_id
+    ("venue_id: 12252462", 'venue_id: "12252462"'),                           # wrong type
+    ("enabled: false", "enabled: nope"),                                     # not a bool
+    ("name: Tuf", "name: Tuf\n    untappd_slug: tuf"),                       # unknown place field
+    ("id: tuf", "id: Tap Station"),                                          # bad id
+    ("sources:\n      untappd_menu: {slug: gargoyle-bar, venue_id: 12252462}", "sources: {}"),  # no sources
+])
+def test_invalid_place_raises(tmp_path, old, new):
+    assert old in MINIMAL
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL.replace(old, new, 1)))
+
+
+@pytest.mark.parametrize("extra", [
+    "settings:\n  digest_time: 17:00\n",            # unquoted: YAML reads it as 1020
+    'settings:\n  digest_time: "25:00"\n',
+    "settings:\n  digest_tme: \"18:00\"\n",          # typo
+    "breweries:\n  - {id: dors, name: Dors}\n",      # missing brewery_id
+    "breweries:\n  - {id: dors, name: Dors, brewery_id: 441775}\n",   # missing slug
+])
+def test_invalid_settings_or_breweries_raise(tmp_path, extra):
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + extra))
+
+
+@pytest.mark.parametrize("text", ["", "places: [\n", "- just a list\n"])
+def test_broken_file_raises(tmp_path, text):
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, text))
+
+
+def test_missing_file_raises(tmp_path):
+    with pytest.raises(ConfigError):
+        load_config(tmp_path / "nope.yaml")
