@@ -53,11 +53,20 @@ places:
     sources:
       untappd_checkins: {slug: pulpulak-craft-beer-kitchen, venue_id: 12734409}
 
+  - id: beer-academy
+    name: Beer Academy
+    kind: brewpub
+    # главный бар на Московян 8 (найден по чекинам пивоварни, адрес проверен 2026-09-24)
+    enabled: true
+    brewery_id: 143586
+    brewery_name: Beer Academy
+    sources:
+      untappd_checkins: {slug: beer-academy, venue_id: 368914}
+
   - id: beer-academy-ethnograph
     name: Beer Academy Ethnograph
     kind: brewpub
-    # филиал на Абовяна 10; у главного бара (Москвян 8) пока нет известного venue_id в Untappd —
-    # должен всплыть через еженедельный отчёт о новых местах по чекинам пивоварни Beer Academy
+    # филиал на Абовяна 10; главный бар (Московян 8) — отдельное место beer-academy ниже
     enabled: true
     brewery_id: 143586
     brewery_name: Beer Academy
