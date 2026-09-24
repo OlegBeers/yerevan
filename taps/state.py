@@ -82,6 +82,9 @@ class VenueRec:
     verified: bool = False
     checkins: list[dict] = field(default_factory=list)   # [{"id": int, "at": iso}], deduped by id
     has_meta: bool = False   # name/url came from the venue's own page (untappd_menu/checkins): checkins must not overwrite them
+    city: str | None = None            # v1.1 city check (§4): raw addressLocality once the venue page was read
+    country: str | None = None        # "Armenia" if the venue is there, else its country (or unknown but read)
+    location_checked_at: str | None = None   # iso; set even on an unresolved read, to space out retries
 
 
 @dataclass

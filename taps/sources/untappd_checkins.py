@@ -1,4 +1,5 @@
 """Source 4.3 (👀): recent check-ins on an Untappd venue page; the parser also serves brewery pages (4.2)."""
+import json
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -129,6 +130,40 @@ def parse_venue_meta(html: str) -> dict | None:
     src = img["src"] if img else None
     verified = logo_div.find("span", string="Verified") is not None
     return {"logo": None if src and _is_generic_category_icon(src) else src, "verified": verified}
+
+
+ARMENIA_LOCALITY_MARKERS = ("yerevan", "ереван", "երևան")
+
+
+def parse_venue_location(html: str) -> dict | None:
+    """City/country from the venue's own JSON-LD "Location" block (v1.1 city check, §4); None if the
+    page carries no such block. Untappd's JSON-LD has no addressCountry for Armenian venues we've seen
+    (only addressLocality, e.g. "Yerevan Հայաստան"); is_armenia_location() covers that case too."""
+    soup = BeautifulSoup(html, "html.parser")
+    for script in soup.find_all("script", type="application/ld+json"):
+        try:
+            data = json.loads(script.get_text())
+        except ValueError:
+            continue
+        if data.get("@type") != "Location":
+            continue
+        address = data.get("address") or {}
+        locality, country = address.get("addressLocality"), address.get("addressCountry")
+        if locality or country:
+            return {"locality": locality, "country": country}
+    return None
+
+
+def is_armenia_location(loc: dict | None) -> bool:
+    """True when parse_venue_location() found an Armenian address: addressCountry if present (a foreign
+    venue is expected to carry one), else a Yerevan spelling in addressLocality."""
+    if loc is None:
+        return False
+    country = (loc.get("country") or "").strip().lower()
+    if country:
+        return country in ("armenia", "am")
+    locality = (loc.get("locality") or "").lower()
+    return any(marker in locality for marker in ARMENIA_LOCALITY_MARKERS)
 
 
 def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, now: datetime,

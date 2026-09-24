@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 
+import pytest
 from bs4 import BeautifulSoup
 
 from taps.config import Config, Place, Settings
 from taps.fetch import FetchError
 from taps.model import VenueCheckin
 from taps.sources.untappd_checkins import (
-    Checkin, checkins_to_sightings, checkins_to_venue_checkins, fetch_venue_checkins, parse_checkins,
-    parse_venue_meta,
+    Checkin, checkins_to_sightings, checkins_to_venue_checkins, fetch_venue_checkins, is_armenia_location,
+    parse_checkins, parse_venue_location, parse_venue_meta,
 )
 from tests.helpers import fixture_text
 
@@ -233,6 +234,44 @@ def test_parse_venue_meta_generic_category_icon_is_not_a_logo():
 
 def test_parse_venue_meta_missing_header_is_none():
     assert parse_venue_meta("<html><body>Nothing</body></html>") is None
+
+
+# --- v1.1 city check: venue location -------------------------------------------------------------
+
+FOREIGN_VENUE_HTML = """
+<script type="application/ld+json">
+{"@context":"http:\\/\\/schema.org\\/","@type":"Location","name":"Old Tbilisi Brewery",
+ "address":{"@type":"PostalAddress","streetAddress":"1 Rustaveli Ave","addressLocality":"Tbilisi",
+ "addressCountry":"Georgia"}}
+</script>
+"""
+
+
+@pytest.mark.parametrize("fixture", ["craftstory_checkins.html", "vertigo_checkins.html", "gargoyle_menu.html"])
+def test_parse_venue_location_from_yerevan_fixtures_is_armenia(fixture):
+    loc = parse_venue_location(fixture_text(f"untappd/{fixture}"))
+    assert loc is not None and is_armenia_location(loc) is True
+
+
+def test_parse_venue_location_foreign_country():
+    loc = parse_venue_location(FOREIGN_VENUE_HTML)
+    assert loc == {"locality": "Tbilisi", "country": "Georgia"}
+    assert is_armenia_location(loc) is False
+
+
+def test_parse_venue_location_missing_block_is_none():
+    assert parse_venue_location("<html><body>Nothing</body></html>") is None
+    assert is_armenia_location(None) is False
+
+
+@pytest.mark.parametrize("loc, armenia", [
+    ({"locality": "Yerevan Հայաստան", "country": None}, True),
+    ({"locality": "Ереван", "country": None}, True),
+    ({"locality": "Tbilisi", "country": None}, False),           # no country field: decided from the city
+    ({"locality": "Yerevan", "country": "Georgia"}, False),      # a country field, if present, wins
+])
+def test_is_armenia_location_rules(loc, armenia):
+    assert is_armenia_location(loc) is armenia
 
 
 def test_fetch_other_venue_is_bad_response():
