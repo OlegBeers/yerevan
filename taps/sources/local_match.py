@@ -60,7 +60,15 @@ class KnownBeer:
 _LATIN_RE = re.compile("[a-z]", re.IGNORECASE)
 # Words that mark a distinct edition of a base beer; a shop title must name them to match it
 _VARIANT_TOKENS = {"alkoholfrei", "alcoholfree", "non", "free", "zero", "0", "barrel", "aged", "ba", "bourbon",
-                   "brandy", "cognac", "rum", "whisky", "whiskey", "wine"}
+                   "brandy", "cognac", "rum", "whisky", "whiskey", "wine",
+                   "double", "imperial", "triple", "session", "hazy", "extra", "foreign", "nitro", "milk",
+                   "smoked", "vanilla", "shake"}
+# Too generic to serve as brewery evidence on their own -- many unrelated breweries share one of
+# these words (e.g. "St. Bernardus" and "St-Feuillien", or "Pivovar Svijany" and "Pivovar Chotěboř").
+_GENERIC_BREWERY_WORDS = {"st", "saint", "sint", "pivovar", "pivovarna", "the", "brau", "brauerei", "brasserie",
+                          "brouwerij", "birrificio", "cerveceria", "brewery", "brewing", "beer", "co", "company",
+                          "craft", "group", "gruppe"}
+_PAREN_RE = re.compile(r"\(([^()]*)\)")
 
 
 def _shop_tokens(text: str) -> list[str]:
@@ -79,21 +87,44 @@ def _is_latin(text: str) -> bool:
     return bool(_LATIN_RE.search(text))
 
 
+def _paren_tokens(name: str) -> set[str]:
+    """Tokens inside (...) in an Untappd beer's own name -- a scientific/regional aside (Apricot Ale
+    (Prunus Armeniaca), Pilsner (La Rapsodia)), not a real difference from the plain title."""
+    tokens: set[str] = set()
+    for m in _PAREN_RE.finditer(name):
+        tokens |= set(_candidate_tokens(m.group(1)))
+    return tokens
+
+
+def _best_fit_leftover(name: str, remaining: set[str]) -> set[str]:
+    """Extra candidate-name tokens still unexplained by `remaining`, after picking whichever
+    " / "-separated alternative spelling (Paulaner "Hefe-Weißbier / Hefe-Weizen / Weissbier") it
+    best fits: the other alternatives are just another phrasing of the same beer, not evidence of a
+    real difference, so only the chosen alternative's own leftover tokens count as "extra"."""
+    alts = [set(_candidate_tokens(part)) for part in name.split(" / ")]
+    fits = [alt - remaining for alt in alts if remaining <= alt]
+    return min(fits, key=len) if fits else set(_candidate_tokens(name)) - remaining
+
+
 def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candidate: KnownBeer) -> str | None:
     """"exact", "loose", "variant" (never chosen, but makes the name ambiguous) or None for how well `candidate` fits -- used to break ties when several
     candidates pass (local_match prefers an exact token-set match).
 
-    Brewery compatibility: a shop brewery token appears in the candidate's own brewery or name
-    tokens; or, when the shop brewery is empty/non-latin (often an importer's legal-entity name,
-    e.g. Parma), the shop name's first token stands in for it instead. Either way, whichever tokens
-    served as the brewery signal are excluded from the name-containment check below.
+    Brewery compatibility: the shop brewery's first significant token (ignoring generic words like
+    "st"/"pivovar"/"brewery" -- too common across unrelated breweries to serve as evidence) appears
+    in the candidate's own brewery or name tokens; or, when the shop brewery is empty/non-latin
+    (often an importer's legal-entity name, e.g. Parma), the shop name's first token stands in for
+    it instead. Either way, whichever tokens served as the brewery signal are excluded from the
+    name-containment check below.
     """
-    brewery_tokens = set(_shop_tokens(shop_brewery or ""))
+    shop_brewery_tokens = _shop_tokens(shop_brewery or "")
+    brewery_tokens = set(shop_brewery_tokens)
     candidate_brewery_tokens = set(_candidate_tokens(candidate.brewery))
     candidate_name_tokens = set(_candidate_tokens(candidate.name))
     consumed = brewery_tokens
 
-    if not brewery_tokens & (candidate_brewery_tokens | candidate_name_tokens):
+    first_significant = next((t for t in shop_brewery_tokens if t not in _GENERIC_BREWERY_WORDS), None)
+    if first_significant is None or first_significant not in (candidate_brewery_tokens | candidate_name_tokens):
         if brewery_tokens and _is_latin(shop_brewery or ""):
             return None   # a present, Latin brewery that simply disagrees (e.g. an importer's name)
         first = shop_name_tokens[0] if shop_name_tokens else None
@@ -104,9 +135,11 @@ def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candida
     remaining = {t for t in shop_name_tokens if t not in consumed}
     if not remaining or not remaining <= candidate_name_tokens:
         return None
-    if (candidate_name_tokens & _VARIANT_TOKENS) - set(shop_name_tokens):
-        return "variant"   # an alcohol-free/barrel-aged edition the title doesn't name: another beer, yet a rival
-    return "exact" if remaining == candidate_name_tokens else "loose"
+    extra = _best_fit_leftover(candidate.name, remaining)
+    allowed = consumed | candidate_brewery_tokens | _paren_tokens(candidate.name)
+    if (extra & _VARIANT_TOKENS) or (extra - allowed):
+        return "variant"   # an edition/flavour the title doesn't name: another beer, yet a rival
+    return "exact" if not extra else "loose"
 
 
 def local_match(shop_brewery: str | None, shop_name: str, candidates: Sequence[KnownBeer]) -> KnownBeer | None:

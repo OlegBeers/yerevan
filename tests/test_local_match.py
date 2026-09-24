@@ -150,3 +150,66 @@ def test_local_match_variant_candidate_still_makes_a_plain_name_ambiguous():
     stout_ba = KnownBeer(untappd_id=2508041, name="Armenian Imperial Stout (Brandy Barrel Aged)", brewery="Dargett Brewery")
     assert local_match("Dargett", "Stout", [oatmeal, stout_ba]) is None
     assert local_match("Dargett", "Oatmeal Stout", [oatmeal, stout_ba]) == oatmeal
+
+
+# --- local_match(): false-merge regressions found via the real dry run (code review) -----
+
+def test_local_match_rejects_saint_prefixed_brewery_as_generic_evidence():
+    """"St"/"Saint" is too generic a brewery-name prefix to count as evidence on its own -- two
+    unrelated Trappist breweries both start with it."""
+    found = local_match("St. Bernardus", "St. Bernardus Tripel",
+                        [KnownBeer(untappd_id=1, name="St-Feuillien Tripel", brewery="Brasserie St-Feuillien")])
+    assert found is None
+
+
+def test_local_match_rejects_pivovar_prefixed_brewery_as_generic_evidence():
+    """"Pivovar" (Czech for "brewery") is generic too -- it must not let one Czech brewery's beer
+    match another's just because both are called "Pivovar X"."""
+    found = local_match("Pivovar Svijany", "Svijany Pilsner",
+                        [KnownBeer(untappd_id=1, name="Chotěboř Pilsner", brewery="Pivovar Chotěboř")])
+    assert found is None
+
+
+def test_local_match_rejects_double_edition_the_shop_does_not_name():
+    """A "Double IPA" is a materially different, stronger beer than a plain "IPA"."""
+    found = local_match("Dargett", "Dargett IPA",
+                        [KnownBeer(untappd_id=1, name="Double IPA", brewery="Dargett Brewery")])
+    assert found is None
+
+
+def test_local_match_rejects_foreign_extra_stout_for_a_plain_stout():
+    found = local_match("Guinness", "Guinness Stout",
+                        [KnownBeer(untappd_id=1, name="Guinness Foreign Extra Stout", brewery="Guinness")])
+    assert found is None
+
+
+def test_local_match_rejects_a_flavoured_edition_the_shop_does_not_name():
+    """"Beer Geek Vanilla Shake Breakfast" is a distinct, flavoured edition of "Beer Geek Breakfast"."""
+    found = local_match("Mikkeller", "Mikkeller Beer Geek Breakfast",
+                        [KnownBeer(untappd_id=1, name="Beer Geek Vanilla Shake Breakfast", brewery="Mikkeller")])
+    assert found is None
+
+
+# --- local_match(): the "loose" allowances the stricter rules above must not break -------
+
+def test_local_match_accepts_a_parenthetical_regional_aside():
+    found = local_match("Dargett", "Dargett Pilsner",
+                        [KnownBeer(untappd_id=1, name="Pilsner (La Rapsodia)", brewery="Dargett Brewery")])
+    assert found is not None
+
+
+def test_local_match_accepts_extra_tokens_from_another_slash_alternative():
+    """Paulaner's own Untappd name lists three alternative spellings; the shop naming only one of
+    them is not "extra", unexplained evidence."""
+    found = local_match("Paulaner", "Weissbier",
+                        [KnownBeer(untappd_id=1, name="Hefe-Weißbier / Hefe-Weizen / Weissbier",
+                                  brewery="Paulaner Brauerei")])
+    assert found is not None
+
+
+def test_local_match_accepts_brand_repeated_in_the_candidates_own_name():
+    """The candidate's own Untappd name redundantly repeats the brand (common for German beers);
+    a shop title that only names the style, not the brand again, still matches."""
+    found = local_match("Weihenstephaner", "Hefeweissbier",
+                        [KnownBeer(untappd_id=1, name="Weihenstephaner Hefeweissbier", brewery="Weihenstephaner")])
+    assert found is not None
