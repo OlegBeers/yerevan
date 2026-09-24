@@ -53,10 +53,22 @@ places:
     sources:
       untappd_checkins: {slug: pulpulak-craft-beer-kitchen, venue_id: 12734409}
 
+  - id: beer-academy-ethnograph
+    name: Beer Academy Ethnograph
+    kind: brewpub
+    # филиал на Абовяна 10; у главного бара (Москвян 8) пока нет известного venue_id в Untappd —
+    # должен всплыть через еженедельный отчёт о новых местах по чекинам пивоварни Beer Academy
+    enabled: true
+    brewery_id: 143586
+    brewery_name: Beer Academy
+    sources:
+      untappd_checkins: {slug: beer-academy-ethnograph, venue_id: 10274653}
+
   - id: 379-torch-brew
     name: "379 Torch & Brew"
     kind: brewpub
-    enabled: true
+    # закрылись; блок оставлен, чтобы бот не принял их за новое место, если вернутся
+    enabled: false
     brewery_id: 518994
     brewery_name: "379"
     sources:
@@ -69,38 +81,51 @@ places:
     sources:
       untappd_checkins: {slug: tap-station, venue_id: 8234456}
 
+  - id: ferment
+    name: Ferment
+    kind: bar
+    # крафтовый бар на месте Vertigo (Teryan 65), 16 кранов
+    enabled: true
+    sources:
+      untappd_checkins: {slug: ferment, venue_id: 13510969}
+
   - id: tuf
     name: Tuf
     kind: bar
-    enabled: true
+    # закрылись; блок оставлен, чтобы бот не принял их за новое место, если вернутся
+    enabled: false
     sources:
       untappd_checkins: {slug: tuf, venue_id: 11284746}
 
   - id: izh
     name: Izh
     kind: bar
-    enabled: true
+    # нет реального заведения (решение Олега)
+    enabled: false
     sources:
       untappd_checkins: {slug: izh, venue_id: 12246294}
 
   - id: beer-point
     name: Beer Point Pub
     kind: bar
-    enabled: true
+    # нет реального заведения (решение Олега)
+    enabled: false
     sources:
       untappd_checkins: {slug: beer-point-pub, venue_id: 12348951}
 
   - id: ker-u-sus
     name: KER U SUS
     kind: bar
-    enabled: true
+    # это ресторан, а не пивной бар (решение Олега)
+    enabled: false
     sources:
       untappd_checkins: {slug: ker-u-sus, venue_id: 13968261}
 
   - id: tavern
     name: Tavern Yerevan
     kind: bar
-    enabled: true
+    # закрылись; блок оставлен, чтобы бот не принял их за новое место, если вернутся
+    enabled: false
     sources:
       untappd_checkins: {slug: tavern-yerevan-khorenatsi, venue_id: 13298511}
 
