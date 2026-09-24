@@ -194,7 +194,7 @@ def test_fetch_parma_walks_pages_and_fetches_product_pages_only_for_new_codes():
     assert by_id["28051"] == Sighting(
         place_id="parma", source="parma", beer_key="n:dahook ipa light", title='Beer "Dahook Ipa" light 330ml',
         name="Dahook Ipa light", seen_at=NOW, brewery="Dahook LLC", shop_item_id="28051", abv=6.0,
-        price_amd=790, volume_ml=330, in_stock=True, category="beer", url=URL_28051)
+        price_amd=790, volume_ml=330, in_stock=True, category="beer", url=URL_28051, shop_url=URL_28051)
     vimpel = by_id["21593"]                                 # known code: no product page, so no brewery or abv
     assert (vimpel.beer_key, vimpel.brewery, vimpel.abv, vimpel.price_amd, vimpel.in_stock) == \
         ("n:vimpel lager light", None, None, 520, True)

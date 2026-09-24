@@ -136,6 +136,6 @@ def fetch_parma(http: Http, place: Place, known_item_ids: set[str], now: datetim
             shop_item_id=card.item_id,
             abv=product.abv if product else None,
             price_amd=card.price_amd, volume_ml=volume_ml(card.title),
-            in_stock=card.in_stock, category=CATEGORY, url=card.url,
+            in_stock=card.in_stock, category=CATEGORY, url=card.url, shop_url=card.url,
         ))
     return SourceResult(key=key, source="parma", ok=True, sightings=sightings, place_id=place.id)

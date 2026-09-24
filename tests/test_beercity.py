@@ -184,12 +184,13 @@ def test_partial_run_without_new_ids_reads_only_first_page_of_each_category():
         place_id="beer-city", source="beercity", beer_key="n:starnberger brauhaus helles",   # alias applied
         title='Beer "Starnberger helles" 0,45l', name="Starnberger helles", seen_at=NOW,
         shop_item_id="2045", price_amd=730, in_stock=True, category="sshalcavac-garejur",
-        url=product("garejur-starnberger-heles-045l"))   # known: no product page, so no brand/abv/volume
+        url=product("garejur-starnberger-heles-045l"),   # known: no product page, so no brand/abv/volume
+        shop_url=product("garejur-starnberger-heles-045l"))
     assert s["12"] == Sighting(
         place_id="beer-city", source="beercity", beer_key="n:379 non",
         title='Draught beer "379" non-filtered 1l', name="379 non-filtered", seen_at=NOW,
         shop_item_id="12", price_amd=1700, container="draft", in_stock=False, category="lcnovi-garejur",
-        url=product("garejur-379-chfiltrvac-1l"))
+        url=product("garejur-379-chfiltrvac-1l"), shop_url=product("garejur-379-chfiltrvac-1l"))
     assert s["2050"].beer_key == s["2049"].beer_key == "n:mythos"   # 0.3L and 0.5L share a key
 
 
@@ -208,7 +209,7 @@ def test_partial_run_fetches_new_product_pages_and_walks_on_while_a_page_had_new
         place_id="beer-city", source="beercity", beer_key="n:hard root double ipa",
         title='Beer "Hard root" Double IPA 0.45 l', name="Hard root Double IPA", seen_at=NOW,
         brewery="Konix", shop_item_id="2047", abv=7.6, price_amd=2200, volume_ml=450, container="can",
-        in_stock=True, category="sshalcavac-garejur", url=IPA_URL)
+        in_stock=True, category="sshalcavac-garejur", url=IPA_URL, shop_url=IPA_URL)
     assert (s["2048"].brewery, s["2048"].abv, s["2048"].name) == ("Konix", 0.5, "Pure wave IPA non alco")
     assert s["2053"].brewery is None
 

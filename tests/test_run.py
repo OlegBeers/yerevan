@@ -15,7 +15,7 @@ from taps.model import SourceResult
 from taps.rules import MergeOutcome
 from taps.run import Deps, main, run, update_alerts
 from taps.sources.parma import fetch_parma as real_fetch_parma
-from taps.state import BeerRec, PairRec, UntappdRec, VenueRec, empty_state, load_state, save_state
+from taps.state import BeerRec, PairRec, ShopMatchRec, UntappdRec, VenueRec, empty_state, load_state, save_state
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import iso
 from tests.helpers import fixture_json, fixture_text
@@ -662,6 +662,195 @@ def test_fetch_beer_ratings_survives_a_parse_crash_and_continues(monkeypatch):
     run_mod.fetch_beer_ratings(state, client, NOW)
 
     assert state.beers["u:1"].rating_at == iso(NOW) and state.beers["u:2"].rating_at == iso(NOW)
+
+
+# --- v1.1 §3: match shop beers to Untappd via search -------------------------
+
+def _shop_pair(brand, name, last_seen=None, **extra):
+    return PairRec(first_seen=iso(NOW), last_seen=last_seen or iso(NOW),
+                   info={"kind": "shop", "source": "parma", "brewery": brand, "name": name, **extra})
+
+
+KILIKIA_RESULT_HTML = """
+<div class="beer-item" data-bid="1547626">
+ <a class="label" href="/b/kilikia-brewery-kilikia/1547626">
+  <img src="https://assets.untappd.com/site/beer_logos/beer-1547626.jpeg"></a>
+ <div class="beer-details">
+  <p class="name"><a href="/b/kilikia-brewery-kilikia/1547626">Kilikia</a></p>
+  <p class="brewery">Kilikia Brewery</p>
+  <p class="style">Pale Lager</p>
+ </div>
+ <div class="details beer">
+  <div class="abv">4.6% ABV</div>
+  <div class="caps" data-rating="3.21"></div>
+ </div>
+</div>
+"""
+KILIKIA_SEARCH_URL = "https://untappd.com/search?q=Kilikia%20Kilikia&type=beer"
+
+
+def test_shop_match_candidates_excludes_already_matched_and_untappd_keyed():
+    state = empty_state(NOW)
+    state.pairs = {
+        "parma": {
+            "n:kilikia": _shop_pair("Kilikia", "Kilikia"),
+            "u:1": _shop_pair("Dahook", "Hell"),   # already an Untappd id (e.g. via alias): no search
+        },
+    }
+    state.shop_matches["n:kilikia"] = ShopMatchRec(untappd_beer_id=1, matched_at=iso(NOW))
+    assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def test_shop_match_candidates_retries_a_stale_no_match():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=31)))
+    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia")]
+
+
+def test_shop_match_candidates_skips_a_fresh_no_match():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=29)))
+    assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def test_shop_match_candidates_skips_pairs_without_brand_or_name():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        "n:a": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "A"}),
+        "n:b": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "brewery": "B"}),
+    }}
+    assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def test_shop_match_candidates_most_recently_seen_first_capped_at_eight():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        f"n:beer{i}": _shop_pair("Brand", f"Beer {i}", last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 11)
+    }}
+    candidates = run_mod._shop_match_candidates(state, NOW)
+    assert [key for key, _, _ in candidates] == [f"n:beer{i}" for i in range(1, 9)]
+
+
+def test_match_shop_beers_records_a_match():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:kilikia"]
+    assert (match.untappd_beer_id, match.url, match.rating, match.style, match.abv) == (
+        1547626, "https://untappd.com/b/kilikia-brewery-kilikia/1547626", 3.21, "Pale Lager", 4.6)
+    assert match.logo == "https://assets.untappd.com/site/beer_logos/beer-1547626.jpeg"
+    assert match.matched_at == iso(NOW) and match.checked_at == iso(NOW)
+
+
+def test_match_shop_beers_records_no_match_when_nothing_scores():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Beer")}}
+    client = _untappd_client({"https://untappd.com/search?q=Nonexistent%20Brand%20Nonexistent%20Beer&type=beer":
+                              KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.untappd_beer_id, match.url, match.rating) == (None, None, None)
+    assert match.matched_at == iso(NOW)
+
+
+def test_match_shop_beers_dumps_debug_html_on_empty_results(monkeypatch, tmp_path):
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: "<html><body>Nothing found.</body></html>"})
+
+    run_mod.match_shop_beers(state, client, NOW)
+
+    written = (debug_dir / "untappd_search_n_kilikia.html").read_text(encoding="utf-8")
+    assert written.splitlines()[0] == f"<!-- {KILIKIA_SEARCH_URL} -->"
+    assert state.shop_matches["n:kilikia"].untappd_beer_id is None
+
+
+def test_match_shop_beers_stops_on_budget_error_without_consuming_the_others():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        "n:a": _shop_pair("A", "A", last_seen=iso(NOW - timedelta(days=1))),
+        "n:b": _shop_pair("B", "B", last_seen=iso(NOW - timedelta(days=2))),
+    }}
+    client = _untappd_client({}, daily_pages=0)
+    run_mod.match_shop_beers(state, client, NOW)
+    assert state.shop_matches == {}
+
+
+def test_shop_match_refresh_candidates_oldest_checked_first_capped_at_three():
+    state = empty_state(NOW)
+    state.shop_matches = {
+        f"n:beer{i}": ShopMatchRec(untappd_beer_id=i, url=f"https://untappd.com/b/x/{i}",
+                                   checked_at=iso(NOW - timedelta(days=31 + i)))
+        for i in range(1, 5)
+    }
+    candidates = run_mod._shop_match_refresh_candidates(state, NOW)
+    assert [key for key, _ in candidates] == ["n:beer4", "n:beer3", "n:beer2"]   # oldest checked_at first
+
+
+def test_shop_match_refresh_candidates_skips_fresh_and_unmatched():
+    state = empty_state(NOW)
+    state.shop_matches = {
+        "n:fresh": ShopMatchRec(untappd_beer_id=1, url="u1", checked_at=iso(NOW - timedelta(days=1))),
+        "n:no-match": ShopMatchRec(matched_at=iso(NOW - timedelta(days=40))),
+    }
+    assert run_mod._shop_match_refresh_candidates(state, NOW) == []
+
+
+def test_refresh_shop_matches_updates_cached_fields():
+    state = empty_state(NOW)
+    state.shop_matches = {"n:kilikia": ShopMatchRec(untappd_beer_id=1559917, url=BEER_URL, style="Old Style",
+                                                    checked_at=iso(NOW - timedelta(days=31)))}
+    client = _untappd_client({BEER_URL: BEER_PAGE_HTML})
+    run_mod.refresh_shop_matches(state, client, NOW)
+    match = state.shop_matches["n:kilikia"]
+    assert (match.rating, match.style, match.abv, match.checked_at) == (3.82, "Fruit Beer", 6.2, iso(NOW))
+
+
+def test_refresh_shop_matches_stamps_checked_at_even_when_unparseable():
+    state = empty_state(NOW)
+    state.shop_matches = {"n:kilikia": ShopMatchRec(untappd_beer_id=1559917, url=BEER_URL, rating=3.5,
+                                                    checked_at=iso(NOW - timedelta(days=31)))}
+    client = _untappd_client({BEER_URL: "<html><body>login wall</body></html>"})
+    run_mod.refresh_shop_matches(state, client, NOW)
+    match = state.shop_matches["n:kilikia"]
+    assert match.rating == 3.5 and match.checked_at == iso(NOW)   # kept, just stamped so it isn't refetched
+
+
+def test_apply_shop_matches_overlays_matched_beer_onto_shop_pair():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "Kilikia", "brewery": "Kilikia", "url": "https://parma.am/p/1",
+              "shop_url": "https://parma.am/p/1"})}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(
+        untappd_beer_id=1547626, url="https://untappd.com/b/kilikia-brewery-kilikia/1547626",
+        rating=3.21, style="Pale Lager", abv=4.6, logo="https://x/logo.jpg",
+        matched_at=iso(NOW), checked_at=iso(NOW))
+
+    run_mod.apply_shop_matches(state)
+
+    info = state.pairs["parma"]["n:kilikia"].info
+    assert info["url"] == "https://untappd.com/b/kilikia-brewery-kilikia/1547626"
+    assert info["shop_url"] == "https://parma.am/p/1"   # untouched: still the shop's own product page
+    assert (info["rating"], info["style"], info["abv"], info["logo"]) == (3.21, "Pale Lager", 4.6, "https://x/logo.jpg")
+
+
+def test_apply_shop_matches_leaves_unmatched_and_non_shop_pairs_alone():
+    state = empty_state(NOW)
+    state.pairs = {
+        "parma": {"n:x": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                 info={"kind": "shop", "url": "https://parma.am/p/2"})},
+        "gargoyle": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu"})},
+    }
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["parma"]["n:x"].info["url"] == "https://parma.am/p/2"
+    assert state.pairs["gargoyle"]["u:1"].info == {"kind": "menu"}
 
 
 def test_discovery_report_pluralizes_checkins_correctly(world):

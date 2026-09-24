@@ -33,8 +33,11 @@ from taps.sources.untappd_checkins import (
     fetch_venue_checkins, is_armenia_location, is_yerevan_city, parse_venue_location, parse_venue_meta,
 )
 from taps.sources.untappd_menu import fetch_menu
+from taps.sources.untappd_search import matches, parse_search_results, search_url
 from taps.sources.yerevan_city import fetch_yerevan_city
-from taps.state import VENUE_KEEP_DAYS, BeerRec, State, apply_aliases, load_state, prune, record_venues, save_state
+from taps.state import (
+    VENUE_KEEP_DAYS, BeerRec, ShopMatchRec, State, apply_aliases, load_state, prune, record_venues, save_state,
+)
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
@@ -59,6 +62,10 @@ LOCATION_MIN_CHECKINS = 2         # below this, not worth spending a page on
 LOCATION_RECHECK_DAYS = 90        # a failed/unknown check is retried after this many days
 BEER_RATING_CANDIDATES_PER_RUN = 5   # v1.1 §2: beer pages fetched per run for check-in-only ratings
 BEER_RATING_MAX_AGE_DAYS = 30        # a cached rating older than this is refreshed
+SHOP_SEARCH_CANDIDATES_PER_RUN = 8   # v1.1 §3: shop beers searched on Untappd per run
+SHOP_MATCH_RETRY_DAYS = 30           # a failed search ("no_match") is retried after this many days
+SHOP_MATCH_REFRESH_PER_RUN = 3       # matched shop beers whose cached rating is refreshed per run
+SHOP_MATCH_MAX_AGE_DAYS = 30         # a matched beer's cached rating is refreshed after this many days
 
 
 @dataclass
@@ -128,6 +135,8 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
             results.append(result)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
         fetch_beer_ratings(state, client, now)                 # v1.1 §2: check-in-only beer ratings
+        match_shop_beers(state, client, now)                   # v1.1 §3: search shop beers on Untappd
+        refresh_shop_matches(state, client, now)               # v1.1 §3: refresh matched shop ratings
     finally:
         close()
     if client.responded:
@@ -264,6 +273,105 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
                 if data[field] is not None:
                     setattr(beer, field, data[field])
         beer.rating_at = iso(now)
+
+
+# --- v1.1 §3: match shop beers to Untappd via search --------------------------
+
+def _shop_match_candidates(state: State, now: datetime) -> list[tuple[str, str, str]]:
+    """(key, brand, name) of shop beers with no successful match yet -- never searched, or a failed
+    search ("no_match") old enough to retry -- most recently seen first, capped at
+    SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a corrections.yaml
+    alias starts with "u:", not "n:", so it needs no search (apply_aliases runs before collect_untappd)."""
+    best: dict[str, tuple[str, str, str]] = {}   # key -> (last_seen, brand, name)
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            if not key.startswith("n:") or rec.info.get("kind") != "shop":
+                continue
+            match = state.shop_matches.get(key)
+            if match is not None and (match.untappd_beer_id is not None
+                                      or age_days(parse_iso(match.matched_at), now) <= SHOP_MATCH_RETRY_DAYS):
+                continue
+            brand, name = rec.info.get("brewery"), rec.info.get("name")
+            if not brand or not name:
+                continue
+            if key not in best or rec.last_seen > best[key][0]:
+                best[key] = (rec.last_seen, brand, name)
+    ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
+    return [(key, brand, name) for key, (_, brand, name) in ordered[:SHOP_SEARCH_CANDIDATES_PER_RUN]]
+
+
+def match_shop_beers(state: State, client: UntappdClient, now: datetime) -> None:
+    """Search Untappd for up to SHOP_SEARCH_CANDIDATES_PER_RUN shop beers per run (v1.1 §3), same
+    client/budget/pauses as the other Untappd sources; a budget or Cloudflare error stops this step
+    only. An empty or unparseable results page is dumped for debugging (TAPS_DEBUG_DIR) and still
+    counts as "no_match", so it is retried after SHOP_MATCH_RETRY_DAYS rather than every run."""
+    for key, brand, name in _shop_match_candidates(state, now):
+        try:
+            html = client.get(search_url(f"{brand} {name}"))
+        except FetchError:
+            break
+        try:
+            results = parse_search_results(html)   # I-1: an unexpected page must fail this one beer
+        except Exception:
+            results = []
+        if not results:
+            dump_debug_html(f"untappd_search_{key}", client)
+        found = next((r for r in results if matches(brand, name, r)), None)
+        if found is None:
+            state.shop_matches[key] = ShopMatchRec(matched_at=iso(now))
+        else:
+            state.shop_matches[key] = ShopMatchRec(
+                untappd_beer_id=found.beer_id, url=found.url, rating=found.rating, style=found.style,
+                abv=found.abv, logo=found.logo, matched_at=iso(now), checked_at=iso(now))
+
+
+def _shop_match_refresh_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """(key, url) of matched shop beers whose cached rating is missing or older than
+    SHOP_MATCH_MAX_AGE_DAYS, oldest checked first, capped at SHOP_MATCH_REFRESH_PER_RUN."""
+    due = [(key, m) for key, m in state.shop_matches.items()
+           if m.untappd_beer_id is not None and m.url
+           and (m.checked_at is None or age_days(parse_iso(m.checked_at), now) > SHOP_MATCH_MAX_AGE_DAYS)]
+    due.sort(key=lambda kv: kv[1].checked_at or "")
+    return [(key, m.url) for key, m in due[:SHOP_MATCH_REFRESH_PER_RUN]]
+
+
+def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> None:
+    """Refresh up to SHOP_MATCH_REFRESH_PER_RUN matched shop beers' ratings via the beer's own page
+    (v1.1 §3, the existing untappd_beer parser), same client/budget. A page that doesn't parse leaves
+    the cached fields as they were, but still stamps checked_at so it isn't retried every run."""
+    for key, url in _shop_match_refresh_candidates(state, now):
+        try:
+            html = client.get(url)
+        except FetchError:
+            break
+        try:
+            data = parse_beer_page(html)   # I-1: an unexpected page must fail this one beer, not the run
+        except Exception:
+            data = None
+        match = state.shop_matches[key]
+        if data:
+            for field in ("rating", "style", "abv"):
+                if data[field] is not None:
+                    setattr(match, field, data[field])
+        match.checked_at = iso(now)
+
+
+def apply_shop_matches(state: State) -> None:
+    """Overlay a matched Untappd beer's rating/style/abv/logo/url onto every shop pair that shares
+    its key (v1.1 §3), after this run's merge. The shop's own product link already reached info via
+    Sighting.shop_url like any other field; only Untappd's data needs to move in here."""
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            if rec.info.get("kind") != "shop":
+                continue
+            match = state.shop_matches.get(key)
+            if match is None or match.untappd_beer_id is None:
+                continue
+            rec.info["url"] = match.url
+            for field in ("logo", "rating", "style", "abv"):
+                value = getattr(match, field)
+                if value is not None:
+                    rec.info[field] = value
 
 
 # --- alerts ------------------------------------------------------------------
@@ -460,6 +568,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
                manual_result(corrections, config, now)]
     record_venues(state, results, now, config.known_venue_ids)
     outcome = merge_results(state, results, config, corrections, now)
+    apply_shop_matches(state)   # v1.1 §3: overlay this run's (or an earlier) Untappd match onto shop rows
     prune(state, now)
     update_alerts(alerter, state, outcome, client, load.errors)
     site_data = build_site_data(state, config, now)

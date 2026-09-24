@@ -164,7 +164,7 @@ def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], full: boo
                     price_amd=item.price_amd,
                     volume_ml=product.volume_ml if product else None,
                     container="draft" if category == DRAFT_CATEGORY else (product.container if product else None),
-                    in_stock=item.in_stock, category=category, url=item.url,
+                    in_stock=item.in_stock, category=category, url=item.url, shop_url=item.url,
                 ))
             if not full and not unseen:
                 break
