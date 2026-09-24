@@ -284,16 +284,24 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
 
 def apply_same_as(state: State, corrections: Corrections, now: datetime) -> None:
     """corrections.yaml same_as: a manual identity override, wins over local/search matches -- run
-    before both so their own candidate selection skips whatever this already resolved."""
+    before both so their own candidate selection skips whatever this already resolved. A key the
+    owner removed from corrections.yaml drops its stale manual match, so local/search matching
+    resumes for it. untappd_id: null ("не то же") records a manual block with no Untappd id/url,
+    re-applied every run so it never ages into local/search's own retry window."""
+    active_keys = {key for _, key in corrections.same_as}
+    for key, match in list(state.shop_matches.items()):
+        if match.via == "manual" and key not in active_keys:
+            del state.shop_matches[key]
     if not corrections.same_as:
         return
     catalog = {b.untappd_id: b for b in known_untappd_beers(state)}
     for (place_id, key), untappd_id in corrections.same_as.items():
         if key not in state.pairs.get(place_id, {}):
             continue
-        known = catalog.get(untappd_id)
+        known = catalog.get(untappd_id) if untappd_id is not None else None
         state.shop_matches[key] = ShopMatchRec(
-            untappd_beer_id=untappd_id, url=f"https://untappd.com/beer/{untappd_id}",
+            untappd_beer_id=untappd_id,
+            url=f"https://untappd.com/beer/{untappd_id}" if untappd_id is not None else None,
             name=known.name if known else None, brewery=known.brewery if known else None,
             matched_at=iso(now), via="manual")
 

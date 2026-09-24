@@ -847,6 +847,44 @@ def test_apply_same_as_wins_over_an_existing_local_or_search_match():
     assert state.shop_matches["n:x"].via == "manual"
 
 
+def test_apply_same_as_drops_a_manual_match_removed_from_corrections():
+    """Each run: a same_as entry the owner deleted from corrections.yaml must not leave a stale
+    manual override behind -- local/search matching should resume for that key (code review)."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=12345, via="manual", matched_at=iso(NOW - timedelta(days=1)))
+    run_mod.apply_same_as(state, run_mod.Corrections(), NOW)   # no same_as entries any more
+    assert "n:x" not in state.shop_matches
+
+
+def test_apply_same_as_leaves_non_manual_matches_alone_when_dropping_stale():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=999, via="local", matched_at=iso(NOW))
+    run_mod.apply_same_as(state, run_mod.Corrections(), NOW)
+    assert state.shop_matches["n:x"].via == "local"   # same_as only ever drops its own via="manual"
+
+
+def test_apply_same_as_null_untappd_id_blocks_matching_without_claiming_an_id():
+    """corrections.yaml same_as untappd_id: null -- "не то же" -- records a manual block (v1.2 beer
+    identity) without a real Untappd id or url."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:x"): None})
+    run_mod.apply_same_as(state, corrections, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.untappd_beer_id, match.via, match.url) == (None, "manual", None)
+    assert match.matched_at == iso(NOW)
+
+
+def test_apply_same_as_null_override_keeps_blocking_local_matching_every_run():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:x"): None})
+    run_mod.apply_same_as(state, corrections, NOW)
+    assert run_mod._shop_match_candidates(state, NOW, limit=None) == []
+
+
 def test_match_shop_beers_locally_records_a_local_match():
     """v1.2 beer identity: before any Untappd search, a shop beer already known from a bar's own
     menu is matched for free and marked via="local", with the Untappd beer's own name/brewery."""
