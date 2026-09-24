@@ -219,10 +219,10 @@ def test_venues_list_sorted_by_checkins_then_name():
         "99": VenueRec(name="KER U SUS", url="https://untappd.com/v/ker-u-sus/99", city="Yerevan", country="Armenia",
                       checkins=[{"id": 3, "at": ago(1)}, {"id": 4, "at": ago(2)}, {"id": 5, "at": ago(3)}]),
         "50": VenueRec(name="Old Bar", url="https://untappd.com/v/old/50", city="Yerevan", country="Armenia",
-                      checkins=[{"id": 6, "at": ago(40)}]),
+                      checkins=[{"id": 6, "at": ago(70)}]),
     })
     venues = build(st)["venues"]
-    assert [v["name"] for v in venues] == ["KER U SUS", "Gargoyle Bar"]   # Old Bar has no checkin within 30d
+    assert [v["name"] for v in venues] == ["KER U SUS", "Gargoyle Bar"]   # Old Bar has no checkin within 60d
     ker = venues[0]
     assert ker == {
         "venue_id": 99, "name": "KER U SUS", "url": "https://untappd.com/v/ker-u-sus/99",

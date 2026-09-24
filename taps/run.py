@@ -286,7 +286,7 @@ def build_discovery_report(state: State, config: Config, now: datetime) -> tuple
     if not candidates:
         return None
     candidates.sort(key=lambda c: (-len(c[2]), c[1].name))
-    header = "🍺 Новые места по чекинам (за 30 дней):"
+    header = "🍺 Новые места по чекинам (за 60 дней):"
     footer = "\nДобавить в список — напиши Claude."
     lines: list[str] = []
     included: list[int] = []

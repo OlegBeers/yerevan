@@ -331,7 +331,7 @@ def test_prune_drops_untracked_venue_record_without_recent_checkins(world):
     """I-1: worldwide venues seen once on a brewery page must not accumulate in state.venues forever."""
     first_run(world)
     world.edit_state(lambda s: s.venues.__setitem__(
-        "77777", VenueRec(name="Random Bar", url="u", checkins=[{"id": 1, "at": iso(NOW - timedelta(days=40))}])))
+        "77777", VenueRec(name="Random Bar", url="u", checkins=[{"id": 1, "at": iso(NOW - timedelta(days=70))}])))
     world.next_run()
 
     assert world.run(NEXT_EVENING) == 0
@@ -343,7 +343,7 @@ def test_prune_keeps_a_disabled_known_place_venue_without_recent_checkins(world)
     """I-1: a disabled place's own venue is kept (for its logo/verified) even through a quiet spell."""
     first_run(world)
     world.edit_state(lambda s: s.venues.__setitem__(
-        "88888", VenueRec(name="Closed Bar", url="u", checkins=[{"id": 1, "at": iso(NOW - timedelta(days=40))}])))
+        "88888", VenueRec(name="Closed Bar", url="u", checkins=[{"id": 1, "at": iso(NOW - timedelta(days=70))}])))
     world.next_run()
 
     assert world.run(NEXT_EVENING) == 0

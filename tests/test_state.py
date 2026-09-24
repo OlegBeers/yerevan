@@ -397,7 +397,7 @@ def test_record_venues_adds_untracked_venue_from_checkins_only():
 def test_record_venues_dedupes_by_checkin_id_and_prunes_old_ones():
     s = empty_state(NOW)
     s.venues["1"] = VenueRec(name="Bar", url="u", checkins=[
-        {"id": 1, "at": ago(1)}, {"id": 2, "at": ago(40)}])   # 2 is older than 30 days
+        {"id": 1, "at": ago(1)}, {"id": 2, "at": ago(70)}])   # 2 is older than 60 days
     result = SourceResult(
         key="untappd_checkins:bar", source="untappd_checkins", ok=True,
         venue_checkins=[VenueCheckin(venue_id=1, venue_name="Bar", venue_url="u", checkin_id=1, at=NOW - timedelta(days=1)),
@@ -415,8 +415,8 @@ def test_record_venues_ignores_results_without_venue_data():
 
 def test_record_venues_drops_venues_with_no_recent_checkins_unless_known():
     s = empty_state(NOW)
-    s.venues["1"] = VenueRec(name="Random Bar", url="u1", checkins=[{"id": 1, "at": ago(40)}])
-    s.venues["2"] = VenueRec(name="Closed Bar", url="u2", checkins=[{"id": 2, "at": ago(40)}])
+    s.venues["1"] = VenueRec(name="Random Bar", url="u1", checkins=[{"id": 1, "at": ago(70)}])
+    s.venues["2"] = VenueRec(name="Closed Bar", url="u2", checkins=[{"id": 2, "at": ago(70)}])
     record_venues(s, [], NOW, known_venue_ids=frozenset({2}))
     assert "1" not in s.venues
     assert "2" in s.venues

@@ -12,7 +12,7 @@ from taps.timeutil import age_days, iso, parse_iso
 PAIR_KEEP_DAYS = 180      # pairs not seen for longer are pruned...
 SOURCE_OK_DAYS = 30       # ...but only if a source of their place succeeded this recently
 ALIAS_MAX_HOPS = 5
-VENUE_KEEP_DAYS = 30      # v1.1: check-ins older than this are pruned from state.venues
+VENUE_KEEP_DAYS = 60      # v1.1: venue check-in window ("Все места", weekly report); older check-ins are pruned
 MARKERS = ("baseline", "suppressed")   # notified_at values that are not timestamps
 
 

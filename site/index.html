@@ -172,7 +172,7 @@
     <p id="count" class="count" aria-live="polite"></p>
     <div id="rows"></div>
     <section id="venues-section" hidden>
-      <p class="intro">Где за последние 30 дней отмечали пиво местных пивоварен. Если место стоит добавить — напишите Олегу.</p>
+      <p class="intro">Где за последние 60 дней отмечали пиво местных пивоварен. Если место стоит добавить — напишите Олегу.</p>
       <ul id="venues" class="cards"></ul>
     </section>
   </main>
@@ -429,7 +429,7 @@ function venueNode(v) {
     el("div", { class: "top" },
       el("span", { class: "where-head" }, logoNode(v.name, v.logo, 28), placeNameNode(place)),
       v.tracked ? el("span", { class: "tracked-badge" }, "в списке") : null),
-    el("div", { class: "meta" }, `${v.checkins_30d} ${plural(v.checkins_30d, "чекин", "чекина", "чекинов")} за 30 дней`),
+    el("div", { class: "meta" }, `${v.checkins_30d} ${plural(v.checkins_30d, "чекин", "чекина", "чекинов")} за 60 дней`),
     last ? el("div", { class: "meta" }, `последний ${yerevan(last).dm}`) : null);
 }
 function renderVenues() {
