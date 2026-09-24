@@ -114,6 +114,13 @@ def test_from_dict_does_not_share_input_objects():
     assert "9999" not in d["shop_items"]["yerevan-city"]
 
 
+def test_shop_match_rec_has_identity_fields_defaulting_to_none():
+    """v1.2 beer identity: a match (local, search or manual) can carry the Untappd beer's own
+    canonical name/brewery and how it was found."""
+    rec = ShopMatchRec(untappd_beer_id=1)
+    assert (rec.via, rec.name, rec.brewery) == (None, None, None)
+
+
 def test_from_dict_fills_missing_sections_and_fields_with_defaults():
     s = State.from_dict({"started_at": ago(0), "sources": {"parma:parma": {"last_ok": ago(1)}}})
     assert s.sources["parma:parma"] == SourceRec(last_ok=ago(1))

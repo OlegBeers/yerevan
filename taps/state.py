@@ -52,6 +52,9 @@ class ShopMatchRec:
     logo: str | None = None
     matched_at: str | None = None   # iso; last search attempt, matched or not
     checked_at: str | None = None   # iso; last rating refresh of a matched beer
+    via: str | None = None          # "local" | "search" | "manual" (corrections.yaml same_as); how it was found
+    name: str | None = None         # Untappd's own canonical name/brewery (v1.2 beer identity), for display
+    brewery: str | None = None
 
 
 @dataclass
