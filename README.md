@@ -169,4 +169,4 @@ docs/superpowers/specs/   дизайн
 
 ## Спасибо и обратная связь
 
-Спасибо Ивану за идею (проект [hopandshot](https://github.com/hopandshot/hopsandshot) для Валенсии). Проект делает и поддерживает Олег — Telegram [@oleg_sorokin](https://t.me/oleg_sorokin); пожелания и ошибки — туда.
+Спасибо Ивану за идею (проект [hopandshot](https://github.com/hopandshot/hopsandshot) для Валенсии). Сайт и бота собрал и ведёт Олег. Нашли ошибку, знаете бар с крафтом или хотите что-то предложить — пишите в Telegram [@oleg_sorokin](https://t.me/oleg_sorokin). Подписывайтесь на меня в Untappd: [Oleg_Sorokin](https://untappd.com/user/Oleg_Sorokin) 🍻

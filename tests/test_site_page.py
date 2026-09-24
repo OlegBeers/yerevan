@@ -204,9 +204,11 @@ def test_footer_sources_legend_and_credits():
     text = footer.get_text(" ", strip=True)
     assert "Идея и основа" not in text
     assert "Спасибо Ивану за идею." in text
-    assert "Проект делает и поддерживает Олег" in text
-    assert "Пожелания и ошибки — туда." in text
+    assert "Сайт и бота собрал и ведёт Олег." in text
+    assert "пишите в Telegram" in text
+    assert "Подписывайтесь на меня в Untappd: Oleg_Sorokin" in text
     assert soup.find(id="legend-star").get_text().startswith("⭐ — возможно, впервые в Ереване (с тех пор, как следим")
     hrefs = " ".join(a["href"] for a in footer.find_all("a"))
-    for host in ("untappd.com", "buy.am", "beer-city.am", "yerevan-city.am", "parma.am", "t.me/oleg_sorokin"):
+    for host in ("untappd.com", "buy.am", "beer-city.am", "yerevan-city.am", "parma.am", "t.me/oleg_sorokin",
+                 "untappd.com/user/Oleg_Sorokin"):
         assert host in hrefs, host
