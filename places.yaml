@@ -219,4 +219,4 @@ settings:
   digest_time: "17:00"        # раньше вечернего запуска (18:17 по Еревану)
   digest_max_lines: 15
   hot_rating: 3.75
-  untappd_daily_pages: 30
+  untappd_daily_pages: 40

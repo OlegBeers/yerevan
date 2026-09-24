@@ -30,6 +30,7 @@ class Checkin:
     created_at: datetime
     venue_url: str | None = None
     beer_url: str | None = None   # canonical /b/<slug>/<id> link from the check-in's own beer href
+    logo: str | None = None       # beer label image (a.label img, before p.text)
 
 
 def _text(tag: Tag | None) -> str:
@@ -72,6 +73,7 @@ def _parse_item(item: Tag) -> Checkin | None:
     if beer is None:
         return None
     serving = _text(item.select_one("p.serving span")) or None
+    logo = item.select_one("a.label img[src]")
     return Checkin(
         checkin_id=int(item["data-checkin-id"]),
         beer_id=beer[0],
@@ -84,6 +86,7 @@ def _parse_item(item: Tag) -> Checkin | None:
         created_at=created_at,
         venue_url=f"https://untappd.com{venue[2]}" if venue else None,
         beer_url=f"https://untappd.com{beer[2]}",
+        logo=logo["src"] if logo else None,
     )
 
 
@@ -210,6 +213,7 @@ def checkins_to_sightings(checkins: list[Checkin], config: Config, source: str, 
             title=f"{c.brewery} {c.beer_name}".strip(), name=c.beer_name, seen_at=c.created_at,
             brewery=c.brewery or None, untappd_beer_id=c.beer_id, serving=c.serving,
             url=c.beer_url or f"https://untappd.com/beer/{c.beer_id}", checkin_id=c.checkin_id, at_home=c.at_home,
+            logo=c.logo,
         ))
     return out
 

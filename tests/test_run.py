@@ -541,7 +541,7 @@ def test_city_check_respects_the_untappd_budget(world):
     """The daily budget runs out during the main jobs (as in test_sources_out_of_untappd_budget_are_
     skipped_without_failure): the city check must not spend a page either, and stays unchecked."""
     state = empty_state(NOW)
-    state.untappd.pages_today, state.untappd.pages_date = 29, "2026-09-24"   # 1 of 30 pages left
+    state.untappd.pages_today, state.untappd.pages_date = 39, "2026-09-24"   # 1 of 40 pages left
     state.venues["54321"] = VenueRec(
         name="Never Reached", url="https://untappd.com/v/never/54321",
         checkins=[{"id": i, "at": iso(NOW - timedelta(days=1))} for i in range(2)])
@@ -970,14 +970,14 @@ def test_first_cloudflare_challenge_stops_untappd_but_not_shops(world):
 
 def test_sources_out_of_untappd_budget_are_skipped_without_failure(world):
     state = empty_state(NOW)
-    state.untappd.pages_today, state.untappd.pages_date = 29, "2026-09-24"   # 1 of 30 pages left
+    state.untappd.pages_today, state.untappd.pages_date = 39, "2026-09-24"   # 1 of 40 pages left
     save_state(world.repo / "state.json", state)
     assert world.run(NOW) == 0
 
     state = world.state()
     assert world.untappd.urls == [GARGOYLE]            # its second tab and everything after: no budget
     assert not any(k.startswith("untappd") for k in state.sources)
-    assert state.untappd.pages_today == 30 and state.alerts == {} and world.sends == []
+    assert state.untappd.pages_today == 40 and state.alerts == {} and world.sends == []
 
 
 # --- TAPS_DEBUG_DIR opt-in capture --------------------------------------------------------------

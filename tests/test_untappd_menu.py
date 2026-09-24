@@ -62,13 +62,17 @@ def test_gargoyle_default_page_items():
     assert parse_menu_page(TAP_LIST).items == [
         MenuItem(beer_id=5817007, name="Hell", brewery="Dahook", brewery_id=559009, style="Lager - Helles",
                  abv=4.8, ibu=20, rating=3.42226, price_amd=None, volume_ml=None, container=None,
-                 section="Tap List"),
+                 section="Tap List", url="https://untappd.com/b/dahook-hell/5817007",
+                 logo="https://labels.untappd.com/5817007"),
         MenuItem(beer_id=5817002, name="Red IPA", brewery="Dahook", brewery_id=559009, style="IPA - Red",
                  abv=6.0, ibu=45, rating=3.66676, price_amd=None, volume_ml=None, container=None,
-                 section="Tap List"),
+                 section="Tap List", url="https://untappd.com/b/dahook-red-ipa/5817002",
+                 logo="https://labels.untappd.com/5817002"),
         MenuItem(beer_id=4775604, name="American Wheat Ale", brewery="379 Torch & Brew", brewery_id=518994,
                  style="Wheat Beer - American Pale Wheat", abv=4.8, ibu=25, rating=3.72004,
-                 price_amd=None, volume_ml=None, container=None, section="Tap List"),
+                 price_amd=None, volume_ml=None, container=None, section="Tap List",
+                 url="https://untappd.com/b/379-torch-and-brew-american-wheat-ale/4775604",
+                 logo="https://labels.untappd.com/4775604"),
     ]
 
 
@@ -94,7 +98,8 @@ def test_beatles_item_fields():
     items = first_by_id(parse_menu_page(BEATLES_MENU).items)
     assert items[4473] == MenuItem(   # "1. Guinness Draught": numbering stripped
         beer_id=4473, name="Guinness Draught", brewery="Guinness", brewery_id=49, style="Stout - Irish Dry",
-        abv=4.2, ibu=45, rating=3.76508, price_amd=None, volume_ml=None, container=None, section="On Tap")
+        abv=4.2, ibu=45, rating=3.76508, price_amd=None, volume_ml=None, container=None, section="On Tap",
+        url="https://untappd.com/b/guinness-guinness-draught/4473", logo="https://labels.untappd.com/4473")
     warsteiner = items[4305756]   # "N/A ABV • N/A IBU"
     assert (warsteiner.name, warsteiner.style, warsteiner.abv, warsteiner.ibu) == \
         ("Warsteiner 0,0% Isotonisch", "Non-Alcoholic - Other", None, None)
@@ -201,7 +206,7 @@ def test_fetch_gargoyle_reads_every_beer_tab():
         place_id="gargoyle", source="untappd_menu", beer_key="u:5817002", title="Dahook Red IPA",
         name="Red IPA", seen_at=NOW, brewery="Dahook", brewery_id=559009, untappd_beer_id=5817002,
         style="IPA - Red", abv=6.0, ibu=45, rating=3.66676, menu_id="203569",
-        url="https://untappd.com/beer/5817002")
+        url="https://untappd.com/b/dahook-red-ipa/5817002", logo="https://labels.untappd.com/5817002")
 
 
 def test_fetch_single_menu_venue():

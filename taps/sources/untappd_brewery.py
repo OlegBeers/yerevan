@@ -65,7 +65,7 @@ def parse_beer_list(html: str) -> BeerList:
             brewery_id=0, untappd_beer_id=int(m.group(1)), name=_text(link), brewery=brewery,
             style=_text(item.select_one("p.style")) or None,
             abv=float(abv.group(1)) if abv else None,
-            url=f"https://untappd.com/beer/{m.group(1)}",
+            url=f"https://untappd.com{link['href'].rstrip('/')}",   # canonical /b/<slug>/<id>: opens in the app
         ))
     return BeerList(total=total, beers=beers)
 
