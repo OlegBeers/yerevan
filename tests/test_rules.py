@@ -227,6 +227,30 @@ def test_shop_item_hidden_by_brand_stays_hidden_when_a_later_sighting_lacks_bran
     assert rec.notified_at == "suppressed" and rec.info["hidden"] is True
 
 
+def test_matched_shop_item_stays_visible_after_partial_refresh_even_with_a_not_craft_untappd_brewery():
+    """Code review (HIGH): run.py's apply_shop_matches must never let a match's canonical Untappd
+    brewery leak into rec.info["brewery"] -- the brand fallback above (a partial refresh that lacks
+    brand falls back to rec.info["brewery"]) must keep seeing the shop's own brand, so a beer whose
+    matched Untappd brewery name happens to contain a not_craft word is not wrongly hidden."""
+    from taps.run import apply_shop_matches
+    from taps.state import ShopMatchRec
+
+    state = ready("beercity:beer-city")
+    corrections = Corrections(not_craft=("Efes",))
+    key = "n:craft lager"
+    title = 'Beer "Craft Lager" 0.5 l'
+    out1 = merge(state, shop(item(1, key, brewery="Craftbrew", title=title)), corrections=corrections)
+    assert out1.events == [("beer-city", key)]   # a genuine craft brand: not hidden
+
+    state.shop_matches[key] = ShopMatchRec(untappd_beer_id=1, name="Craft Lager", brewery="Efes International",
+                                           matched_at=iso(NOW), via="local")
+    apply_shop_matches(state)
+
+    merge(state, shop(item(1, key, brewery=None, title=title)), corrections=corrections, now=NOW + 12 * H)
+    rec = state.pairs["beer-city"][key]
+    assert "hidden" not in rec.info and rec.notified_at != "suppressed"
+
+
 # --- shops: stock, item keys, aliases, Parma colours -------------------------
 
 def test_out_of_stock_new_item_becomes_an_event_only_when_in_stock():

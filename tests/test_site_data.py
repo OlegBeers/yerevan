@@ -162,6 +162,18 @@ def test_row_carries_display_fields():
     }]
 
 
+def test_row_prefers_canonical_untappd_name_and_brewery_when_matched():
+    """v1.2 beer identity: apply_shop_matches (run.py) stores the Untappd beer's own canonical
+    name/brewery in info["u_name"]/["u_brewery"], separate from the shop's own info["name"]/
+    ["brewery"] (which the digest and rules.py still use, code review) -- only the site row prefers
+    the canonical identity, e.g. so it groups/displays under the same name as on Untappd."""
+    info = {"name": "Chimay peres trappistes blue", "brewery": "Chimay",
+            "u_name": "Chimay Grande Réserve (Blue)", "u_brewery": "Bières de Chimay"}
+    st = state({"beer-city": {"n:chimay peres trappistes blue": pair("beercity", in_stock=True, info=info)}})
+    row = build(st)["rows"][0]
+    assert (row["name"], row["brewery"]) == ("Chimay Grande Réserve (Blue)", "Bières de Chimay")
+
+
 def test_row_carries_beer_logo_and_shop_url():
     """A shop row matched to Untappd (v1.1 §3): url/logo are the Untappd beer's, shop_url is the
     shop's own product page, both filled by the search-match overlay onto the pair's own info."""

@@ -8,7 +8,8 @@ from pathlib import Path
 import pytest
 
 from taps import run as run_mod
-from taps.config import Config, ConfigError, Settings
+from taps.config import Config, ConfigError, Place, Settings
+from taps.digest import build_digest
 from taps.fetch import FetchError, HttpResponse, UntappdClient
 from taps.gitsync import CheckoutError, commit_and_push, pull_ff
 from taps.model import SourceResult
@@ -1183,9 +1184,11 @@ def test_apply_shop_matches_leaves_unmatched_and_non_shop_pairs_alone():
     assert state.pairs["gargoyle"]["u:1"].info == {"kind": "menu"}
 
 
-def test_apply_shop_matches_overlays_canonical_name_and_brewery():
-    """v1.2 beer identity: a matched shop row shows the Untappd beer's own name/brewery, e.g. the
-    site groups it correctly and Oleg sees the same name as on Untappd."""
+def test_apply_shop_matches_overlays_canonical_name_and_brewery_separately():
+    """v1.2 beer identity: a matched shop row carries the Untappd beer's own name/brewery in
+    separate u_name/u_brewery fields (e.g. so the site can group/display it correctly) -- the
+    shop's own info["name"]/["brewery"] are never overwritten, so the digest and rules.py's brand
+    classification (code review) keep seeing the shop's own, familiar text."""
     state = empty_state(NOW)
     state.pairs = {"beer-city": {"n:dargett apricot ale": PairRec(
         first_seen=iso(NOW), last_seen=iso(NOW),
@@ -1195,7 +1198,8 @@ def test_apply_shop_matches_overlays_canonical_name_and_brewery():
         matched_at=iso(NOW), via="local")
     run_mod.apply_shop_matches(state)
     info = state.pairs["beer-city"]["n:dargett apricot ale"].info
-    assert (info["name"], info["brewery"]) == ("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
+    assert (info["u_name"], info["u_brewery"]) == ("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
+    assert (info["name"], info["brewery"]) == ("Dargett apricot ale", "Dargett")   # untouched
 
 
 def test_apply_shop_matches_also_overlays_menu_and_manual_kind_pairs():
@@ -1216,6 +1220,27 @@ def test_apply_shop_matches_also_overlays_menu_and_manual_kind_pairs():
     run_mod.apply_shop_matches(state)
     assert state.pairs["dargett-brewpub"]["n:apricot ale"].info["url"] == "https://untappd.com/beer/1"
     assert state.pairs["tap-station"]["n:hazy pale"].info["url"] == "https://untappd.com/beer/2"
+
+
+def test_digest_line_for_a_matched_shop_pair_uses_the_shops_own_name_and_brewery():
+    """Code review (HIGH): apply_shop_matches's canonical-identity overlay must not change the
+    Telegram digest text -- the digest keeps announcing the shop's own, familiar name/brewery, not
+    Untappd's (only site_data.py's site row prefers the canonical one)."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:chimay peres trappistes blue": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW), event_at=iso(NOW),
+        info={"kind": "shop", "name": "Chimay peres trappistes blue", "brewery": "Chimay"})}}
+    state.shop_matches["n:chimay peres trappistes blue"] = ShopMatchRec(
+        untappd_beer_id=34039, name="Chimay Grande Réserve (Blue)", brewery="Bières de Chimay",
+        matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)
+    config = Config(places={"beer-city": Place(id="beer-city", name="Beer City", kind="shop",
+                                               sources={"beercity": {}})},
+                    breweries=(), settings=Settings())
+    digest = build_digest(state, config, config.settings, NOW)
+    assert "Chimay — Chimay peres trappistes blue" in digest.html
+    assert "Bières de Chimay" not in digest.html
+    assert "Grande Réserve" not in digest.html
 
 
 def test_discovery_report_pluralizes_checkins_correctly(world):

@@ -121,9 +121,14 @@ def _is_new(rec: PairRec, now: datetime) -> bool:
 def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict:
     info = rec.info
     new = _is_new(rec, now)
+    # v1.2 beer identity: a shop/menu/manual pair matched to Untappd carries the canonical name/
+    # brewery separately (info["u_name"]/["u_brewery"], set by run.py's apply_shop_matches) -- only
+    # the site display prefers them; the digest and rules.py keep using the shop's own text.
     row = {"place_id": place.id, "section": _section(place), "beer_key": key,
-           "group_key": _group_key(key, info), "name": info.get("name") or info.get("title") or key}
+           "group_key": _group_key(key, info),
+           "name": info.get("u_name") or info.get("name") or info.get("title") or key}
     row.update({f: info.get(f) for f in INFO_FIELDS})
+    row["brewery"] = info.get("u_brewery") or info.get("brewery")
     row["beer_logo"] = info.get("logo")
     row.update({
         "badge": kind,

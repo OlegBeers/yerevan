@@ -438,10 +438,13 @@ def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> 
 
 
 def apply_shop_matches(state: State) -> None:
-    """Overlay a matched Untappd beer's name/brewery/rating/style/abv/logo/url onto every shop/menu/
-    manual pair that shares its key (v1.1 §3, v1.2 beer identity), after this run's merge. The shop's
-    own product link already reached info via Sighting.shop_url like any other field; only Untappd's
-    data needs to move in here."""
+    """Overlay a matched Untappd beer's rating/style/abv/logo/url onto every shop/menu/manual pair
+    that shares its key (v1.1 §3, v1.2 beer identity), after this run's merge. The shop's own
+    product link already reached info via Sighting.shop_url like any other field; only Untappd's
+    data needs to move in here. The Untappd beer's own canonical name/brewery go into separate
+    info["u_name"]/["u_brewery"] fields instead of overwriting info["name"]/["brewery"] (code
+    review): the digest and rules.py's brand classification must keep using the shop's own,
+    familiar text -- only site_data.py prefers the canonical identity for display."""
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if rec.info.get("kind") not in ("shop", "menu", "manual"):
@@ -450,10 +453,14 @@ def apply_shop_matches(state: State) -> None:
             if match is None or match.untappd_beer_id is None:
                 continue
             rec.info["url"] = match.url
-            for field in ("logo", "rating", "style", "abv", "name", "brewery"):
+            for field in ("logo", "rating", "style", "abv"):
                 value = getattr(match, field)
                 if value is not None:
                     rec.info[field] = value
+            if match.name is not None:
+                rec.info["u_name"] = match.name
+            if match.brewery is not None:
+                rec.info["u_brewery"] = match.brewery
 
 
 # --- alerts ------------------------------------------------------------------
