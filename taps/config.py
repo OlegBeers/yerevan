@@ -1,7 +1,7 @@
 """places.yaml loader: places, breweries and settings."""
 import re
 from dataclasses import dataclass
-from datetime import time
+from datetime import date, time
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -22,7 +22,8 @@ CHECKIN_VENUE_FIELDS = ("slug", "venue_id", "address")
 PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewery_name", "untappd_venue_id",
                 "merged_from")
 BREWERY_FIELDS = ("id", "name", "brewery_id", "slug", "list_enabled")
-SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages")
+SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages",
+                   "boost_until", "boost_daily_pages", "boost_search_per_run")
 _REQUIRED = object()
 
 
@@ -100,6 +101,24 @@ class Settings:
     digest_max_lines: int = 15
     hot_rating: float = 3.75
     untappd_daily_pages: int = 40
+    # temporary one-off boost (owner decision): while the Yerevan date is <= boost_until, the daily
+    # Untappd page budget and the shop-search-per-run cap are raised; unset or expired -> normal values.
+    boost_until: str | None = None
+    boost_daily_pages: int | None = None
+    boost_search_per_run: int | None = None
+
+    def _boost_active(self, today: str) -> bool:
+        return self.boost_until is not None and today <= self.boost_until
+
+    def effective_daily_pages(self, today: str) -> int:
+        if self._boost_active(today) and self.boost_daily_pages is not None:
+            return self.boost_daily_pages
+        return self.untappd_daily_pages
+
+    def effective_search_per_run(self, today: str, default: int) -> int:
+        if self._boost_active(today) and self.boost_search_per_run is not None:
+            return self.boost_search_per_run
+        return default
 
 
 @dataclass(frozen=True)
@@ -217,12 +236,21 @@ def _settings(raw: Any) -> Settings:
         parsed_time = s.digest_time if raw_time is None else time.fromisoformat(raw_time)
     except (TypeError, ValueError):
         raise _fail("settings", f"digest_time {raw_time!r}: нужно время ЧЧ:ММ в кавычках, например \"17:00\"") from None
+    raw_boost_until = d.get("boost_until")   # unquoted 2026-10-01 is a date object in YAML -> TypeError
+    try:
+        boost_until = None if raw_boost_until is None else date.fromisoformat(raw_boost_until).isoformat()
+    except (TypeError, ValueError):
+        raise _fail("settings",
+                    f"boost_until {raw_boost_until!r}: нужна дата ГГГГ-ММ-ДД в кавычках, например \"2026-10-01\"") from None
     return Settings(
         preview_digests=_get(d, "preview_digests", int, "settings", s.preview_digests),
         digest_time=parsed_time,
         digest_max_lines=_get(d, "digest_max_lines", int, "settings", s.digest_max_lines),
         hot_rating=float(_get(d, "hot_rating", (int, float), "settings", s.hot_rating)),
         untappd_daily_pages=_get(d, "untappd_daily_pages", int, "settings", s.untappd_daily_pages),
+        boost_until=boost_until,
+        boost_daily_pages=_get(d, "boost_daily_pages", int, "settings", s.boost_daily_pages),
+        boost_search_per_run=_get(d, "boost_search_per_run", int, "settings", s.boost_search_per_run),
     )
 
 

@@ -127,7 +127,8 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
         return [], None
     alerter.resolve("untappd:browser")
     try:
-        client = UntappdClient(state.untappd, config.settings.untappd_daily_pages, now, fetch_page, sleep=deps.sleep)
+        daily_pages = config.settings.effective_daily_pages(yerevan_date(now))   # owner's temporary boost, if active
+        client = UntappdClient(state.untappd, daily_pages, now, fetch_page, sleep=deps.sleep)
         # once blocked, the sources themselves return error "blocked" without spending pages
         results = []
         for key, place_id, job in jobs:
@@ -136,7 +137,8 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
             results.append(result)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
         fetch_beer_ratings(state, client, now)                 # v1.1 §2: check-in-only beer ratings
-        match_shop_beers(state, client, now)                   # v1.1 §3: search shop beers on Untappd
+        search_limit = config.settings.effective_search_per_run(yerevan_date(now), SHOP_SEARCH_CANDIDATES_PER_RUN)
+        match_shop_beers(state, client, now, search_limit)     # v1.1 §3: search shop beers on Untappd
         refresh_shop_matches(state, client, now)               # v1.1 §3: refresh matched shop ratings
     finally:
         close()
@@ -278,7 +280,8 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
 
 # --- v1.1 §3: match shop beers to Untappd via search --------------------------
 
-def _shop_match_candidates(state: State, now: datetime) -> list[tuple[str, str, str]]:
+def _shop_match_candidates(state: State, now: datetime,
+                           limit: int = SHOP_SEARCH_CANDIDATES_PER_RUN) -> list[tuple[str, str, str]]:
     """(key, brand, name) of shop beers with no successful match yet -- never searched, or a failed
     search ("no_match") old enough to retry -- most recently seen first, capped at
     SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a corrections.yaml
@@ -300,15 +303,17 @@ def _shop_match_candidates(state: State, now: datetime) -> list[tuple[str, str, 
             if key not in best or rec.last_seen > best[key][0]:
                 best[key] = (rec.last_seen, brand, name)
     ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
-    return [(key, brand, name) for key, (_, brand, name) in ordered[:SHOP_SEARCH_CANDIDATES_PER_RUN]]
+    return [(key, brand, name) for key, (_, brand, name) in ordered[:limit]]
 
 
-def match_shop_beers(state: State, client: UntappdClient, now: datetime) -> None:
-    """Search Untappd for up to SHOP_SEARCH_CANDIDATES_PER_RUN shop beers per run (v1.1 §3), same
-    client/budget/pauses as the other Untappd sources; a budget or Cloudflare error stops this step
-    only. An empty or unparseable results page is dumped for debugging (TAPS_DEBUG_DIR) and still
-    counts as "no_match", so it is retried after SHOP_MATCH_RETRY_DAYS rather than every run."""
-    for key, brand, name in _shop_match_candidates(state, now):
+def match_shop_beers(state: State, client: UntappdClient, now: datetime,
+                     limit: int = SHOP_SEARCH_CANDIDATES_PER_RUN) -> None:
+    """Search Untappd for up to `limit` shop beers per run (SHOP_SEARCH_CANDIDATES_PER_RUN by
+    default, or the owner's temporary boost_search_per_run, v1.1 §3), same client/budget/pauses as
+    the other Untappd sources; a budget or Cloudflare error stops this step only. An empty or
+    unparseable results page is dumped for debugging (TAPS_DEBUG_DIR) and still counts as
+    "no_match", so it is retried after SHOP_MATCH_RETRY_DAYS rather than every run."""
+    for key, brand, name in _shop_match_candidates(state, now, limit):
         try:
             html = client.get(search_url(f"{brand} {name}"))
         except FetchError:

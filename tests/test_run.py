@@ -734,6 +734,18 @@ def test_shop_match_candidates_most_recently_seen_first_capped_at_eight():
     assert [key for key, _, _ in candidates] == [f"n:beer{i}" for i in range(1, 9)]
 
 
+def test_shop_match_candidates_respects_a_custom_limit():
+    """Owner's temporary Untappd boost (v1.1 boost_search_per_run): the cap is a parameter, not
+    only the SHOP_SEARCH_CANDIDATES_PER_RUN default."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        f"n:beer{i}": _shop_pair("Brand", f"Beer {i}", last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 11)
+    }}
+    candidates = run_mod._shop_match_candidates(state, NOW, limit=3)
+    assert [key for key, _, _ in candidates] == ["n:beer1", "n:beer2", "n:beer3"]
+
+
 def test_match_shop_beers_records_a_match():
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
@@ -780,6 +792,69 @@ def test_match_shop_beers_stops_on_budget_error_without_consuming_the_others():
     client = _untappd_client({}, daily_pages=0)
     run_mod.match_shop_beers(state, client, NOW)
     assert state.shop_matches == {}
+
+
+def test_match_shop_beers_respects_a_custom_limit():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        "n:a": _shop_pair("A", "A", last_seen=iso(NOW - timedelta(days=1))),
+        "n:b": _shop_pair("B", "B", last_seen=iso(NOW - timedelta(days=2))),
+    }}
+    client = _untappd_client({
+        "https://untappd.com/search?q=A%20A&type=beer": "<html><body>Nothing found.</body></html>",
+        "https://untappd.com/search?q=B%20B&type=beer": "<html><body>Nothing found.</body></html>",
+    })
+    run_mod.match_shop_beers(state, client, NOW, limit=1)
+    assert list(state.shop_matches) == ["n:a"]                 # only the most recently seen one
+
+
+# --- v1.1 boost settings: temporary Untappd budget increase ------------------
+
+def test_collect_untappd_uses_boosted_daily_pages_and_search_cap():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        f"n:beer{i}": _shop_pair("Brand", f"Beer {i}", last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 11)
+    }}
+    config = Config(places={}, breweries=(), settings=Settings(
+        untappd_daily_pages=40, boost_until="2026-12-31", boost_daily_pages=80, boost_search_per_run=10))
+    urls = []
+
+    def fetch_page(url):
+        urls.append(url)
+        return HttpResponse(200, {}, "<html><body>Nothing found.</body></html>")
+
+    deps = Deps(untappd_fetcher=lambda: (fetch_page, lambda: None), sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    _, client = run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert client.daily_pages == 80                                              # boosted, not the plain 40
+    searches = [u for u in urls if u.startswith("https://untappd.com/search?q=")]
+    assert len(searches) == 10                                                    # boosted cap, not the plain 8
+
+
+def test_collect_untappd_uses_normal_budget_and_cap_when_not_boosted():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        f"n:beer{i}": _shop_pair("Brand", f"Beer {i}", last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 11)
+    }}
+    config = Config(places={}, breweries=(), settings=Settings(untappd_daily_pages=40))   # no boost fields set
+    urls = []
+
+    def fetch_page(url):
+        urls.append(url)
+        return HttpResponse(200, {}, "<html><body>Nothing found.</body></html>")
+
+    deps = Deps(untappd_fetcher=lambda: (fetch_page, lambda: None), sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    _, client = run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert client.daily_pages == 40
+    searches = [u for u in urls if u.startswith("https://untappd.com/search?q=")]
+    assert len(searches) == 8
 
 
 def test_shop_match_refresh_candidates_oldest_checked_first_capped_at_three():

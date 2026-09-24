@@ -125,6 +125,56 @@ def test_settings(cfg):
     assert cfg.settings.digest_time == time(17, 0)
 
 
+def test_boost_settings_default_to_none(cfg):
+    assert (cfg.settings.boost_until, cfg.settings.boost_daily_pages, cfg.settings.boost_search_per_run) == (
+        None, None, None)
+
+
+def test_boost_settings_parsed(tmp_path):
+    extra = "settings:\n  boost_until: \"2026-10-01\"\n  boost_daily_pages: 80\n  boost_search_per_run: 45\n"
+    cfg = load_config(write(tmp_path, MINIMAL + extra))
+    s = cfg.settings
+    assert (s.boost_until, s.boost_daily_pages, s.boost_search_per_run) == ("2026-10-01", 80, 45)
+
+
+@pytest.mark.parametrize("extra", [
+    "settings:\n  boost_until: 2026-10-01\n",              # unquoted: YAML reads it as a date object, not str
+    'settings:\n  boost_until: "2026-13-40"\n',             # not a real date
+    'settings:\n  boost_daily_pages: "80"\n',               # wrong type
+    'settings:\n  boost_search_per_run: "45"\n',            # wrong type
+])
+def test_invalid_boost_settings_raise(tmp_path, extra):
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + extra))
+
+
+def test_effective_daily_pages_boosted_on_and_before_boost_until():
+    s = Settings(untappd_daily_pages=40, boost_until="2026-10-01", boost_daily_pages=80)
+    assert s.effective_daily_pages("2026-09-24") == 80
+    assert s.effective_daily_pages("2026-10-01") == 80              # boundary: still boosted on the day itself
+
+
+def test_effective_daily_pages_normal_after_boost_until():
+    s = Settings(untappd_daily_pages=40, boost_until="2026-10-01", boost_daily_pages=80)
+    assert s.effective_daily_pages("2026-10-02") == 40
+
+
+def test_effective_daily_pages_unboosted_when_unset():
+    assert Settings(untappd_daily_pages=40).effective_daily_pages("2026-09-24") == 40
+
+
+def test_effective_search_per_run_boosted_on_and_before_boost_until():
+    s = Settings(boost_until="2026-10-01", boost_search_per_run=45)
+    assert s.effective_search_per_run("2026-09-24", default=8) == 45
+    assert s.effective_search_per_run("2026-10-01", default=8) == 45
+
+
+def test_effective_search_per_run_normal_after_boost_until_or_unset():
+    s = Settings(boost_until="2026-10-01", boost_search_per_run=45)
+    assert s.effective_search_per_run("2026-10-02", default=8) == 8
+    assert Settings().effective_search_per_run("2026-09-24", default=8) == 8
+
+
 def test_disabled_place_is_excluded(tmp_path):
     cfg = load_config(write(tmp_path, MINIMAL))
     assert list(cfg.places) == ["gargoyle"]
