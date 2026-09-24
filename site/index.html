@@ -475,6 +475,7 @@ async function load() {
   renderHeader();
   renderPlaces();
   render();
+  setSection(ui.section);   // renders the venues tab too, if it was clicked before data.json loaded
 }
 
 for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => setSection(b.dataset.section));

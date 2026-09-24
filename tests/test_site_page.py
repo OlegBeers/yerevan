@@ -101,6 +101,14 @@ def test_loads_data_json_bypassing_cache():
     assert re.search(r"""fetch\(\s*["']\./data\.json["']\s*,\s*\{\s*cache:\s*["']no-store["']\s*\}\s*\)""", js)
 
 
+def test_load_ends_by_setting_the_current_section_so_a_pre_click_venues_tab_still_renders():
+    """M-2: clicking the venues tab before data.json loads must not leave that tab blank."""
+    js = _js(_soup())
+    load_body = re.search(r"async function load\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    tail = [line for line in load_body.strip().splitlines() if line.strip()][-1]
+    assert re.search(r"setSection\(\s*ui\.section\s*\)\s*;?", tail)
+
+
 def test_no_external_scripts_or_styles():
     soup = _soup()
     for script in soup.find_all("script"):
