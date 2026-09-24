@@ -141,6 +141,12 @@
   .wherelist { display: flex; flex-direction: column; gap: 5px; }
   .wherelist .where { margin-top: 0; gap: 2px 6px; }
   .wherelist .where + .where { padding-top: 5px; border-top: 1px dashed var(--border); }
+  #to-top {
+    position: fixed; right: 16px; bottom: 16px; width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface); color: var(--accent);
+    font: inherit; font-size: 1.3rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+  }
+  #to-top[hidden] { display: none; }
   footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
   footer h2 { font-size: .95rem; color: var(--text); margin: 20px 0 6px; font-weight: 700; }
   footer p { margin: 4px 0; }
@@ -182,6 +188,7 @@
       <ul id="venues" class="cards"></ul>
     </section>
   </main>
+  <button type="button" id="to-top" aria-label="Наверх" title="Наверх" hidden>↑</button>
   <footer>
     <h2>Значки</h2>
     <ul class="legend">
@@ -362,7 +369,7 @@ function bestOf(rows, field) {   // highest non-null value, for sorting/display 
 function groupBeers(rows) {   // one beer can be on the menu at several places; group after filtering
   const map = new Map();
   for (const r of rows) {
-    const key = r.beer_key || `n:${(r.brewery || "").toLowerCase()}|${(r.name || "").toLowerCase()}`;
+    const key = r.group_key || r.beer_key || `n:${(r.brewery || "").toLowerCase()}|${(r.name || "").toLowerCase()}`;
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(r);
   }
@@ -569,6 +576,9 @@ async function load() {
 }
 
 for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => setSection(b.dataset.section));
+const toTop = $("to-top");
+window.addEventListener("scroll", () => { toTop.hidden = window.scrollY < 600; }, { passive: true });
+toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 $("search").addEventListener("input", render);
 $("sort").addEventListener("change", render);
 $("only-new").addEventListener("change", render);

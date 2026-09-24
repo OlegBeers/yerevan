@@ -1,5 +1,6 @@
 """Build site/data.json from state (spec §8)."""
 import json
+import re
 from datetime import date, datetime
 from pathlib import Path
 
@@ -14,6 +15,17 @@ CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
 NEW_DAYS = 7             # 🆕/⭐ badges live this long after the event was sent
 INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url", "serving",
                "shop_url")
+
+
+UNTAPPD_BEER_RE = re.compile(r"untappd\.com/(?:b/[^/?#]+|beer)/(\d+)")
+GLASS_BOTTLE_RE = re.compile(r" g b$")   # Yerevan City appends "G/B" to titles; the key normalizer leaves "g b"
+
+
+def _group_key(key: str, info: dict) -> str:
+    """Display-only identity: the same beer at a bar and a shop groups into one card.
+    The pair key stays untouched (it carries notification state)."""
+    m = UNTAPPD_BEER_RE.search(info.get("url") or "")
+    return f"u:{m.group(1)}" if m else GLASS_BOTTLE_RE.sub("", key)
 
 
 def _section(place: Place) -> str:
@@ -110,7 +122,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict
     info = rec.info
     new = _is_new(rec, now)
     row = {"place_id": place.id, "section": _section(place), "beer_key": key,
-           "name": info.get("name") or info.get("title") or key}
+           "group_key": _group_key(key, info), "name": info.get("name") or info.get("title") or key}
     row.update({f: info.get(f) for f in INFO_FIELDS})
     row["beer_logo"] = info.get("logo")
     row.update({

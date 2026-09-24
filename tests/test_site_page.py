@@ -268,3 +268,17 @@ def test_footer_sources_legend_and_credits():
     for host in ("untappd.com", "buy.am", "beer-city.am", "yerevan-city.am", "parma.am", "t.me/oleg_sorokin",
                  "untappd.com/user/Oleg_Sorokin"):
         assert host in hrefs, host
+
+
+def test_beers_group_by_group_key_before_beer_key():
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", _js(_soup()), re.S).group(1)
+    assert group_fn.index("r.group_key") < group_fn.index("r.beer_key")
+
+
+def test_back_to_top_button():
+    soup = _soup()
+    button = soup.find(id="to-top")
+    assert button.name == "button" and button["type"] == "button" and button.has_attr("hidden")
+    assert button["aria-label"] == "Наверх"
+    js = _js(soup)
+    assert "scrollTo" in js and 'addEventListener("scroll"' in js

@@ -153,7 +153,7 @@ def test_row_carries_display_fields():
             "url": "https://untappd.com/b/ayinger-celebrator/4280"}
     st = state({"gargoyle": {"u:4280": pair("untappd_menu", first_seen="2026-09-24T21:30:00+00:00", info=info)}})
     assert build(st)["rows"] == [{
-        "place_id": "gargoyle", "section": "bars", "beer_key": "u:4280", "name": "Celebrator",
+        "place_id": "gargoyle", "section": "bars", "beer_key": "u:4280", "group_key": "u:4280", "name": "Celebrator",
         "brewery": "Ayinger", "style": "Doppelbock", "abv": 6.7, "ibu": 24, "rating": 3.76,
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
         "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
@@ -310,3 +310,24 @@ def test_venues_list_excludes_venue_of_disabled_place_even_when_city_matches():
     gargoyle_data = build(state({}, venues={"1": VenueRec(name="Gargoyle Bar", url="u1",
                                                           checkins=[{"id": 1, "at": ago(1)}])}))["venues"]
     assert gargoyle_data[0]["tracked"] is True  # enabled-place venue still shows as tracked
+
+
+def test_group_key_joins_shop_rows_matched_to_the_same_untappd_beer():
+    """Search-matched shop beers keep their n: pair key (notification identity) but group with the bar's u: row."""
+    url = "https://untappd.com/b/bitburger-brauerei-bitburger-premium-pils/17252"
+    st = state({"gargoyle": {"u:17252": pair("untappd_menu", info={"url": url})},
+                "beer-city": {"n:bitburger premium pils": pair("beercity", in_stock=True, info={"url": url})}})
+    groups = {(r["place_id"], r["beer_key"]): r["group_key"] for r in build(st)["rows"]}
+    assert groups == {("gargoyle", "u:17252"): "u:17252", ("beer-city", "n:bitburger premium pils"): "u:17252"}
+
+
+def test_group_key_ignores_yerevan_city_glass_bottle_suffix():
+    st = state({"beer-city": {"n:dargett apricot ale": pair("beercity", in_stock=True)},
+                "parma": {"n:dargett apricot ale g b": pair("parma", in_stock=True)}})
+    assert {r["group_key"] for r in build(st)["rows"]} == {"n:dargett apricot ale"}
+
+
+def test_group_key_keeps_unmatched_shop_key_and_ignores_shop_page_urls():
+    st = state({"parma": {"n:corona extra": pair("parma", in_stock=True,
+                                                info={"url": "https://parma.am/en/product/product?slug=corona_1"})}})
+    assert build(st)["rows"][0]["group_key"] == "n:corona extra"
