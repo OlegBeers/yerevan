@@ -32,9 +32,15 @@ class HttpResponse:
 PageFetcher = Callable[[str], HttpResponse]
 
 
+# Not the bare "challenge-platform": Cloudflare's bot-management script /cdn-cgi/challenge-platform/scripts/
+# is injected into ordinary 200 pages too. The markers are language-independent except the title.
+CHALLENGE_MARKERS = ("_cf_chl_opt", "/cdn-cgi/challenge-platform/h/", "<title>just a moment")
+
+
 def is_cloudflare_challenge(status: int, headers: Mapping[str, str], body: str) -> bool:
+    lowered = body.lower()
     return ("cf-mitigated" in headers
-            or "_cf_chl_opt" in body or "challenge-platform" in body
+            or any(marker in lowered for marker in CHALLENGE_MARKERS)
             or status == 403)
 
 

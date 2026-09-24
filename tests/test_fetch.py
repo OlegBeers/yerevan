@@ -32,11 +32,17 @@ def test_challenge_fixture_is_detected():
 def test_each_challenge_signal_alone_is_enough():
     assert is_cloudflare_challenge(200, {"cf-mitigated": "challenge"}, "")
     assert is_cloudflare_challenge(200, {}, CF_HTML)   # body markers only, any page language
-    assert is_cloudflare_challenge(200, {}, "<script src='/cdn-cgi/challenge-platform/x'>")
+    assert is_cloudflare_challenge(200, {}, "<script src='/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1'>")
+    assert is_cloudflare_challenge(200, {}, "<TITLE>JUST A MOMENT...</title>")
     assert is_cloudflare_challenge(403, {"server": "Cloudflare"}, "")
     assert is_cloudflare_challenge(403, {"server": "nginx"}, "forbidden")   # any 403 is treated as a challenge
     assert is_cloudflare_challenge(200, {"cf-mitigated": "static"}, "")     # any presence of the header counts
     assert not is_cloudflare_challenge(200, {}, "plain 200 page")
+
+
+def test_normal_page_with_the_cloudflare_bot_management_script_is_not_a_challenge():
+    page = "<html><script src='/cdn-cgi/challenge-platform/scripts/jsd/main.js'></script><body>menu</body></html>"
+    assert not is_cloudflare_challenge(200, {}, page)
 
 
 def test_real_menu_page_is_not_a_challenge():
