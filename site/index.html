@@ -111,6 +111,12 @@
     vertical-align: middle; flex-shrink: 0;
   }
   .verified { color: var(--accent); font-weight: 800; margin-left: 1px; }
+  .map-link {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 50%;
+    background: var(--surface-2); font-size: .8rem; line-height: 1; text-decoration: none;
+  }
+  .map-link:hover { border-color: var(--accent); text-decoration: none; }
   .tracked-badge {
     font-size: .72rem; color: var(--accent); border: 1px solid var(--accent);
     border-radius: 999px; padding: 2px 9px; margin-left: 8px; white-space: nowrap;
@@ -299,12 +305,19 @@ function beerLogoNode(url) {
 function verifiedBadge() {
   return el("span", { class: "verified", role: "img", "aria-label": "Верифицирован в Untappd", title: "Верифицирован в Untappd" }, "✓");
 }
-function placeNameNode(place) {
+function placeNameNode(place) {   // the address, when known, is the tooltip
   const url = safeUrl(place.untappd_url);
   const kids = [place.name, place.verified ? verifiedBadge() : null];
   return url
-    ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, ...kids)
-    : el("span", null, ...kids);
+    ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer", title: place.address }, ...kids)
+    : el("span", { title: place.address }, ...kids);
+}
+function mapLinkNode(place) {   // «🗺» right after a place's name: the place on Yandex Maps
+  const url = safeUrl(place.map_url);
+  return url && /^https:/i.test(url)
+    ? el("a", { class: "map-link", href: url, target: "_blank", rel: "noopener noreferrer",
+        "aria-label": "Карта", title: "Открыть на Яндекс Картах" }, "🗺️")
+    : null;
 }
 function placeObj(id) {
   return ui.places.get(id) || { name: id };
@@ -433,7 +446,7 @@ function shopNameLine(r, name) {   // v1.2: what the shop calls a matched beer, 
 function placeCell(r, name) {
   const place = placeObj(r.place_id);
   return [
-    el("span", { class: "where-head" }, logoNode(place.name, place.logo, 22), placeNameNode(place)),
+    el("span", { class: "where-head" }, logoNode(place.name, place.logo, 22), placeNameNode(place), mapLinkNode(place)),
     el("span", { class: "small" }, ...badgeNodes(r)),
     r.servings ? el("span", { class: "small" }, servingsText(r)) : null,
     shopNameLine(r, name),
@@ -450,6 +463,7 @@ function placeLines(rows, name) {   // one line per place a grouped beer is avai
     return el("div", { class: "where" },
       logoNode(place.name, place.logo, 20),
       placeNameNode(place),
+      mapLinkNode(place),
       status,
       extra ? el("span", { class: "meta-inline" }, extra) : null,
       shopLinkNode(r),
@@ -480,6 +494,7 @@ function cardWhere(r, name) {
   return el("div", { class: "where" },
     logoNode(place.name, place.logo, 20),
     placeNameNode(place),
+    mapLinkNode(place),
     el("span", { class: "meta-inline" }, ...badgeNodes(r)),
     r.servings ? el("span", { class: "meta-inline" }, servingsText(r)) : null,
     shopNameLine(r, name));
@@ -509,7 +524,7 @@ function render() {
 
 function placeStatus(p, now) {
   const lines = [];
-  if (p.addresses && p.addresses.length) lines.push({ text: p.addresses.join(", "), warn: false });
+  if (p.address) lines.push({ text: p.address, warn: false });
   const menu = parseTime(p.menu_updated_at);
   if (menu) lines.push({ text: `меню обновлено ${ago(daysBetween(menu, now))}`, warn: false });
   const ok = parseTime(p.last_ok);
@@ -554,12 +569,13 @@ function renderPlaces() {
     }));
 }
 function venueNode(v) {
-  const place = { name: v.name, logo: v.logo, verified: v.verified, untappd_url: v.url };
+  const place = { name: v.name, logo: v.logo, verified: v.verified, untappd_url: v.url, address: v.address, map_url: v.map_url };
   const last = parseTime(v.last_checkin);
   return el("li", { class: "card" },
     el("div", { class: "top" },
-      el("span", { class: "where-head" }, logoNode(v.name, v.logo, 28), placeNameNode(place)),
+      el("span", { class: "where-head" }, logoNode(v.name, v.logo, 28), placeNameNode(place), mapLinkNode(place)),
       v.tracked ? el("span", { class: "tracked-badge" }, "в списке") : null),
+    v.address ? el("div", { class: "meta" }, v.address) : null,
     el("div", { class: "meta" }, `${v.checkins_30d} ${plural(v.checkins_30d, "чекин", "чекина", "чекинов")} за 60 дней`),
     last ? el("div", { class: "meta" }, `последний ${yerevan(last).dm}`) : null);
 }

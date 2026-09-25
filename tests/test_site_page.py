@@ -9,8 +9,8 @@ ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
               "beer_logo", "shop_url", "beer_key", "shop_name", "servings", "country", "style_inferred")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
-                "logo", "verified", "untappd_url", "addresses")
-VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
+                "logo", "verified", "untappd_url", "address", "map_url")
+VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked", "address", "map_url")
 
 
 def _soup():
@@ -396,3 +396,47 @@ def test_a_style_guessed_from_the_name_is_set_apart_and_says_so():
     assert "style_inferred: r0.style_inferred" in group_fn          # travels with the style it belongs to
     table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert 'el("td", null, styleNode(g))' in table_fn
+
+
+def test_a_map_button_follows_the_place_link_wherever_a_place_is_named():
+    """v1.4: the row's place cell, a card's place line, every line of a multi-place beer and the venues tab."""
+    js = _js(_soup())
+    for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)", "venueNode(v)"):
+        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
+        assert re.search(r"placeNameNode\(place\),\s*mapLinkNode\(place\)", body), fn
+
+
+def test_the_map_button_is_a_safe_icon_link_that_opens_yandex_maps_in_a_new_tab():
+    js = _js(_soup())
+    fn = re.search(r"function mapLinkNode\(place\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "safeUrl(place.map_url)" in fn                       # the same URL check as every other link
+    assert "https:" in fn                                       # https only: an http link is dropped
+    assert 'target: "_blank"' in fn and 'rel: "noopener noreferrer"' in fn
+    assert '"aria-label": "Карта"' in fn and 'title: "Открыть на Яндекс Картах"' in fn
+    assert "🗺" in fn
+    assert "null" in fn                                         # no map_url: no button
+
+
+def test_the_map_button_is_small_and_takes_its_colours_from_the_theme_tokens():
+    css = _css(_soup())
+    rule = re.search(r"\.map-link\s*\{([^}]*)\}", css).group(1)
+    assert "var(--border)" in rule and "var(--surface-2)" in rule
+    assert not re.search(r"#[0-9a-fA-F]{3,8}\b|rgb", rule)       # colours only via the tokens: dark theme follows
+    assert re.search(r"width:\s*(2[4-9]|3\d)px", rule) and re.search(r"height:\s*(2[4-9]|3\d)px", rule)
+    assert "flex-shrink: 0" in rule                             # never squeezed to an oval next to a long name
+
+
+def test_the_address_is_the_place_name_tooltip_and_a_muted_line_on_the_venues_tab():
+    js = _js(_soup())
+    name_fn = re.search(r"function placeNameNode\(place\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert name_fn.count("title: place.address") == 2           # the link and the plain-text variants alike
+    venue_fn = re.search(r"function venueNode\(v\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r'v\.address \? el\("div", \{ class: "meta" \}, v\.address\) : null', venue_fn)
+    assert "address: v.address" in venue_fn and "map_url: v.map_url" in venue_fn    # the venue is a place-shaped object
+
+
+def test_the_place_chip_tooltip_leads_with_the_address():
+    js = _js(_soup())
+    status_fn = re.search(r"function placeStatus\(p, now\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r"if \(p\.address\) lines\.push\(\{ text: p\.address, warn: false \}\)", status_fn)
+    assert "addresses" not in js                                # data.json no longer carries the list
