@@ -436,3 +436,16 @@ def test_match_shop_photo_is_the_pairs_own_only_when_the_overlay_did_not_replace
                                 "n:b": pair("yerevan_city", in_stock=True, info=replaced)}}, a=match, b=match)
     photos = {m["key"]: m["shop_photo"] for m in build(st)["matches"]}
     assert photos == {"n:a": "https://yc/photo.jpg", "n:b": None}
+
+
+def test_row_lists_servings_only_for_a_pair_that_has_several():
+    servings = [{"container": "draft", "price_amd": 2800, "volume_ml": None},
+                {"container": "bottle", "price_amd": 1500, "volume_ml": 330}]
+    st = state({"gargoyle": {
+        "u:1": pair("untappd_menu", info={"container": "draft", "price_amd": 2800, "servings": servings}),
+        "u:2": pair("untappd_menu", info={"container": "can", "price_amd": 900}),   # a pair saved before servings existed
+    }})
+    rows = {r["beer_key"]: r for r in build(st)["rows"]}
+    assert rows["u:1"]["servings"] == servings
+    assert (rows["u:1"]["container"], rows["u:1"]["price_amd"]) == ("draft", 2800)   # the first serving, as before
+    assert "servings" not in rows["u:2"]

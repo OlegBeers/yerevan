@@ -138,6 +138,18 @@ def test_from_dict_loads_an_older_state_whose_shop_matches_lack_weak():
     assert State.from_dict(d).shop_matches["n:kilikia"].weak is False
 
 
+def test_from_dict_loads_an_older_state_whose_pairs_have_no_servings():
+    """state.json files written before servings existed must still load; info["servings"] survives a round trip."""
+    d = full_state().to_dict()
+    servings = [{"container": "draft", "price_amd": 2800, "volume_ml": None},
+                {"container": "bottle", "price_amd": None, "volume_ml": 330}]
+    assert "servings" not in d["pairs"]["gargoyle"]["u:3539672"]["info"]
+    d["pairs"]["yerevan-city"]["n:kilikia"]["info"]["servings"] = servings
+    back = State.from_dict(json.loads(json.dumps(d)))
+    assert "servings" not in back.pairs["gargoyle"]["u:3539672"].info
+    assert back.pairs["yerevan-city"]["n:kilikia"].info["servings"] == servings
+
+
 def test_from_dict_fills_missing_sections_and_fields_with_defaults():
     s = State.from_dict({"started_at": ago(0), "sources": {"parma:parma": {"last_ok": ago(1)}}})
     assert s.sources["parma:parma"] == SourceRec(last_ok=ago(1))
