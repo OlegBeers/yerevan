@@ -198,6 +198,38 @@ def test_local_match_accepts_a_parenthetical_regional_aside():
     assert found is not None
 
 
+# --- local_match(): a parenthetical aside must not paper over a real ABV difference (round 2) --
+
+def test_local_match_rejects_parenthetical_reliance_when_abv_differs_a_lot():
+    """A loose match that only works because of a parenthesised aside (rule a) must not paper over
+    a real difference in strength: "Sour (Raspberry)" at 6.5% is not the shop's plain 4.0% "Sour"."""
+    found = local_match("Dargett", "Dargett Sour",
+                        [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery", abv=6.5)],
+                        shop_abv=4.0)
+    assert found is None
+
+
+def test_local_match_accepts_parenthetical_reliance_when_abv_is_close():
+    found = local_match("Dargett", "Dargett Sour",
+                        [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery", abv=4.2)],
+                        shop_abv=4.0)
+    assert found is not None
+
+
+def test_local_match_accepts_parenthetical_reliance_when_shop_abv_is_unknown():
+    """shop_abv omitted (None): keep the current, permissive behaviour."""
+    found = local_match("Dargett", "Dargett Sour",
+                        [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery", abv=6.5)])
+    assert found is not None
+
+
+def test_local_match_accepts_parenthetical_reliance_when_candidate_abv_is_unknown():
+    found = local_match("Dargett", "Dargett IPA",
+                        [KnownBeer(untappd_id=1, name="IPA (Citra Mosaic)", brewery="Dargett Brewery")],
+                        shop_abv=5.5)
+    assert found is not None
+
+
 def test_local_match_accepts_extra_tokens_from_another_slash_alternative():
     """Paulaner's own Untappd name lists three alternative spellings; the shop naming only one of
     them is not "extra", unexplained evidence."""

@@ -331,8 +331,8 @@ def match_shop_beers_locally(state: State, now: datetime) -> None:
     The matched beer's rating/style/abv/logo are already known too, copied straight in with
     checked_at stamped now, so refresh_shop_matches doesn't spend a page re-fetching them."""
     candidates = known_untappd_beers(state)
-    for key, brand, name in _shop_match_candidates(state, now, limit=None):
-        found = local_match(brand, name, candidates)
+    for key, brand, name, abv in _shop_match_candidates(state, now, limit=None):
+        found = local_match(brand, name, candidates, shop_abv=abv)
         if found is not None:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.untappd_id, url=f"https://untappd.com/beer/{found.untappd_id}",
@@ -343,17 +343,19 @@ def match_shop_beers_locally(state: State, now: datetime) -> None:
 # --- v1.1 §3: match shop beers to Untappd via search --------------------------
 
 def _shop_match_candidates(state: State, now: datetime,
-                           limit: int | None = SHOP_SEARCH_CANDIDATES_PER_RUN) -> list[tuple[str, str, str]]:
-    """(key, brand, name) of shop/menu/manual beers with no successful match yet -- never searched,
-    or a failed search ("no_match") old enough to retry -- most recently seen first, capped at
-    SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a corrections.yaml
-    alias starts with "u:", not "n:", so it needs no search (apply_aliases runs before collect_untappd).
-    "menu"/"manual" (v1.2 beer identity: Dargett Brewpub via buyam, a friend's manual sighting) are
-    candidates too -- an Untappd-native "u:"-keyed menu pair is already excluded by the key check.
-    limit=None (only match_shop_beers_locally) also ignores a search "no_match" record's retry-days
-    wait: local matching is free, so it need not wait on search's own throttle -- but a corrections.yaml
-    same_as untappd_id: null override (via="manual") still blocks it, same as search."""
-    best: dict[str, tuple[str, str, str]] = {}   # key -> (last_seen, brand, name)
+                           limit: int | None = SHOP_SEARCH_CANDIDATES_PER_RUN) -> list[tuple[str, str, str, float | None]]:
+    """(key, brand, name, abv) of shop/menu/manual beers with no successful match yet -- never
+    searched, or a failed search ("no_match") old enough to retry -- most recently seen first,
+    capped at SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a
+    corrections.yaml alias starts with "u:", not "n:", so it needs no search (apply_aliases runs
+    before collect_untappd). "menu"/"manual" (v1.2 beer identity: Dargett Brewpub via buyam, a
+    friend's manual sighting) are candidates too -- an Untappd-native "u:"-keyed menu pair is
+    already excluded by the key check. limit=None (only match_shop_beers_locally) also ignores a
+    search "no_match" record's retry-days wait: local matching is free, so it need not wait on
+    search's own throttle -- but a corrections.yaml same_as untappd_id: null override (via="manual")
+    still blocks it, same as search. abv is the shop's own (possibly unknown) scraped value, for
+    local_match's parenthetical/ABV guard (code review round 2, finding C) -- search never uses it."""
+    best: dict[str, tuple[str, str, str, float | None]] = {}   # key -> (last_seen, brand, name, abv)
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if not key.startswith("n:") or rec.info.get("kind") not in ("shop", "menu", "manual"):
@@ -373,9 +375,9 @@ def _shop_match_candidates(state: State, now: datetime,
             if not brand or not name:
                 continue
             if key not in best or rec.last_seen > best[key][0]:
-                best[key] = (rec.last_seen, brand, name)
+                best[key] = (rec.last_seen, brand, name, rec.info.get("abv"))
     ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
-    return [(key, brand, name) for key, (_, brand, name) in ordered[:limit]]
+    return [(key, brand, name, abv) for key, (_, brand, name, abv) in ordered[:limit]]
 
 
 def match_shop_beers(state: State, client: UntappdClient, now: datetime,
@@ -385,7 +387,7 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
     the other Untappd sources; a budget or Cloudflare error stops this step only. An empty or
     unparseable results page is dumped for debugging (TAPS_DEBUG_DIR) and still counts as
     "no_match", so it is retried after SHOP_MATCH_RETRY_DAYS rather than every run."""
-    for key, brand, name in _shop_match_candidates(state, now, limit):
+    for key, brand, name, _abv in _shop_match_candidates(state, now, limit):
         try:
             html = client.get(search_url(clean_query(brand, name)))
         except FetchError:

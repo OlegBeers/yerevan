@@ -753,7 +753,7 @@ def test_shop_match_candidates_retries_a_stale_no_match():
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
     state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=31)))
-    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia")]
+    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia", None)]
 
 
 def test_shop_match_candidates_skips_a_fresh_no_match():
@@ -769,7 +769,7 @@ def test_shop_match_candidates_ignores_a_fresh_search_no_match_when_limit_is_non
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
     state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=1)))
-    assert run_mod._shop_match_candidates(state, NOW, limit=None) == [("n:kilikia", "Kilikia", "Kilikia")]
+    assert run_mod._shop_match_candidates(state, NOW, limit=None) == [("n:kilikia", "Kilikia", "Kilikia", None)]
 
 
 def test_shop_match_candidates_still_skips_a_manual_block_when_limit_is_none():
@@ -917,6 +917,19 @@ def test_match_shop_beers_locally_copies_rating_style_abv_logo_and_sets_checked_
     assert match.checked_at == iso(NOW)
 
 
+def test_match_shop_beers_locally_rejects_a_parenthetical_match_when_abv_differs_a_lot():
+    """Code review round 2, finding C: the shop's own scraped abv is threaded through to
+    local_match, so a loose match that only works via a parenthesised aside in the candidate's
+    Untappd name does not paper over a real difference in strength."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1": _u_pair("Sour (Raspberry)", "Dargett Brewery", abv=6.5)},
+        "beer-city": {"n:dargett sour": _shop_pair("Dargett", "Dargett Sour", abv=4.0)},
+    }
+    run_mod.match_shop_beers_locally(state, NOW)
+    assert state.shop_matches == {}
+
+
 def test_match_shop_beers_locally_leaves_no_match_when_nothing_qualifies():
     """No caching of a local miss (unlike search's no_match): it's free to retry every run."""
     state = empty_state(NOW)
@@ -954,7 +967,7 @@ def test_shop_match_candidates_includes_buyam_menu_and_manual_kinds():
             first_seen=iso(NOW), last_seen=iso(NOW),
             info={"kind": "manual", "source": "manual", "brewery": "379", "name": "Hazy Pale"})},
     }
-    candidates = {key for key, _, _ in run_mod._shop_match_candidates(state, NOW)}
+    candidates = {key for key, _, _, _ in run_mod._shop_match_candidates(state, NOW)}
     assert candidates == {"n:apricot ale", "n:hazy pale"}
 
 
@@ -965,7 +978,7 @@ def test_shop_match_candidates_most_recently_seen_first_capped_at_eight():
         for i in range(1, 11)
     }}
     candidates = run_mod._shop_match_candidates(state, NOW)
-    assert [key for key, _, _ in candidates] == [f"n:beer{i}" for i in range(1, 9)]
+    assert [key for key, _, _, _ in candidates] == [f"n:beer{i}" for i in range(1, 9)]
 
 
 def test_shop_match_candidates_respects_a_custom_limit():
@@ -977,7 +990,7 @@ def test_shop_match_candidates_respects_a_custom_limit():
         for i in range(1, 11)
     }}
     candidates = run_mod._shop_match_candidates(state, NOW, limit=3)
-    assert [key for key, _, _ in candidates] == ["n:beer1", "n:beer2", "n:beer3"]
+    assert [key for key, _, _, _ in candidates] == ["n:beer1", "n:beer2", "n:beer3"]
 
 
 def test_match_shop_beers_records_a_match():
@@ -1908,4 +1921,4 @@ def test_shop_match_candidates_skip_beers_not_shown_on_the_site():
     gone.last_in_result = False
     state.pairs = {"parma": {"n:baltika 3": hidden, "n:bronx": oos, "n:pale": gone,
                              "n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
-    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia")]
+    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia", None)]
