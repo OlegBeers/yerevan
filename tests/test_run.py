@@ -1206,14 +1206,88 @@ def test_apply_shop_matches_clears_stale_identity_when_the_match_is_removed():
     state = empty_state(NOW)
     state.pairs = {"beer-city": {"n:x": PairRec(
         first_seen=iso(NOW), last_seen=iso(NOW),
-        info={"kind": "shop", "name": "X", "brewery": "Y", "shop_url": "https://beer-city.am/p/1",
-              "url": "https://untappd.com/beer/999", "rating": 4.1, "logo": "https://x/logo.jpg",
-              "u_name": "Stale Name", "u_brewery": "Stale Brewery"})}}
-    run_mod.apply_shop_matches(state)   # no shop_matches entry for "n:x" at all
+        info={"kind": "shop", "name": "X", "brewery": "Y", "shop_url": "https://beer-city.am/p/1"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(
+        untappd_beer_id=999, url="https://untappd.com/beer/999", rating=4.1, logo="https://x/logo.jpg",
+        name="Stale Name", brewery="Stale Brewery", matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)   # run 1: the match is active, its fields get overlaid
+    del state.shop_matches["n:x"]       # run 2: the match is removed/blocked
+    run_mod.apply_shop_matches(state)
     info = state.pairs["beer-city"]["n:x"].info
     assert "u_name" not in info and "u_brewery" not in info
     assert info["url"] == "https://beer-city.am/p/1"   # falls back to the shop's own product page
     assert "rating" not in info and "logo" not in info
+
+
+# --- apply_shop_matches: precise overlay-field tracking (3rd review round, finding B2) --------
+
+def test_apply_shop_matches_clears_rating_even_when_a_full_run_already_reset_the_url():
+    """Code review round 3, finding B2: a full shop run's own sighting always sets info["url"] to
+    the shop's own product page (rules._update_info), BEFORE apply_shop_matches runs each run -- so
+    by the time a removed match needs clearing, url is no longer the tell-tale Untappd url the
+    round-2 fix's clearing was gated on. rating/logo must still be cleared, via a precise marker of
+    which fields the overlay actually wrote, not the current url."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "X", "shop_url": "https://beer-city.am/p/1"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(
+        untappd_beer_id=999, url="https://untappd.com/beer/999", rating=4.1, logo="https://x/logo.jpg",
+        matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)
+    del state.shop_matches["n:x"]
+    # simulate this run's own full shop sighting already having reset url (rules._update_info runs
+    # before apply_shop_matches every run) -- the round-2 fix's url-based gate is moot here
+    state.pairs["beer-city"]["n:x"].info["url"] = "https://beer-city.am/p/1"
+
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:x"].info
+    assert "rating" not in info and "logo" not in info
+    assert info["url"] == "https://beer-city.am/p/1"
+
+
+def test_apply_shop_matches_preserves_a_freshly_rescraped_shop_logo_after_the_match_is_removed():
+    """Yerevan City re-sends its own shop photo into info["logo"] (and its own url) on every full
+    run it finds the item (rules._update_info), BEFORE apply_shop_matches runs each run -- clearing
+    a removed match's overlaid logo must not clobber that same-run refresh (full-run path)."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "X", "shop_url": "https://yerevan-city.am/p/1"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=999, url="https://untappd.com/beer/999",
+                                             logo="https://untappd.com/logo.jpg",
+                                             matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["beer-city"]["n:x"].info["logo"] == "https://untappd.com/logo.jpg"
+
+    del state.shop_matches["n:x"]
+    # simulate this run's own full shop sighting (rules._update_info, which runs before
+    # apply_shop_matches every run) already resetting url to the shop's own page and refreshing
+    # logo to Yerevan City's own current photo
+    info = state.pairs["beer-city"]["n:x"].info
+    info["url"] = info["shop_url"]
+    info["logo"] = "https://media.yerevan-city.am/own-photo.jpg"
+
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["beer-city"]["n:x"].info["logo"] == "https://media.yerevan-city.am/own-photo.jpg"
+
+
+def test_apply_shop_matches_still_clears_a_stale_logo_when_nothing_refreshed_it():
+    """Companion to the above (partial-run path): a partial Beer City run's _update_info never
+    touches info at all for an already-known item (refresh=False) -- a removed match's overlaid
+    logo/rating, left untouched since, must still be cleared."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "X"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=999, logo="https://untappd.com/logo.jpg",
+                                             rating=4.1, matched_at=iso(NOW), via="local")
+    run_mod.apply_shop_matches(state)
+    del state.shop_matches["n:x"]
+    # no simulated refresh here -- info["logo"]/["rating"] are left exactly as the overlay wrote
+    # them, as on a partial run of an already-known item
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:x"].info
+    assert "logo" not in info and "rating" not in info
 
 
 def test_apply_shop_matches_clears_untappd_url_entirely_when_no_shop_url_is_on_file():

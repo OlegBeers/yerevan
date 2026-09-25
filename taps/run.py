@@ -439,13 +439,27 @@ def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> 
         match.checked_at = iso(now)
 
 
+_OVERLAY_FIELDS = ("logo", "rating")   # tracked in info["u_overlay"] and cleared when the match is
+                                        # gone (code review round 3, finding B2); style/abv are
+                                        # never cleared -- a shop can genuinely scrape its own
+
+
 def _clear_shop_match(info: dict) -> None:
     """Drop a shop/menu/manual n: pair's stale identity overlay once its match is gone (code review
     round 2, finding B) -- a removed corrections.yaml same_as entry, or an untappd_id: null block,
     must not leave the previous run's canonical name/brewery, or its Untappd url/rating/logo,
-    showing the wrong beer forever. style/abv are left alone even then: unlike rating/logo (only
-    ever set here, from a match), a shop can genuinely scrape its own style/abv, so there is no
-    cheap way to tell whether they came from a match -- clearing them risks losing real shop data."""
+    showing the wrong beer forever. style/abv are left alone even then: unlike rating/logo, a shop
+    can genuinely scrape its own style/abv, so there is no cheap way to tell whether they came from
+    a match -- clearing them risks losing real shop data.
+
+    A full shop run's own sighting always resets info["url"] to the shop's own product page before
+    apply_shop_matches runs (rules._update_info) -- so by the time this runs, url may already look
+    nothing like an Untappd url even though rating/logo still need clearing (round 3, finding B2):
+    they are popped via info["u_overlay"] (the exact fields the overlay wrote, set by
+    apply_shop_matches below) instead, independent of the url check. A field is popped only if it
+    still holds the value the overlay itself wrote -- e.g. Yerevan City re-sends its own shop photo
+    into info["logo"] every run it finds the item, via that same _update_info, BEFORE this runs, so
+    a fresher, already-refreshed value must not be clobbered."""
     info.pop("u_name", None)
     info.pop("u_brewery", None)
     if UNTAPPD_BEER_RE.search(info.get("url") or ""):
@@ -453,8 +467,9 @@ def _clear_shop_match(info: dict) -> None:
             info["url"] = info["shop_url"]
         else:
             info.pop("url", None)
-        info.pop("rating", None)
-        info.pop("logo", None)
+    for field, value in info.pop("u_overlay", {}).items():
+        if info.get(field) == value:
+            info.pop(field, None)
 
 
 def apply_shop_matches(state: State) -> None:
@@ -466,7 +481,9 @@ def apply_shop_matches(state: State) -> None:
     review): the digest and rules.py's brand classification must keep using the shop's own,
     familiar text -- only site_data.py prefers the canonical identity for display. A shop/menu/
     manual "n:" pair with no active match has any previous match's identity cleared (_clear_shop_
-    match) -- a bar's own "u:"-keyed pair never goes through shop_matches at all, so it is untouched."""
+    match) -- a bar's own "u:"-keyed pair never goes through shop_matches at all, so it is untouched.
+    info["u_overlay"] records exactly which of _OVERLAY_FIELDS this overlay wrote (and their
+    values), so _clear_shop_match can later pop precisely those, regardless of the current url."""
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if rec.info.get("kind") not in ("shop", "menu", "manual"):
@@ -477,10 +494,14 @@ def apply_shop_matches(state: State) -> None:
                     _clear_shop_match(rec.info)
                 continue
             rec.info["url"] = match.url
+            overlay = {}
             for field in ("logo", "rating", "style", "abv"):
                 value = getattr(match, field)
                 if value is not None:
                     rec.info[field] = value
+                    if field in _OVERLAY_FIELDS:
+                        overlay[field] = value
+            rec.info["u_overlay"] = overlay
             if match.name is not None:
                 rec.info["u_name"] = match.name
             if match.brewery is not None:
