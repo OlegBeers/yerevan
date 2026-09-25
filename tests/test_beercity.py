@@ -38,6 +38,7 @@ def product(slug):
     return f"https://www.beer-city.am/en/products/{slug}/"
 
 
+THUMBS = "https://www.beer-city.am/media/product-img/"
 IPA_URL = product("garejur-hard-rut-dabl-ipa-045l")
 NONALC_URL = product("garejur-pur-vayv-ipa-non-alco-045l")
 
@@ -100,8 +101,10 @@ def test_parse_listing_first_bottles_page():
     listing = parse_listing(BOTTLES_P1)
     assert (listing.page, listing.pages) == (1, 23)
     assert [i.item_id for i in listing.items] == P1_IDS
-    assert listing.items[0] == BCItem("2053", 'Beer "Bronx" 0.5L', 730, True, product("garejur-bronx-05l"))
-    assert listing.items[6] == BCItem("2047", 'Beer "Hard root" Double IPA 0.45 l', 2200, True, IPA_URL)
+    assert listing.items[0] == BCItem("2053", 'Beer "Bronx" 0.5L', 730, True, product("garejur-bronx-05l"),
+                                      THUMBS + "small_5_EhKo240.jpg")
+    assert listing.items[6] == BCItem("2047", 'Beer "Hard root" Double IPA 0.45 l', 2200, True, IPA_URL,
+                                      THUMBS + "small_3_wCYfvQC.jpg")
     assert listing.items[8].title == 'Beer "Starnberger helles" 0,45l'
     assert all(i.in_stock for i in listing.items)
 
@@ -110,13 +113,13 @@ def test_parse_listing_last_pages_and_out_of_stock():
     last = parse_listing(BOTTLES_LAST)
     assert (last.page, last.pages) == (23, 23)
     assert last.items == [BCItem("266", 'Пиво "379 American Wheat Ale" Citrus 0,33л', 740, True,
-                                 product("garejowr-379-american-wheat-ale-citrus-033l"))]
+                                 product("garejowr-379-american-wheat-ale-citrus-033l"), THUMBS + "15_small-min.jpg")]
     draft_page = parse_listing(DRAFT_LAST)
     assert (draft_page.page, draft_page.pages) == (3, 3)
     assert [i.item_id for i in draft_page.items] == DRAFT_IDS
     # a.addtocart-but.diss-prod marks the only card that is out of stock
     assert draft_page.items[2] == BCItem("12", 'Draught beer "379" non-filtered 1l', 1700, False,
-                                         product("garejur-379-chfiltrvac-1l"))
+                                         product("garejur-379-chfiltrvac-1l"), THUMBS + "379_pilsner_small-min.jpg")
     assert [i.item_id for i in draft_page.items if not i.in_stock] == ["12"]
 
 
@@ -132,7 +135,29 @@ def test_parse_listing_missing_price_and_incomplete_cards():
     no_name = P1_CARDS["2050"].replace("prod-item-name", "prod-item-title")
     listing = parse_listing(page_json([no_price, no_id, no_name], 1, 1))
     assert listing.items == [BCItem("2052", 'Beer "Bronx black cherry" 0.5L', None, True,
-                                    product("garejur-bronx-black-cheri-05l"))]
+                                    product("garejur-bronx-black-cheri-05l"), THUMBS + "small_4_Om4bipN.jpg")]
+
+
+def test_parse_listing_reads_the_small_product_photo_of_every_card():
+    items = parse_listing(BOTTLES_P1).items + parse_listing(BOTTLES_LAST).items + parse_listing(DRAFT_LAST).items
+    assert len(items) == 19
+    assert items[0].photo == THUMBS + "small_5_EhKo240.jpg"   # the shop's own resized variant, made absolute
+    assert items[13].photo == THUMBS + "kellers_small-min_ucdNmWe.jpg"
+    assert all(i.photo and i.photo.startswith(THUMBS) for i in items)
+
+
+@pytest.mark.parametrize("src", ["http://www.beer-city.am/media/x.jpg", "https://evil.example/x.jpg",
+                                 "//evil.example/x.jpg", "javascript:alert(1)"])
+def test_parse_listing_drops_a_photo_that_is_not_https_on_the_shops_own_host(src):
+    card = P1_CARDS["2053"].replace("/media/product-img/small_5_EhKo240.jpg", src)
+    [item] = parse_listing(page_json([card], 1, 1)).items
+    assert (item.item_id, item.photo) == ("2053", None)
+
+
+def test_parse_listing_keeps_a_card_without_a_photo():
+    card = P1_CARDS["2053"].replace('src="/media/product-img/small_5_EhKo240.jpg"', "")
+    [item] = parse_listing(page_json([card], 1, 1)).items
+    assert (item.item_id, item.photo) == ("2053", None)
 
 
 @pytest.mark.parametrize("text", ["<html>Just a moment...</html>", "[]", '{"link": "x"}', '{"products": null}'])
@@ -184,13 +209,15 @@ def test_partial_run_without_new_ids_reads_only_first_page_of_each_category():
         place_id="beer-city", source="beercity", beer_key="n:starnberger brauhaus helles",   # alias applied
         title='Beer "Starnberger helles" 0,45l', name="Starnberger helles", seen_at=NOW,
         shop_item_id="2045", price_amd=730, in_stock=True, category="sshalcavac-garejur",
-        url=product("garejur-starnberger-heles-045l"),   # known: no product page, so no brand/abv/volume
-        shop_url=product("garejur-starnberger-heles-045l"))
+        url=product("garejur-starnberger-heles-045l"),   # known: no product page, so no brand/abv/volume/country
+        shop_url=product("garejur-starnberger-heles-045l"),
+        logo=THUMBS + "small_1_3NjeSmS.jpg")             # ... but the listing card has the photo
     assert s["12"] == Sighting(
         place_id="beer-city", source="beercity", beer_key="n:379 non",
         title='Draught beer "379" non-filtered 1l', name="379 non-filtered", seen_at=NOW,
         shop_item_id="12", price_amd=1700, container="draft", in_stock=False, category="lcnovi-garejur",
-        url=product("garejur-379-chfiltrvac-1l"), shop_url=product("garejur-379-chfiltrvac-1l"))
+        url=product("garejur-379-chfiltrvac-1l"), shop_url=product("garejur-379-chfiltrvac-1l"),
+        logo=THUMBS + "379_pilsner_small-min.jpg")
     assert s["2050"].beer_key == s["2049"].beer_key == "n:mythos"   # 0.3L and 0.5L share a key
 
 
@@ -209,9 +236,11 @@ def test_partial_run_fetches_new_product_pages_and_walks_on_while_a_page_had_new
         place_id="beer-city", source="beercity", beer_key="n:hard root double ipa",
         title='Beer "Hard root" Double IPA 0.45 l', name="Hard root Double IPA", seen_at=NOW,
         brewery="Konix", shop_item_id="2047", abv=7.6, price_amd=2200, volume_ml=450, container="can",
-        in_stock=True, category="sshalcavac-garejur", url=IPA_URL, shop_url=IPA_URL)
-    assert (s["2048"].brewery, s["2048"].abv, s["2048"].name) == ("Konix", 0.5, "Pure wave IPA non alco")
-    assert s["2053"].brewery is None
+        in_stock=True, category="sshalcavac-garejur", url=IPA_URL, shop_url=IPA_URL,
+        logo=THUMBS + "small_3_wCYfvQC.jpg", country="Russia")
+    assert (s["2048"].brewery, s["2048"].abv, s["2048"].name, s["2048"].country) == \
+        ("Konix", 0.5, "Pure wave IPA non alco", "Russia")
+    assert (s["2053"].brewery, s["2053"].country) == (None, None)   # a known item's product page is not read again
 
 
 def test_failed_product_page_drops_only_that_item():

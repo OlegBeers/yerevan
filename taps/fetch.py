@@ -6,7 +6,8 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Collection, Mapping
+from urllib.parse import urljoin, urlsplit
 
 import requests
 
@@ -84,6 +85,16 @@ class Http:
             return raw.json()
         except ValueError as e:   # requests' JSONDecodeError is a ValueError
             raise FetchError("http", f"invalid JSON from {url}") from e
+
+
+def shop_photo(src: str | None, base: str, hosts: Collection[str]) -> str | None:
+    """A shop's product photo: `src` (absolute or relative to `base`) if it is https on one of the shop's own hosts."""
+    src = (src or "").strip()
+    if not src:
+        return None
+    url = urljoin(base, src)
+    parts = urlsplit(url)
+    return url if parts.scheme == "https" and parts.hostname in hosts else None
 
 
 def untappd_due(untappd: UntappdRec, now: datetime) -> bool:

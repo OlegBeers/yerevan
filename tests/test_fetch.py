@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from taps.fetch import (UA, FetchError, Http, HttpResponse, UntappdClient,
-                        dump_debug_html, is_cloudflare_challenge, untappd_due)
+                        dump_debug_html, is_cloudflare_challenge, shop_photo, untappd_due)
 from taps.state import UntappdRec
 from taps.timeutil import iso
 from tests.helpers import fixture_text
@@ -147,6 +147,34 @@ def test_http_delay_also_follows_a_failed_request():
         http.get("https://shop.example/1")
     http.get("https://shop.example/2")
     assert len(sleeps) == 1
+
+
+# --- shop_photo -----------------------------------------------------------------
+
+SHOP = "https://www.beer-city.am"
+SHOP_HOSTS = ("www.beer-city.am", "static.beer-city.am")
+
+
+@pytest.mark.parametrize("src, url", [
+    ("/media/product-img/small_5.jpg", f"{SHOP}/media/product-img/small_5.jpg"),
+    ("small_5.jpg", f"{SHOP}/small_5.jpg"),
+    (f"  {SHOP}/media/a.jpg ", f"{SHOP}/media/a.jpg"),
+    ("https://static.beer-city.am/cache/a(1).jpg?v=7", "https://static.beer-city.am/cache/a(1).jpg?v=7"),
+])
+def test_shop_photo_keeps_https_urls_on_the_shops_own_hosts(src, url):
+    assert shop_photo(src, SHOP, SHOP_HOSTS) == url
+
+
+@pytest.mark.parametrize("src", [
+    None, "", "   ",
+    "http://www.beer-city.am/media/a.jpg",                 # not https
+    "//evil.example/a.jpg", "https://evil.example/a.jpg",  # another host
+    "https://www.beer-city.am.evil.example/a.jpg",         # host only starts like the shop's
+    "https://evil.example/www.beer-city.am/a.jpg", "https://www.beer-city.am@evil.example/a.jpg",
+    "javascript:alert(1)", "data:image/png;base64,AAAA",
+])
+def test_shop_photo_rejects_everything_else(src):
+    assert shop_photo(src, SHOP, SHOP_HOSTS) is None
 
 
 # --- untappd_due --------------------------------------------------------------

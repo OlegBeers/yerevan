@@ -9,10 +9,11 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from taps.config import Place
-from taps.fetch import FetchError, Http
+from taps.fetch import FetchError, Http, shop_photo
 from taps.model import Sighting, SourceResult, n_key
 
 BASE = "https://www.beer-city.am"
+PHOTO_HOSTS = ("www.beer-city.am",)   # listing cards carry the shop's own small variant, /media/product-img/small_*.jpg
 LIST_URL = BASE + "/en/catalog/{category}/?sorting=-id&page={page}"
 CATEGORIES = ("sshalcavac-garejur", "lcnovi-garejur")   # bottles and cans; draught to take away
 DRAFT_CATEGORY = "lcnovi-garejur"
@@ -35,6 +36,7 @@ class BCItem:
     price_amd: int | None
     in_stock: bool
     url: str
+    photo: str | None = None
 
 
 @dataclass(frozen=True)
@@ -68,12 +70,14 @@ def parse_listing(text: str) -> BCListing:
             continue
         price = card.select_one(".new-price .wh-point")
         digits = re.sub(r"\D", "", price.get_text()) if price else ""
+        img = card.select_one(".prod-item-img img[src]")
         items.append(BCItem(
             item_id=item_id,
             title=link.get_text(" ", strip=True),
             price_amd=int(digits) if digits else None,
             in_stock=card.select_one("a.addtocart-but.diss-prod") is None,
             url=urljoin(BASE, link["href"]),
+            photo=shop_photo(img["src"], BASE, PHOTO_HOSTS) if img else None,
         ))
     m = PAGES_RE.search(soup.get_text(" ", strip=True))
     return BCListing(items, int(m.group(1)), int(m.group(2))) if m else BCListing(items, 1, 1)
@@ -161,6 +165,8 @@ def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], full: boo
                     brewery=product.brand if product else None,
                     shop_item_id=item.item_id,
                     abv=product.abv if product else None,
+                    country=product.country if product else None,
+                    logo=item.photo,
                     price_amd=item.price_amd,
                     volume_ml=product.volume_ml if product else None,
                     container="draft" if category == DRAFT_CATEGORY else (product.container if product else None),
