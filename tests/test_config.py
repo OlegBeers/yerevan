@@ -294,6 +294,47 @@ def test_multi_venue_missing_slug_raises(tmp_path):
         load_config(write(tmp_path, extra))
 
 
+def test_a_place_may_carry_its_own_street_address(tmp_path):
+    """v1.4: a single-venue place has no per-venue addresses, so it can state one of its own."""
+    extra = MINIMAL + """
+  - id: dors
+    name: Dors Craft Beer & Kitchen
+    kind: brewpub
+    address: "Амиряна 4/6"
+    sources:
+      untappd_checkins: {slug: dors-craft-beer-kitchen, venue_id: 9312556}
+"""
+    cfg = load_config(write(tmp_path, extra))
+    assert cfg.places["dors"].address == "Амиряна 4/6"
+    assert cfg.places["dors"].addresses == ["Амиряна 4/6"]
+    assert cfg.places["gargoyle"].address is None                   # optional: MINIMAL's place states none
+    assert cfg.places["gargoyle"].addresses == []
+
+
+def test_a_multi_venue_places_venue_addresses_win_over_its_own_address(tmp_path):
+    extra = MINIMAL + """
+  - id: beer-academy
+    name: Beer Academy
+    kind: brewpub
+    address: "Абовяна 1"
+    sources:
+      untappd_checkins:
+        venues:
+          - {slug: beer-academy, venue_id: 368914, address: "Московян 8"}
+          - {slug: beer-academy-ethnograph, venue_id: 10274653, address: "Абовяна 10"}
+"""
+    ba = load_config(write(tmp_path, extra)).places["beer-academy"]
+    assert ba.address == "Абовяна 1"
+    assert ba.addresses == ["Московян 8", "Абовяна 10"]
+
+
+@pytest.mark.parametrize("value", ["10", "true", "[Арама, 72]"])    # a number, a bool, a list: not text
+def test_a_place_address_that_is_not_text_raises(tmp_path, value):
+    text = MINIMAL.replace("name: Tuf", f"name: Tuf\n    address: {value}", 1)
+    with pytest.raises(ConfigError, match="неверное значение address"):
+        load_config(write(tmp_path, text))
+
+
 def test_place_without_merged_from_has_empty_tuple(cfg):
     assert cfg.places["gargoyle"].merged_from == ()
 

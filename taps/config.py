@@ -20,7 +20,7 @@ SOURCE_PARAMS: dict[str, dict[str, type]] = {
 ID_RE = re.compile(r"[a-z0-9][a-z0-9-]*")
 CHECKIN_VENUE_FIELDS = ("slug", "venue_id", "address")
 PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewery_name", "untappd_venue_id",
-                "merged_from")
+                "merged_from", "address")
 BREWERY_FIELDS = ("id", "name", "brewery_id", "slug", "list_enabled")
 SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages",
                    "boost_until", "boost_daily_pages", "boost_search_per_run", "discovery_daily_until")
@@ -42,6 +42,7 @@ class Place:
     brewery_name: str | None = None
     untappd_venue_id: int | None = None
     merged_from: tuple[str, ...] = ()   # old place ids merged into this one (state.merge_places), v1.1
+    address: str | None = None          # street address of a single-venue place, as people write it (v1.4)
 
     def source_keys(self) -> list[str]:
         return [f"{s}:{self.id}" for s in self.sources]
@@ -76,9 +77,10 @@ class Place:
 
     @property
     def addresses(self) -> list[str]:
-        """Per-venue addresses (v1.1 multi-venue places), in `places.yaml` order; empty for a place with
-        no addresses on file."""
-        return [v["address"] for v in self._checkin_venues() if v.get("address")]
+        """Per-venue addresses (v1.1 multi-venue places), in `places.yaml` order; they win over the place's
+        own `address`, which stands in when there are none; empty for a place with no address on file."""
+        venue_addresses = [v["address"] for v in self._checkin_venues() if v.get("address")]
+        return venue_addresses or ([self.address] if self.address else [])
 
 
 @dataclass(frozen=True)
@@ -220,6 +222,7 @@ def _place(raw: Any, n: int) -> Place:
         brewery_name=_get(d, "brewery_name", str, where, None),
         untappd_venue_id=_get(d, "untappd_venue_id", int, where, None),
         merged_from=tuple(merged_from),
+        address=_get(d, "address", str, where, None),
     )
 
 
