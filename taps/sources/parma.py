@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from taps.config import Place
-from taps.fetch import FetchError, Http, shop_photo
+from taps.fetch import COUNTRY_BACKFILL_PER_RUN, FetchError, Http, shop_photo
 from taps.model import Sighting, SourceResult, n_key
 
 BASE = "https://parma.am"
@@ -104,10 +104,11 @@ def volume_ml(title: str) -> int | None:
     return round(value if m.group(2).lower() == "ml" else value * 1000)
 
 
-def fetch_parma(http: Http, place: Place, known_item_ids: set[str], now: datetime,
+def fetch_parma(http: Http, place: Place, known_item_ids: set[str], country_todo: set[str], now: datetime,
                 brewery_aliases: Mapping[str, str]) -> SourceResult:
-    """Listing pages until a short one (max 8), then product pages for new codes only;
-    a new code whose product page fails is left out of this run."""
+    """Listing pages until a short one (max 8), then product pages for new codes; a new code whose
+    product page fails is left out of this run. Besides, up to COUNTRY_BACKFILL_PER_RUN in-stock codes
+    of country_todo (known, country never read) get their page read; a failure there is skipped quietly."""
     key = f"parma:{place.id}"
     cards: dict[str, ParmaCard] = {}
     try:
@@ -123,6 +124,7 @@ def fetch_parma(http: Http, place: Place, known_item_ids: set[str], now: datetim
         return SourceResult(key=key, source="parma", ok=False, error="empty", place_id=place.id)
 
     sightings = []
+    backfilled = 0
     for card in cards.values():
         beer_key = n_key(card.title, brewery_aliases)
         if beer_key == "n:":
@@ -133,13 +135,20 @@ def fetch_parma(http: Http, place: Place, known_item_ids: set[str], now: datetim
                 product = parse_product(http.get(card.url, headers=HEADERS).text)
             except FetchError:
                 continue
+        elif card.in_stock and card.item_id in country_todo and backfilled < COUNTRY_BACKFILL_PER_RUN:
+            backfilled += 1
+            try:
+                product = parse_product(http.get(card.url, headers=HEADERS).text)
+            except FetchError:
+                pass   # reported as a plain known item, retried next run
         sightings.append(Sighting(
             place_id=place.id, source="parma", beer_key=beer_key, title=card.title,
             name=clean_name(card.title), seen_at=now,
             brewery=product.manufacturer if product else None,
             shop_item_id=card.item_id,
             abv=product.abv if product else None,
-            country=product.country if product else None, logo=card.photo,
+            country=product.country if product else None,
+            country_checked=True if product else None, logo=card.photo,
             price_amd=card.price_amd, volume_ml=volume_ml(card.title),
             in_stock=card.in_stock, category=CATEGORY, url=card.url, shop_url=card.url,
         ))

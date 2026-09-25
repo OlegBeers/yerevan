@@ -653,6 +653,31 @@ def test_partial_beercity_run_never_touches_already_known_items():
     assert out.events == [("beer-city", "n:new-arrival")]
 
 
+def test_country_backfill_fills_a_known_item_even_in_a_partial_run_without_touching_first_seen_or_events():
+    state = ready("beercity:beer-city")
+    merge(state, shop(item(1, "n:gose", brewery="Konix", abv=5.0)), now=NOW - 12 * H)
+    rec = state.pairs["beer-city"]["n:gose"]
+    first_seen, notified = rec.first_seen, rec.notified_at
+    out = merge(state, shop(item(1, "n:gose", brewery="Konix", abv=5.5, country="Russia", country_checked=True),
+                            full=False), now=NOW)
+    assert (rec.info["country"], rec.info["country_checked"], rec.info["abv"]) == ("Russia", True, 5.5)
+    assert (rec.first_seen, rec.notified_at, out.events) == (first_seen, notified, [])
+    assert list(state.pairs["beer-city"]) == ["n:gose"] and state.shop_items["beer-city"] == {"1": "n:gose"}
+
+
+def test_country_checked_without_a_country_is_remembered_and_never_blanks_a_known_country():
+    state = ready("parma:parma")
+    merge(state, shop(item(1, "n:gose", place="parma", source="parma", country="Armenia")), now=NOW - 12 * H)
+    merge(state, shop(item(1, "n:gose", place="parma", source="parma", country_checked=True), place="parma",
+                      source="parma"), now=NOW)
+    info = state.pairs["parma"]["n:gose"].info
+    assert (info["country"], info["country_checked"]) == ("Armenia", True)
+    merge(state, shop(item(1, "n:gose", place="parma", source="parma"), place="parma", source="parma"),
+          now=NOW + 12 * H)   # an ordinary later sighting keeps both
+    info = state.pairs["parma"]["n:gose"].info
+    assert (info["country"], info["country_checked"]) == ("Armenia", True)
+
+
 def test_source_record_after_a_full_and_a_partial_merge():
     state = empty_state(NOW)
     rec = state.source("untappd_menu:gargoyle")

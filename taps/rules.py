@@ -16,8 +16,8 @@ CHECKIN_KEEP_DAYS = 21     # older check-ins are ignored
 MANUAL_EVENT_DAYS = 3      # older manual entries are stored silently
 TRIP_REASONS = ("shrink", "mass_new", "list_mass_new")   # breaker trips; any other discard is a failure
 INFO_FIELDS = ("title", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container",
-               "serving", "url", "shop_url", "logo", "country", "menu_id", "shop_item_id", "manual_id", "manual_by",
-               "manual_date")
+               "serving", "url", "shop_url", "logo", "country", "country_checked", "menu_id", "shop_item_id", "manual_id",
+               "manual_by", "manual_date")
 SERVING_FIELDS = ("container", "price_amd", "volume_ml")   # the first serving, as single-serving readers see it
 BREWERY_INFO_FIELDS = ("name", "brewery", "style", "abv", "url")
 CHECKIN_BACKFILL_FIELDS = ("style", "abv", "ibu", "rating")   # filled from a menu pair when the check-in lacks them
@@ -135,7 +135,8 @@ class _Merger:
     def _sightings(self, result: SourceResult, rec: SourceRec, baseline: bool) -> None:
         tabs = set(rec.seen_menu_ids)   # menu tabs of the previous successful run
         touched: set[tuple[str, str]] = set()
-        # a partial Beer City run only scouts for new arrivals: items already known keep their stored data
+        # a partial Beer City run only scouts for new arrivals: items already known keep their stored data,
+        # except one whose product page was just read to backfill its country (country_checked)
         partial_shop = result.source == "beercity" and not result.full
         known_items = set(self.state.shop_items.get(result.place_id, {})) if partial_shop else set()
         for s in result.sightings:
@@ -146,7 +147,7 @@ class _Merger:
             silent = (baseline
                       or (s.menu_id is not None and s.menu_id not in tabs)
                       or (place.id in self.new_places and s.source not in place.sources and s.kind != "manual"))
-            refresh = not (partial_shop and s.shop_item_id in known_items)
+            refresh = not (partial_shop and s.shop_item_id in known_items and not s.country_checked)
             self._pair(s, place, key, silent, first=(place.id, key) not in touched, refresh=refresh)
             touched.add((place.id, key))
         if result.source == "manual":

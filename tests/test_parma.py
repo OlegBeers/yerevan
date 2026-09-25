@@ -8,7 +8,7 @@ from taps.config import Place
 from taps.fetch import FetchError, HttpResponse
 from taps.model import Sighting
 from taps.sources.parma import (
-    ParmaCard, ParmaProduct, clean_name, fetch_parma, parse_listing, parse_product, volume_ml,
+    COUNTRY_BACKFILL_PER_RUN, ParmaCard, ParmaProduct, clean_name, fetch_parma, parse_listing, parse_product, volume_ml,
 )
 from tests.helpers import fixture_text
 
@@ -206,7 +206,7 @@ def test_fetch_parma_walks_pages_and_fetches_product_pages_only_for_new_codes():
     http = FakeHttp({**listing_pages(*REAL_WALK),
                      URL_28051: PRODUCT_28051,
                      URL_28637: FetchError("http", "404")})
-    result = fetch_parma(http, PLACE, known, NOW, {})
+    result = fetch_parma(http, PLACE, known, set(), NOW, {})
 
     assert (result.ok, result.error, result.key, result.source, result.place_id, result.full) == \
         (True, None, "parma:parma", "parma", "parma", True)
@@ -221,7 +221,7 @@ def test_fetch_parma_walks_pages_and_fetches_product_pages_only_for_new_codes():
         place_id="parma", source="parma", beer_key="n:dahook ipa light", title='Beer "Dahook Ipa" light 330ml',
         name="Dahook Ipa light", seen_at=NOW, brewery="Dahook LLC", shop_item_id="28051", abv=6.0,
         price_amd=790, volume_ml=330, in_stock=True, category="beer", url=URL_28051, shop_url=URL_28051,
-        country="Armenia", logo=THUMB_28051)
+        country="Armenia", logo=THUMB_28051, country_checked=True)
     vimpel = by_id["21593"]                                 # known code: no product page, so no brewery, abv or country
     assert (vimpel.beer_key, vimpel.brewery, vimpel.abv, vimpel.country, vimpel.price_amd, vimpel.in_stock) == \
         ("n:vimpel lager light", None, None, None, 520, True)
@@ -230,12 +230,57 @@ def test_fetch_parma_walks_pages_and_fetches_product_pages_only_for_new_codes():
     assert by_id["226934"].title == 'Beer "379" cherry, dark 330ml'   # renumbered copy on page 2
 
 
+def test_fetch_parma_reads_product_page_of_known_code_lacking_country():
+    known = all_ids(REAL_WALK)
+    http = FakeHttp({**listing_pages(*REAL_WALK), URL_28051: PRODUCT_28051})
+    result = fetch_parma(http, PLACE, known, {"28051"}, NOW, {})
+    assert http.urls() == [list_url(1), list_url(2), list_url(3), list_url(4), URL_28051]
+    by_id = {s.shop_item_id: s for s in result.sightings}
+    assert len(by_id) == 187
+    s = by_id["28051"]
+    assert (s.brewery, s.abv, s.country, s.country_checked, s.price_amd, s.volume_ml) == \
+        ("Dahook LLC", 6.0, "Armenia", True, 790, 330)
+    assert by_id["21593"].country_checked is None
+
+
+def test_fetch_parma_country_backfill_is_capped_per_run():
+    assert COUNTRY_BACKFILL_PER_RUN == 40
+    known = all_ids(REAL_WALK)
+    urls = {c.url: PRODUCT_28051 for html in REAL_WALK for c in parse_listing(html)}
+    http = FakeHttp({**listing_pages(*REAL_WALK), **urls})
+    result = fetch_parma(http, PLACE, known, set(known), NOW, {})
+    product_calls = [u for u in http.urls() if u in urls]
+    assert product_calls == [c.url for c in parse_listing(P1)[:COUNTRY_BACKFILL_PER_RUN]]   # listing order
+    assert sum(1 for s in result.sightings if s.country_checked) == COUNTRY_BACKFILL_PER_RUN
+    assert len(result.sightings) == 187   # the rest are still reported, just not read this run
+
+
+def test_fetch_parma_out_of_stock_code_is_not_backfilled():
+    known = all_ids(REAL_WALK)
+    soup = BeautifulSoup(P4, "html.parser")
+    soup.select("div.product_item")[0].append(soup.new_tag("div", attrs={"class": "not_av_content"}))
+    walk = (P1, renumber(P1, "2"), renumber(P1, "3"), str(soup))
+    code = parse_listing(str(soup))[0].item_id
+    http = FakeHttp(listing_pages(*walk))   # a product page request would fail the test
+    result = fetch_parma(http, PLACE, known, {code}, NOW, {})
+    assert {s.shop_item_id: s for s in result.sightings}[code].country_checked is None
+
+
+def test_fetch_parma_failed_country_backfill_is_skipped_quietly():
+    known = all_ids(REAL_WALK)
+    http = FakeHttp({**listing_pages(*REAL_WALK), URL_28051: FetchError("http", "500")})
+    result = fetch_parma(http, PLACE, known, {"28051"}, NOW, {})
+    assert result.ok and len(result.sightings) == 187
+    s = {s.shop_item_id: s for s in result.sightings}["28051"]
+    assert (s.country, s.country_checked) == (None, None)
+
+
 def test_fetch_parma_sighting_keeps_out_of_stock_flag():
     soup = BeautifulSoup(P4, "html.parser")
     soup.select("div.product_item")[-1].append(soup.new_tag("div", attrs={"class": "not_av_content"}))
     pages = (P1, renumber(P1, "2"), renumber(P1, "3"), str(soup))
     http = FakeHttp({**listing_pages(*pages), URL_28051: PRODUCT_28051})
-    result = fetch_parma(http, PLACE, all_ids(pages) - {"28051"}, NOW, {})
+    result = fetch_parma(http, PLACE, all_ids(pages) - {"28051"}, set(), NOW, {})
     by_id = {s.shop_item_id: s for s in result.sightings}
     assert (by_id["28051"].in_stock, by_id["28051"].brewery) == (False, "Dahook LLC")
     assert by_id["28637"].in_stock is True
@@ -243,7 +288,7 @@ def test_fetch_parma_sighting_keeps_out_of_stock_flag():
 
 def test_fetch_parma_uses_brewery_aliases_in_keys():
     http = FakeHttp(listing_pages(*REAL_WALK))
-    result = fetch_parma(http, PLACE, all_ids(REAL_WALK), NOW, {"dahook": "dahook craft"})
+    result = fetch_parma(http, PLACE, all_ids(REAL_WALK), set(), NOW, {"dahook": "dahook craft"})
     by_id = {s.shop_item_id: s for s in result.sightings}
     assert by_id["28051"].beer_key == "n:dahook craft ipa light"
 
@@ -252,7 +297,7 @@ def test_fetch_parma_skips_title_without_key_and_its_product_page():
     pages = (P1, renumber(P1, "2"), renumber(P1, "3"),
              P4.replace('Beer "Paulaner Weissbier" light 500ml', "Beer 500ml"))
     http = FakeHttp(listing_pages(*pages))                  # no product page for 99846 is served
-    result = fetch_parma(http, PLACE, all_ids(pages) - {"99846"}, NOW, {})
+    result = fetch_parma(http, PLACE, all_ids(pages) - {"99846"}, set(), NOW, {})
     assert result.ok
     assert "99846" not in {s.shop_item_id for s in result.sightings}
     assert len(result.sightings) == 186
@@ -261,14 +306,14 @@ def test_fetch_parma_skips_title_without_key_and_its_product_page():
 def test_fetch_parma_stops_after_eight_pages():
     pages = [page(60, str(i)) for i in range(1, 10)]        # a 9th full page exists but must not be read
     http = FakeHttp(listing_pages(*pages))
-    result = fetch_parma(http, PLACE, all_ids(pages), NOW, {})
+    result = fetch_parma(http, PLACE, all_ids(pages), set(), NOW, {})
     assert http.urls() == [list_url(i) for i in range(1, 9)]
     assert result.ok and len(result.sightings) == 480
 
 
 def test_fetch_parma_counts_each_code_once():
     http = FakeHttp({list_url(i): P1 for i in range(1, 9)})   # site ignores ?page=: same 60 cards every time
-    result = fetch_parma(http, PLACE, set(), NOW, {})
+    result = fetch_parma(http, PLACE, set(), set(), NOW, {})
     assert len(http.calls) == 8
     assert (result.ok, result.error, result.sightings) == (False, "empty", [])
 
@@ -277,7 +322,7 @@ def test_fetch_parma_counts_each_code_once():
 def test_fetch_parma_needs_150_cards(last, ok):
     pages = (page(60, "1"), page(60, "2"), page(last, "3"))
     http = FakeHttp(listing_pages(*pages))
-    result = fetch_parma(http, PLACE, all_ids(pages), NOW, {})
+    result = fetch_parma(http, PLACE, all_ids(pages), set(), NOW, {})
     assert http.urls() == [list_url(1), list_url(2), list_url(3)]   # stops after the short page
     assert result.ok is ok
     assert result.error == (None if ok else "empty")
@@ -286,7 +331,7 @@ def test_fetch_parma_needs_150_cards(last, ok):
 
 def test_fetch_parma_short_first_page_is_empty_without_product_requests():
     http = FakeHttp(listing_pages(P4))
-    result = fetch_parma(http, PLACE, set(), NOW, {})
+    result = fetch_parma(http, PLACE, set(), set(), NOW, {})
     assert http.urls() == [list_url(1)]
     assert (result.ok, result.error, result.key, result.place_id) == (False, "empty", "parma:parma", "parma")
 
@@ -294,6 +339,6 @@ def test_fetch_parma_short_first_page_is_empty_without_product_requests():
 @pytest.mark.parametrize("kind", ["network", "cloudflare", "http"])
 def test_fetch_parma_listing_failure_fails_the_run(kind):
     http = FakeHttp({list_url(1): P1, list_url(2): FetchError(kind, list_url(2))})
-    result = fetch_parma(http, PLACE, set(), NOW, {})
+    result = fetch_parma(http, PLACE, set(), set(), NOW, {})
     assert http.urls() == [list_url(1), list_url(2)]
     assert (result.ok, result.error, result.sightings, result.key) == (False, kind, [], "parma:parma")

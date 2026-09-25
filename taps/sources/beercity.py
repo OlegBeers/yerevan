@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from taps.config import Place
-from taps.fetch import FetchError, Http, shop_photo
+from taps.fetch import COUNTRY_BACKFILL_PER_RUN, FetchError, Http, shop_photo
 from taps.model import Sighting, SourceResult, n_key
 
 BASE = "https://www.beer-city.am"
@@ -122,11 +122,13 @@ def clean_name(title: str) -> str:
     return " ".join(name.split())
 
 
-def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], full: bool, now: datetime,
-                   brewery_aliases: Mapping[str, str]) -> SourceResult:
+def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], country_todo: set[str], full: bool,
+                   now: datetime, brewery_aliases: Mapping[str, str]) -> SourceResult:
     """Full run: every page of both categories. Partial run: page 1, then the next page only while
-    the page had unseen beer ids. Product pages only for unseen ids; a failed one drops that item.
-    Any listing failure fails the whole run, so a full run is never incomplete."""
+    the page had unseen beer ids. Product pages for unseen ids; a failed one drops that item. Besides,
+    up to COUNTRY_BACKFILL_PER_RUN in-stock listed items of country_todo (known, country never read) get
+    their page read; a failure there is skipped quietly. Any listing failure fails the whole run,
+    so a full run is never incomplete."""
     key = f"beercity:{place.id}"
 
     def fail(error: str) -> SourceResult:
@@ -134,6 +136,7 @@ def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], full: boo
 
     sightings: list[Sighting] = []
     done: set[str] = set()
+    backfilled = 0
     for category in CATEGORIES:
         page = pages = 1
         while page <= pages:
@@ -158,6 +161,12 @@ def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], full: boo
                         product = parse_product(http.get(item.url).text)
                     except FetchError:
                         continue   # spec §4.5: not recorded in this run, retried next run
+                elif item.in_stock and item.item_id in country_todo and backfilled < COUNTRY_BACKFILL_PER_RUN:
+                    backfilled += 1
+                    try:
+                        product = parse_product(http.get(item.url).text)
+                    except FetchError:
+                        pass   # reported as a plain known item, retried next run
                 done.add(item.item_id)
                 sightings.append(Sighting(
                     place_id=place.id, source="beercity", beer_key=beer_key, title=item.title,
@@ -166,6 +175,7 @@ def fetch_beercity(http: Http, place: Place, known_item_ids: set[str], full: boo
                     shop_item_id=item.item_id,
                     abv=product.abv if product else None,
                     country=product.country if product else None,
+                    country_checked=True if product else None,
                     logo=item.photo,
                     price_amd=item.price_amd,
                     volume_ml=product.volume_ml if product else None,

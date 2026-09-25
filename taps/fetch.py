@@ -18,6 +18,7 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 TIMEOUT = 30            # seconds per plain HTTP request
 UNTAPPD_EVERY = timedelta(hours=20)
 RETRY_SLEEP = 10.0      # seconds before the single retry after a network error
+COUNTRY_BACKFILL_PER_RUN = 40   # product pages a shop adapter may read per run for known items lacking a country
 
 
 class FetchError(Exception):

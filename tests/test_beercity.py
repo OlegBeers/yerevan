@@ -9,7 +9,7 @@ from taps.config import Place
 from taps.fetch import FetchError, HttpResponse
 from taps.model import Sighting
 from taps.sources.beercity import (
-    MAX_PAGES, BCItem, BCProduct, clean_name, fetch_beercity, parse_listing, parse_product,
+    COUNTRY_BACKFILL_PER_RUN, MAX_PAGES, BCItem, BCProduct, clean_name, fetch_beercity, parse_listing, parse_product,
 )
 from tests.helpers import fixture_text
 
@@ -82,9 +82,9 @@ class FakeHttp:
         return HttpResponse(200, {}, r)
 
 
-def fetch(responses, known=(), full=False, aliases=None):
+def fetch(responses, known=(), full=False, aliases=None, todo=()):
     http = FakeHttp(responses)
-    return fetch_beercity(http, PLACE, set(known), full, NOW, aliases or {}), http
+    return fetch_beercity(http, PLACE, set(known), set(todo), full, NOW, aliases or {}), http
 
 
 def by_id(result):
@@ -237,10 +237,53 @@ def test_partial_run_fetches_new_product_pages_and_walks_on_while_a_page_had_new
         title='Beer "Hard root" Double IPA 0.45 l', name="Hard root Double IPA", seen_at=NOW,
         brewery="Konix", shop_item_id="2047", abv=7.6, price_amd=2200, volume_ml=450, container="can",
         in_stock=True, category="sshalcavac-garejur", url=IPA_URL, shop_url=IPA_URL,
-        logo=THUMBS + "small_3_wCYfvQC.jpg", country="Russia")
+        logo=THUMBS + "small_3_wCYfvQC.jpg", country="Russia", country_checked=True)
     assert (s["2048"].brewery, s["2048"].abv, s["2048"].name, s["2048"].country) == \
         ("Konix", 0.5, "Pure wave IPA non alco", "Russia")
     assert (s["2053"].brewery, s["2053"].country) == (None, None)   # a known item's product page is not read again
+
+
+def test_known_item_without_country_gets_its_product_page_read_when_listed_in_stock():
+    known = P1_IDS + DRAFT_IDS
+    result, http = fetch({bottles(1): BOTTLES_P1, IPA_URL: PRODUCT_IPA, draft(1): page_json(DRAFT_CARDS.values(), 1, 3)},
+                         known=known, todo={"2047"})
+    assert http.calls == [(bottles(1), XHR), (IPA_URL, {}), (draft(1), XHR)]
+    assert ids(result) == P1_IDS + DRAFT_IDS
+    s = by_id(result)["2047"]
+    assert (s.brewery, s.abv, s.volume_ml, s.container, s.country, s.country_checked) == \
+        ("Konix", 7.6, 450, "can", "Russia", True)
+    assert (s.price_amd, s.beer_key) == (2200, "n:hard root double ipa")
+    assert by_id(result)["2053"].country_checked is None   # not in the todo set: untouched
+
+
+def test_country_backfill_skips_out_of_stock_and_unlisted_items():
+    known = P1_IDS + DRAFT_IDS
+    # "12" is out of stock on the draft page; "999" is not on any listed page
+    result, http = fetch({bottles(1): BOTTLES_P1, draft(1): page_json(DRAFT_CARDS.values(), 1, 3)},
+                         known=known, todo={"12", "999"})
+    assert [url for url, _ in http.calls] == [bottles(1), draft(1)]
+    assert by_id(result)["12"].country_checked is None
+
+
+def test_country_backfill_is_capped_per_run():
+    assert COUNTRY_BACKFILL_PER_RUN == 40
+    items = [str(3000 + i) for i in range(COUNTRY_BACKFILL_PER_RUN + 3)]
+    page = page_json([card(i, f'Beer "Bulk {i}" 0.5L') for i in items], 1, 1)
+    urls = [it.url for it in parse_listing(page).items]
+    result, http = fetch({bottles(1): page, draft(1): page_json([], 1, 1), **{u: PRODUCT_IPA for u in urls}},
+                         known=items, todo=items)
+    assert [url for url, _ in http.calls if url in urls] == urls[:COUNTRY_BACKFILL_PER_RUN]   # listing order
+    assert [s.shop_item_id for s in result.sightings if s.country_checked] == items[:COUNTRY_BACKFILL_PER_RUN]
+    assert ids(result) == items   # the rest are still reported, just not read this run
+
+
+def test_failed_country_backfill_is_skipped_quietly_and_counts_against_the_cap():
+    known = P1_IDS + DRAFT_IDS
+    result, http = fetch({bottles(1): BOTTLES_P1, IPA_URL: FetchError("http", "500"),
+                          draft(1): page_json(DRAFT_CARDS.values(), 1, 3)}, known=known, todo={"2047"})
+    assert result.ok
+    assert ids(result) == P1_IDS + DRAFT_IDS   # still reported as an ordinary known item
+    assert (by_id(result)["2047"].country, by_id(result)["2047"].country_checked) == (None, None)
 
 
 def test_failed_product_page_drops_only_that_item():

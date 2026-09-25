@@ -271,6 +271,30 @@ def test_shop_rows_get_the_shops_photo_and_a_guessed_style_that_stays_out_of_the
     assert state.pairs["beer-city"]["n:hard root double ipa"].info["logo"] == hard_root["beer_logo"]
 
 
+def test_shop_country_backfill_reads_product_pages_only_of_known_items_never_checked(world):
+    """A first run reads every product page once (fixtures carry no country, so all are then "checked");
+    later runs read none until a pair loses its check mark, and then exactly that item's page."""
+    assert world.run(NOW) == 0
+    world.next_run()
+    assert world.run(NOW + timedelta(hours=1)) == 0
+    assert [u for u in world.http.urls if PRODUCT_PAGE.match(u)] == []
+
+    def forget(state):
+        for place, key in (("beer-city", "n:hard root double ipa"), ("parma", "n:dahook ipa light")):
+            del state.pairs[place][key].info["country_checked"]
+    world.edit_state(forget)
+    world.next_run()
+    assert world.run(NOW + timedelta(hours=2)) == 0
+    assert sorted(u for u in world.http.urls if PRODUCT_PAGE.match(u)) == [
+        "https://parma.am/en/product/product?slug=beer-dahook-ipa-light-330ml_28051",
+        "https://www.beer-city.am/en/products/garejur-hard-rut-dabl-ipa-045l/"]
+    world.next_run()
+    assert world.run(NOW + timedelta(hours=3)) == 0
+    assert [u for u in world.http.urls if PRODUCT_PAGE.match(u)] == []   # remembered: checked, no country
+    info = world.state().pairs["parma"]["n:dahook ipa light"].info
+    assert info["country_checked"] is True and "country" not in info
+
+
 # --- v1.1: venue meta / discovery -----------------------------------------------------
 
 def test_venue_meta_recorded_from_own_venue_pages(world):

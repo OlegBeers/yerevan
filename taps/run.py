@@ -166,10 +166,18 @@ def collect_shops(state: State, config: Config, corrections: Corrections, now: d
     def known(p) -> set[str]:
         return set(state.shop_items.get(p.id, {}))
 
+    def country_todo(p) -> set[str]:
+        """Known shop items whose pair shows no country and whose product page was never read for it."""
+        pairs = state.pairs.get(p.id, {})
+        return {item_id for item_id, key in state.shop_items.get(p.id, {}).items()
+                if key in pairs and not pairs[key].info.get("hidden")
+                and not pairs[key].info.get("country") and not pairs[key].info.get("country_checked")}
+
     fetchers = {
-        "beercity": lambda p: fetch_beercity(http, p, known(p), _beercity_full(state, p.id, now), now, ba),
+        "beercity": lambda p: fetch_beercity(http, p, known(p), country_todo(p), _beercity_full(state, p.id, now),
+                                             now, ba),
         "yerevan_city": lambda p: fetch_yerevan_city(http, p, now, ba),
-        "parma": lambda p: fetch_parma(http, p, known(p), now, ba),
+        "parma": lambda p: fetch_parma(http, p, known(p), country_todo(p), now, ba),
         "buyam": lambda p: fetch_buyam(http, p, now, ba),
     }
     return [_guard(f"{name}:{p.id}", p.id, lambda: fetch(p))

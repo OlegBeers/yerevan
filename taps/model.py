@@ -49,6 +49,7 @@ class Sighting:
     shop_url: str | None = None   # shops only: the shop's own product page, kept once url becomes an Untappd match
     logo: str | None = None       # beer label image (menu/check-ins), or a shop's own product photo
     country: str | None = None    # shops only: the country the shop states for the item, in its own English
+    country_checked: bool | None = None   # shops only: True once the item's product page was read (country or not)
     checkin_id: int | None = None
     at_home: bool = False
     manual_id: str | None = None
