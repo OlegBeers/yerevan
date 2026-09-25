@@ -152,6 +152,19 @@ def test_the_pair_key_is_searched_too_it_holds_the_shops_name_in_latin_letters(o
     assert problems == []
 
 
+def test_a_linked_item_is_shown_and_found_by_its_shops_own_texts_not_by_the_untappd_beers(open_page):
+    # r.name of a linked row is the Untappd beer's, the shop's own text is shop_name/shop_brewery
+    linked = row("beer-city", "n:dargett weizen", "Weizen (Steppenwolf)", "Dargett Brewery", shop_name="Dargett weizen",
+                 shop_brewery="Dargett", match_via="local")
+    page, problems = open_page(make_data(linked), mode="merge")
+    page.fill("#pick-search", "steppenwolf")
+    assert names(page) == []
+    page.fill("#pick-search", "dargett")
+    assert names(page) == ["Dargett weizen"]
+    assert page.locator("#pick-list .pick .small").all_text_contents() == ["Dargett", "Beer City"]
+    assert problems == []
+
+
 def test_a_card_shows_the_photo_name_brewery_place_abv_price_and_whether_it_is_already_linked(open_page):
     page, problems = open_page(mode="merge")
     page.fill("#pick-search", "wolf ipa")

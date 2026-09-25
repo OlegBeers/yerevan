@@ -468,11 +468,12 @@ function shopItems(data) {
   return (data.rows || []).filter((r) => String(r.beer_key).startsWith("n:")).map((r) => {
     const place = places[r.place_id] || String(r.place_id);
     const linked = Boolean(r.match_via);
+    const name = r.shop_name || r.name || r.beer_key;   // once linked, r.name is the Untappd beer's; the shop's own text is shop_name
+    const brewery = linked ? r.shop_brewery : r.brewery;
     return {
-      place_id: r.place_id, key: r.beer_key, place, linked,
-      name: r.shop_name || r.name || r.beer_key,   // once linked, r.name is the Untappd beer's; the shop's own text is shop_name
-      brewery: linked ? r.shop_brewery : r.brewery, abv: r.abv, price_amd: r.price_amd, photo: r.beer_logo,
-      hay: [r.shop_name, r.name, r.shop_brewery, r.brewery, place, r.beer_key.slice(2)].filter(Boolean).join(" ").toLowerCase(),
+      place_id: r.place_id, key: r.beer_key, place, linked, name, brewery,
+      abv: r.abv, price_amd: r.price_amd, photo: r.beer_logo,
+      hay: [name, brewery, place, r.beer_key.slice(2)].filter(Boolean).join(" ").toLowerCase(),   // what the card says, and the key
     };
   }).sort((a, b) => a.linked - b.linked || a.place.localeCompare(b.place, "ru") || a.name.localeCompare(b.name, "ru"));
 }
