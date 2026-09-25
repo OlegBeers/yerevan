@@ -446,9 +446,9 @@ def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> 
         match.checked_at = iso(now)
 
 
-_OVERLAY_FIELDS = ("logo", "rating")   # tracked in info["u_overlay"] and cleared when the match is
-                                        # gone (code review round 3, finding B2); style/abv are
-                                        # never cleared -- a shop can genuinely scrape its own
+_OVERLAY_FIELDS = ("logo", "rating", "style", "abv")   # tracked in info["u_overlay"] and cleared when the
+                                        # match is gone -- only while the field still holds the
+                                        # overlaid value, so a style/abv the shop scraped itself stays
 
 
 def _drop_overlay(info: dict) -> None:
@@ -467,9 +467,8 @@ def _clear_shop_match(info: dict) -> None:
     """Drop a shop/menu/manual n: pair's stale identity overlay once its match is gone (code review
     round 2, finding B) -- a removed corrections.yaml same_as entry, or an untappd_id: null block,
     must not leave the previous run's canonical name/brewery, or its Untappd url/rating/logo,
-    showing the wrong beer forever. style/abv are left alone even then: unlike rating/logo, a shop
-    can genuinely scrape its own style/abv, so there is no cheap way to tell whether they came from
-    a match -- clearing them risks losing real shop data.
+    showing the wrong beer forever. style/abv go too, but only while they still hold the value the
+    overlay wrote: a shop can genuinely scrape its own, and that different value stays.
 
     A full shop run's own sighting always resets info["url"] to the shop's own product page before
     apply_shop_matches runs (rules._update_info) -- so by the time this runs, url may already look

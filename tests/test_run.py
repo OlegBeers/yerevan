@@ -1278,6 +1278,25 @@ def test_apply_shop_matches_switching_match_drops_the_previous_beers_identity():
     assert not info["match_weak"]
 
 
+def test_apply_shop_matches_removed_match_takes_its_style_and_abv_back_but_keeps_the_shops_own():
+    """A blocked false match (Beer City 'Bronx' vs The Bronx Brewery) must not leave Untappd's 6.3%
+    on an 8% drink -- but a strength the shop scraped itself differs from the overlaid one and stays."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {
+        "n:x": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "X"}),
+        "n:y": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "Y"})}}
+    for key in ("n:x", "n:y"):
+        state.shop_matches[key] = ShopMatchRec(untappd_beer_id=9, url="https://untappd.com/beer/9", abv=6.3,
+                                               style="Pale Ale - American", matched_at=iso(NOW), via="search")
+    run_mod.apply_shop_matches(state)
+    state.pairs["beer-city"]["n:y"].info["abv"] = 8.0   # the shop's own value arrives in a later run
+    del state.shop_matches["n:x"], state.shop_matches["n:y"]
+    run_mod.apply_shop_matches(state)
+    x, y = state.pairs["beer-city"]["n:x"].info, state.pairs["beer-city"]["n:y"].info
+    assert "abv" not in x and "style" not in x
+    assert y["abv"] == 8.0 and "style" not in y
+
+
 # --- apply_shop_matches: precise overlay-field tracking (3rd review round, finding B2) --------
 
 def test_apply_shop_matches_clears_rating_even_when_a_full_run_already_reset_the_url():

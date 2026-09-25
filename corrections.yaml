@@ -298,6 +298,16 @@ sightings:
 
 hide:
 
+same_as:                         # магазинное пиво == пиво с Untappd; untappd_id: null = "не то же"
+  # Beer City "Bronx" и "Bronx black cherry" — пивные коктейли (Украина, 8%, банка), на Untappd их нет;
+  # поиск склеил первый с американским The Bronx Brewery (77455)
+  - place: beer-city
+    beer: "n:bronx"
+    untappd_id: null
+  - place: beer-city
+    beer: "n:bronx black cherry"
+    untappd_id: null
+
 aliases:
 
 brewery_aliases:
