@@ -224,6 +224,16 @@ def test_everything_to_tap_is_at_least_44px_high_on_a_phone(open_page):
     assert problems == []
 
 
+def test_a_chip_in_the_sheet_keeps_to_one_line_of_name_however_long_it_is(open_page):
+    long_name = "Волковская пиваварня Indian Pale Ale Ipa и ещё много слов после названия, которые не влезут в строку"
+    page, problems = open_page(make_data(row("parma", "n:long", long_name, "B")), mode="merge")
+    page.fill("#pick-search", "волковская пиваварня indian pale ale ipa и ещё")
+    page.click("#pick-list .pick")
+    assert 48 <= size(page, "#picked-list .chip")[1] <= 56     # a few picked items must not fill a phone's screen
+    assert long_name in page.text_content("#picked-list .chip .name")   # cut by the eye, not in the text (a screen reader reads it all)
+    assert problems == []
+
+
 def test_a_phone_needs_no_sideways_scrolling_even_with_names_that_never_break(open_page):
     long_name = "Оченьдлинноеназваниебезпробеловикакихлибоподсказок" * 3
     page, problems = open_page(make_data(row("parma", f"n:{long_name.lower()}", long_name, long_name)), mode="merge")
