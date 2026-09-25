@@ -15,6 +15,7 @@ NOW = datetime(2026, 9, 24, 14, 17, tzinfo=timezone.utc)
 PLACE = Place(id="yerevan-city", name="Yerevan City", kind="shop", sources={"yerevan_city": {}})
 BY_CATEGORY = fixture_json("yerevan_city/by_category.json")   # 243 items, itemCount 243
 SEARCH = fixture_json("yerevan_city/search.json")             # 209 products, all with nameEn
+PHOTO = "https://media.yerevan-city.am/api/Image/Resize/ProductPhoto"
 
 
 class FakeHttp:
@@ -46,7 +47,8 @@ def sightings(**kw):
 def test_parse_by_category_reads_whole_category():
     listing = parse_by_category(BY_CATEGORY)
     assert (listing.item_count, len(listing.items)) == (243, 243)
-    assert listing.items[0] == YCItem("3102", "Գարեջուր «Կրոմբախեր» Փիլս թ/տ 5լ", 12990, "Imported beer")
+    assert listing.items[0] == YCItem("3102", "Գարեջուր «Կրոմբախեր» Փիլս թ/տ 5լ", 12990, "Imported beer",
+                                      f"{PHOTO}/1054731.png/160/160/false")
     assert {i.category for i in listing.items} == {"Imported beer", "Armenian beer", "Low alcohol cocktails and cider"}
 
 
@@ -335,4 +337,28 @@ def test_fetch_takes_shop_photo_as_small_label_image():
     found = sightings(search=search)
     assert found["112509"].logo == "https://media.yerevan-city.am/api/Image/Resize/ProductPhoto/1144516.png/160/160/false"
     product["photo"] = "javascript:alert(1)"
-    assert sightings(search=search)["112509"].logo is None
+    by_category = copy.deepcopy(BY_CATEGORY)
+    next(r for r in by_category["data"]["list"] if r["id"] == 112509)["photo"] = "https://evil.example/p.png"
+    assert sightings(by_category=by_category, search=search)["112509"].logo is None
+
+
+def test_parse_by_category_reads_the_small_photo():
+    items = {i.item_id: i for i in parse_by_category(BY_CATEGORY).items}
+    assert items["3102"].photo == f"{PHOTO}/1054731.png/160/160/false"
+    assert items["195013"].photo is None             # the shop has no photo for it
+
+
+def test_parse_by_category_ignores_a_photo_outside_the_shops_media_host():
+    data = copy.deepcopy(BY_CATEGORY)
+    for photo in ("https://evil.example/p.png", "http://media.yerevan-city.am/p.png", 5, None):
+        data["data"]["list"][0]["photo"] = photo
+        assert parse_by_category(data).items[0].photo is None
+
+
+def test_fetch_falls_back_to_the_category_photo_when_search_lacks_the_item_or_its_photo():
+    search = copy.deepcopy(SEARCH)
+    next(p for p in search["data"]["products"] if p["id"] == 112509)["photo"] = None
+    found = sightings(search=search)
+    assert found["175294"].logo == f"{PHOTO}/1168922.png/160/160/false"   # a beer drink: not in Search at all
+    assert found["112509"].logo == f"{PHOTO}/1142977.png/160/160/false"   # in Search, but without its photo
+    assert found["195013"].logo is None                                   # no photo anywhere

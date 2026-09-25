@@ -59,6 +59,7 @@ class YCItem:
     name_hy: str
     price_amd: int
     category: str
+    photo: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,11 @@ def _is_num(v: Any) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
+def _thumb(photo: Any) -> str | None:
+    """The shop's small variant of a product photo; a photo not on its media host is dropped."""
+    return photo + PHOTO_SIZE if isinstance(photo, str) and photo.startswith(PHOTO_PREFIX) else None
+
+
 def _body(data: Any) -> dict:
     """The 'data' object of a successful API answer; ValueError otherwise."""
     if not isinstance(data, dict) or data.get("success") is not True or not isinstance(data.get("data"), dict):
@@ -105,7 +111,8 @@ def parse_by_category(data: dict) -> YCListing:
         if not (_is_int(item_id) and isinstance(name, str) and name.strip() and isinstance(category, str)
                 and _is_num(price) and price > 0 and _is_num(discounted)):
             raise ValueError(f"bad item {item_id!r}")
-        items.append(YCItem(str(item_id), name.strip(), round(discounted if discounted > 0 else price), category))
+        items.append(YCItem(str(item_id), name.strip(), round(discounted if discounted > 0 else price), category,
+                            _thumb(row.get("photo"))))
     return YCListing(items, item_count)
 
 
@@ -123,10 +130,9 @@ def parse_search(data: dict) -> dict[str, YCName]:
         if not _is_int(item_id) or not (name_en is None or isinstance(name_en, str)):
             raise ValueError(f"bad product {item_id!r}")
         if name_en and name_en.strip():
-            photo = p.get("photo")
-            photo = photo + PHOTO_SIZE if isinstance(photo, str) and photo.startswith(PHOTO_PREFIX) else None
-            names[str(item_id)] = YCName(name_en.strip(), brand_id if _is_int(brand_id) else None, photo,
-                                   name_ru.strip() if isinstance(name_ru, str) and name_ru.strip() else None)
+            names[str(item_id)] = YCName(name_en.strip(), brand_id if _is_int(brand_id) else None,
+                                         _thumb(p.get("photo")),
+                                         name_ru.strip() if isinstance(name_ru, str) and name_ru.strip() else None)
     return names
 
 
@@ -232,6 +238,6 @@ def fetch_yerevan_city(http: Http, place: Place, now: datetime, brewery_aliases:
             price_amd=item.price_amd, volume_ml=_volume_ml(title), container=_container(name_en, item.name_hy),
             in_stock=True,   # no stock flag: a sold-out item just leaves the list
             category=item.category, url=PRODUCT_URL.format(item.item_id),
-            shop_url=PRODUCT_URL.format(item.item_id), logo=found.photo if found else None,
+            shop_url=PRODUCT_URL.format(item.item_id), logo=(found.photo if found else None) or item.photo,
         ))
     return SourceResult(key=key, source="yerevan_city", ok=True, sightings=sightings, place_id=place.id)
