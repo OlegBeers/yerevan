@@ -82,7 +82,7 @@ def test_to_dict_is_plain_json_data():
     assert d["pairs"]["yerevan-city"]["n:kilikia"]["info"]["hidden"] is True
     assert d["beers"]["u:3539672"] == {"first_seen_city": ago(2), "n_key": "n:zagovor black sails",
                                        "rating": None, "style": None, "abv": None, "ibu": None, "rating_at": None,
-                                       "logo": None, "country": None}
+                                       "logo": None, "country": None, "name": None, "brewery": None}
     assert d["brewery_new"]["u:6000001"]["brewery_id"] == 265165
     assert d["sources"]["untappd_menu:gargoyle"]["last_trip_keys"] == ["u:1", "u:2"]
     assert d["untappd"]["pages_today"] == 12
@@ -539,4 +539,12 @@ def test_beer_rec_from_an_old_state_without_label_and_country():
     from taps.state import BeerRec
     old = {"first_seen_city": "2026-09-24T10:00:00+00:00", "rating": 3.5}
     beer = BeerRec(**old)
-    assert (beer.logo, beer.country) == (None, None)
+    assert (beer.logo, beer.country, beer.name, beer.brewery) == (None, None, None, None)
+
+
+def test_merge_beer_keeps_the_page_name_and_brewery():
+    from taps.state import BeerRec, _merge_beer
+    a = BeerRec(first_seen_city="2026-09-24T10:00:00+00:00")
+    b = BeerRec(first_seen_city="2026-09-24T10:00:00+00:00", name="Rodenbach Fruitage", brewery="Brouwerij Rodenbach")
+    merged = _merge_beer(a, b)
+    assert (merged.name, merged.brewery) == ("Rodenbach Fruitage", "Brouwerij Rodenbach")

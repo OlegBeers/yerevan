@@ -289,6 +289,19 @@ def _label_less_candidates(state: State, now: datetime) -> list[tuple[str, str]]
     return list(out.items())
 
 
+def _matched_name_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """Untappd beers a shop beer is matched to (local/search/manual) that no bar ever showed: the match has
+    no canonical name and no beer page was read yet, so the page gives the name and brewery."""
+    out: dict[str, str] = {}
+    for match in state.shop_matches.values():
+        key = f"u:{match.untappd_beer_id}"
+        beer = state.beers.get(key)
+        if (match.untappd_beer_id is not None and match.name is None and not (beer and beer.name)
+                and not _fetched_recently(state, key, now)):
+            out.setdefault(key, f"https://untappd.com/beer/{match.untappd_beer_id}")
+    return list(out.items())
+
+
 def _country_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
     """One shown Untappd beer per brewery whose country is still unknown (any beer page of the brewery
     tells it), the breweries with the most beers first."""
@@ -310,10 +323,11 @@ def _country_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
 
 
 def _beer_page_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
-    """Beer pages to fetch this run: label-less beers first, then the check-in-only ratings, then one
-    beer per brewery of unknown country; deduplicated and capped."""
+    """Beer pages to fetch this run: label-less beers first, then matched beers with no known name, then
+    the check-in-only ratings, then one beer per brewery of unknown country; deduplicated and capped."""
     out: dict[str, str] = {}
-    for key, url in (_label_less_candidates(state, now) + _beer_rating_candidates(state, now)
+    for key, url in (_label_less_candidates(state, now) + _matched_name_candidates(state, now)
+                     + _beer_rating_candidates(state, now)
                      + _country_candidates(state, now)):
         out.setdefault(key, url)
     return list(out.items())[:BEER_PAGE_CANDIDATES_PER_RUN]
@@ -342,7 +356,7 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
             sampled = True
         beer = state.beers.setdefault(key, BeerRec(first_seen_city=iso(now)))
         if data:
-            for field in ("rating", "style", "abv", "ibu", "logo", "country"):
+            for field in ("rating", "style", "abv", "ibu", "logo", "country", "name", "brewery"):
                 if data[field] is not None:
                     setattr(beer, field, data[field])
         beer.rating_at = iso(now)
@@ -587,10 +601,12 @@ def apply_shop_matches(state: State) -> None:
                         overlay[field] = value
             rec.info["u_overlay"] = overlay
             rec.info["match_weak"] = match.weak
-            if match.name is not None:
-                rec.info["u_name"] = match.name
-            if match.brewery is not None:
-                rec.info["u_brewery"] = match.brewery
+            beer = state.beers.get(f"u:{match.untappd_beer_id}")   # the beer page's name, when no bar showed the beer
+            name, brewery = match.name or (beer and beer.name), match.brewery or (beer and beer.brewery)
+            if name:
+                rec.info["u_name"] = name
+            if brewery:
+                rec.info["u_brewery"] = brewery
 
 
 def apply_untappd_country(state: State) -> None:

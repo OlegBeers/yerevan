@@ -40,6 +40,8 @@ class BeerRec:
     rating_at: str | None = None
     logo: str | None = None       # the label image and the brewery's country from the beer page
     country: str | None = None
+    name: str | None = None       # the beer's canonical name/brewery from its page, for a matched shop beer no bar showed
+    brewery: str | None = None
 
 
 @dataclass
@@ -232,7 +234,8 @@ def _merge_beer(a: BeerRec, b: BeerRec) -> BeerRec:
     newer = b if (b.rating_at and (not a.rating_at or parse_iso(b.rating_at) > parse_iso(a.rating_at))) else a
     return BeerRec(first_seen_city=_earliest(a.first_seen_city, b.first_seen_city), n_key=a.n_key or b.n_key,
                   rating=newer.rating, style=newer.style, abv=newer.abv, ibu=newer.ibu, rating_at=newer.rating_at,
-                  logo=a.logo or b.logo, country=a.country or b.country)
+                  logo=a.logo or b.logo, country=a.country or b.country,
+                  name=a.name or b.name, brewery=a.brewery or b.brewery)
 
 
 def _merge_brewery_new(a: BreweryNewRec, b: BreweryNewRec) -> BreweryNewRec:

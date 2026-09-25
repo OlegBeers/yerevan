@@ -6,7 +6,8 @@ PAGE = fixture_text("untappd/beer_page.html")
 
 def test_parse_beer_page_fields():
     assert parse_beer_page(PAGE) == {"style": "Fruit Beer", "abv": 6.2, "ibu": 18, "rating": 3.82,
-                                     "logo": None, "country": None}
+                                     "logo": None, "country": None,
+                                     "name": "Cherry Ale (Morello)", "brewery": None}   # the old page has no p.brewery
 
 
 def test_parse_beer_page_missing_abv_or_ibu_is_none():
@@ -38,7 +39,7 @@ def test_parse_real_beer_page_fields_label_and_country():
     assert parse_beer_page(REAL) == {
         "style": "Fruit Beer", "abv": 3.4, "ibu": 7, "rating": 3.48902,
         "logo": "https://assets.untappd.com/site/beer_logos/beer-1715344_b8fec_sm.jpeg",
-        "country": "Belgium",
+        "country": "Belgium", "name": "Rodenbach Fruitage", "brewery": "Brouwerij Rodenbach",
     }
 
 

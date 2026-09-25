@@ -48,7 +48,7 @@ def _country(soup: BeautifulSoup, style: str | None) -> str | None:
 
 
 def parse_beer_page(html: str) -> dict | None:
-    """{"rating", "style", "abv", "ibu", "logo", "country"} from a beer's own page; None if the page doesn't look like
+    """{"rating", "style", "abv", "ibu", "logo", "country", "name", "brewery"} from a beer's own page; None if the page doesn't look like
     a beer page at all (changed markup, a login wall, a page that slipped past Cloudflare detection) --
     checked via the beer name heading, the one element every real beer page must have."""
     soup = BeautifulSoup(html, "html.parser")
@@ -64,4 +64,6 @@ def parse_beer_page(html: str) -> dict | None:
         "rating": _rating(soup),
         "logo": _logo(soup),
         "country": _country(soup, style),
+        "name": _text(soup.select_one("div.name h1")) or None,
+        "brewery": _text(soup.select_one("div.name p.brewery")) or None,
     }

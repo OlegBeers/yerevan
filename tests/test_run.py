@@ -685,6 +685,7 @@ def test_fetch_beer_ratings_caches_label_and_country_from_a_real_page():
     beer = state.beers["u:1715344"]
     assert (beer.rating, beer.country) == (3.48902, "Belgium")
     assert beer.logo == "https://assets.untappd.com/site/beer_logos/beer-1715344_b8fec_sm.jpeg"
+    assert (beer.name, beer.brewery) == ("Rodenbach Fruitage", "Brouwerij Rodenbach")
 
 
 def test_beer_page_candidates_put_label_less_hand_entered_beers_first():
@@ -703,6 +704,38 @@ def test_beer_page_candidates_skip_a_beer_fetched_recently_even_without_a_label(
     state = empty_state(NOW)
     state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}
     state.beers["u:1715344"] = BeerRec(first_seen_city=iso(NOW), rating_at=iso(NOW - timedelta(days=2)))
+    assert run_mod._beer_page_candidates(state, NOW) == []
+
+
+def _nameless_match(**kw):
+    return ShopMatchRec(untappd_beer_id=1715344, url="https://untappd.com/beer/1715344", via="manual",
+                        matched_at=iso(NOW), **kw)
+
+
+def test_beer_page_candidates_fetch_the_page_of_a_matched_beer_with_no_canonical_name():
+    state = empty_state(NOW)
+    state.pairs = {
+        "ferment": {"u:9": _manual_pair(brewery="Jever")},          # label-less manual pair: first
+        "t": {"u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/b/2",
+                                   logo="https://assets.untappd.com/x.jpg")},   # has a label: a rating candidate only
+        "beer-city": {"n:rodenbach": _shop_pair("Rodenbach", "Rodenbach fruitage")}}
+    state.shop_matches["n:rodenbach"] = _nameless_match()
+    got = run_mod._beer_page_candidates(state, NOW)
+    assert got[:3] == [("u:9", "https://untappd.com/beer/9"), ("u:1715344", "https://untappd.com/beer/1715344"),
+                       ("u:2", "https://untappd.com/b/b/2")]      # manual pairs, then matches, then ratings
+
+
+@pytest.mark.parametrize("match, beer", [
+    (_nameless_match(name="Rodenbach Fruitage"), None),                                        # name known
+    (_nameless_match(), BeerRec(first_seen_city="x", name="Rodenbach Fruitage")),              # page already read
+    (_nameless_match(), BeerRec(first_seen_city="x", rating_at=iso(NOW - timedelta(days=2)))),   # fetched recently
+    (ShopMatchRec(untappd_beer_id=None, matched_at=iso(NOW)), None),                           # no_match / blocked
+])
+def test_beer_page_candidates_skip_matches_that_need_no_page(match, beer):
+    state = empty_state(NOW)
+    state.shop_matches["n:x"] = match
+    if beer:
+        state.beers["u:1715344"] = beer
     assert run_mod._beer_page_candidates(state, NOW) == []
 
 
@@ -1624,6 +1657,42 @@ def test_apply_shop_matches_overlays_canonical_name_and_brewery_separately():
     info = state.pairs["beer-city"]["n:dargett apricot ale"].info
     assert (info["u_name"], info["u_brewery"]) == ("Apricot Ale (Prunus Armeniaca)", "Dargett Brewery")
     assert (info["name"], info["brewery"]) == ("Dargett apricot ale", "Dargett")   # untouched
+
+
+def _rodenbach_state(match, beer=None):
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:rodenbach": _shop_pair("Rodenbach", "Rodenbach fruitage")}}
+    state.shop_matches["n:rodenbach"] = match
+    if beer:
+        state.beers["u:1715344"] = beer
+    return state
+
+
+def test_apply_shop_matches_falls_back_to_the_beer_page_name_and_brewery():
+    state = _rodenbach_state(_nameless_match(),
+                             BeerRec(first_seen_city="x", name="Rodenbach Fruitage", brewery="Brouwerij Rodenbach"))
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:rodenbach"].info
+    assert (info["u_name"], info["u_brewery"]) == ("Rodenbach Fruitage", "Brouwerij Rodenbach")
+    assert info["name"] == "Rodenbach fruitage"
+
+
+def test_apply_shop_matches_explicit_name_wins_over_the_beer_page():
+    state = _rodenbach_state(_nameless_match(name="Fruitage", brewery="Rodenbach"),
+                             BeerRec(first_seen_city="x", name="Rodenbach Fruitage", brewery="Brouwerij Rodenbach"))
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:rodenbach"].info
+    assert (info["u_name"], info["u_brewery"]) == ("Fruitage", "Rodenbach")
+
+
+def test_apply_shop_matches_page_name_goes_when_the_match_goes():
+    state = _rodenbach_state(_nameless_match(),
+                             BeerRec(first_seen_city="x", name="Rodenbach Fruitage", brewery="Brouwerij Rodenbach"))
+    run_mod.apply_shop_matches(state)
+    del state.shop_matches["n:rodenbach"]
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:rodenbach"].info
+    assert "u_name" not in info and "u_brewery" not in info
 
 
 def test_apply_shop_matches_also_overlays_menu_and_manual_kind_pairs():
