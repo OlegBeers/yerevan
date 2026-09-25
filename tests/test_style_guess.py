@@ -27,6 +27,13 @@ NAMED = [
     ("Hofbrau helles lager", "Helles"),
     ("Starnberger helles", "Helles"),
     ("Dahook hell non-filtered", "Helles"),
+    ("Franziskaner Hefe-Weissbier Hell", "Wheat Beer"),       # Hell / Dunkel modify a wheat beer
+    ("Erdinger Weissbier Dunkel", "Wheat Beer"),
+    ("Paulaner Weissbier Hell Dunkel", "Wheat Beer"),
+    ("Hell Yeah IPA", "IPA"),                                 # a bare "hell" is no style
+    ("Weizenbock", "Bock"),
+    ("Ayinger Doppelbock", "Bock"),
+    ("Bock", "Bock"),
     ("Gletcher Heidegger Hell lager", "Helles"),
     ("Alpirsbacher weizen", "Wheat Beer"),
     ("Weihenstephaner Weissbier", "Wheat Beer"),
@@ -66,11 +73,12 @@ UNNAMED = [
     "Bitburger", "Estrella Galicia", "Kellers non-filtered", "Gletcher Milk Of Amnesia", "Dargett Cherry ale",
     "Rewort Ale", "Chimay peres trappistes blue", "Жигулевское светлое", "Трехгорное Prem.Ale свет.",
     "Warsteiner light", "Dahook dark", "Petrus Red Cherry", "Paderborner Pilger, light", "Liebenweiss unfiltered, light",
-    "Ayinger celebrator dunkles", "Hell's Kitchen", "Dark Roast", "", "Beer",
+    "Ayinger celebrator dunkles", "Hell's Kitchen", "Dark Roast",
+    "Road to Hell", "Hell or High Watermelon", "Rebock", "", "Beer",
 ]
 
 # Two different styles in one name: better nothing than a guess.
-AMBIGUOUS = ["Stout Porter", "Tripel Blonde", "Hell Yeah IPA", "Weizen lager", "Amber Dubbel", "Pilsner Stout"]
+AMBIGUOUS = ["Stout Porter", "Tripel Blonde", "Weizen lager", "Amber Dubbel", "Pilsner Stout"]
 
 
 @pytest.mark.parametrize("name, style", NAMED)
