@@ -171,6 +171,59 @@ def test_row_carries_the_country_the_shop_states():
     assert {r["beer_key"]: r["country"] for r in build(st)["rows"]} == {"n:a": "Ukraine", "n:b": None}
 
 
+def test_row_guesses_a_style_from_the_name_of_a_shop_beer_with_no_untappd_behind_it():
+    st = state({"beer-city": {"n:a": pair("beercity", in_stock=True, info={"name": "Bever pilsner"}),
+                              "n:b": pair("beercity", in_stock=True, info={"name": "Bitburger"})}})
+    rows = {r["beer_key"]: r for r in build(st)["rows"]}
+    assert (rows["n:a"]["style"], rows["n:a"]["style_inferred"]) == ("Pilsner", True)
+    assert (rows["n:b"]["style"], "style_inferred" in rows["n:b"]) == (None, False)
+
+
+def test_a_menu_beer_from_buyam_gets_the_guess_too():
+    info = {"name": "Bohemian Pilsner", "url": "https://buy.am/en/restaurants/dargett"}
+    st = state({"gargoyle": {"n:a": pair("buyam", last_in_result=True, info=info)}})
+    row = build(st)["rows"][0]
+    assert (row["badge"], row["style"], row["style_inferred"]) == ("menu", "Pilsner", True)
+
+
+def test_the_guess_stays_out_of_the_pair_that_the_digest_reads():
+    st = state({"beer-city": {"n:a": pair("beercity", in_stock=True, info={"name": "Bever pilsner"})}})
+    build(st)
+    assert "style" not in st.pairs["beer-city"]["n:a"].info
+
+
+def test_a_style_the_pair_already_has_is_never_replaced_by_the_guess():
+    info = {"name": "Bever pilsner", "style": "Pale Lager"}
+    row = build(state({"beer-city": {"n:a": pair("beercity", in_stock=True, info=info)}}))["rows"][0]
+    assert (row["style"], "style_inferred" in row) == ("Pale Lager", False)
+
+
+def test_a_beer_matched_to_untappd_gets_no_guess_even_when_the_match_knows_no_style():
+    match = ShopMatchRec(untappd_beer_id=1, url="https://untappd.com/beer/1", via="local")
+    info = {"name": "Bever pilsner", "url": "https://untappd.com/beer/1"}
+    st = match_state({"beer-city": {"n:x": pair("beercity", in_stock=True, info=info)}}, x=match)
+    row = build(st)["rows"][0]
+    assert (row["style"], "style_inferred" in row) == (None, False)
+
+
+def test_a_blocked_match_is_no_match_so_the_guess_applies():
+    blocked = ShopMatchRec(via="manual", matched_at=ago(1))
+    st = match_state({"beer-city": {"n:x": pair("beercity", in_stock=True, info={"name": "Bever pilsner"})}}, x=blocked)
+    assert build(st)["rows"][0]["style"] == "Pilsner"
+
+
+def test_untappd_check_in_and_hand_entered_beers_get_no_guess():
+    untappd = "https://untappd.com/b/pilsner-urquell/1"
+    st = state({"gargoyle": {"u:1": pair("untappd_menu", last_in_result=True, info={"name": "Pilsner Urquell", "url": untappd}),
+                             "n:m": pair("manual", last_in_result=True,
+                                         info={"name": "Pilsner Urquell", "manual_date": "2026-10-10"})},
+                "dors": {"u:2": pair("untappd_checkins", info={"name": "Pilsner Urquell", "url": untappd,
+                                                               "checkin_at": ago(1)})}})
+    rows = build(st)["rows"]
+    assert len(rows) == 3
+    assert [(r["style"], "style_inferred" in r) for r in rows] == [(None, False)] * 3
+
+
 def test_row_carries_match_weak_only_when_the_pair_is_flagged():
     """Code review round 3, finding C2: apply_shop_matches (run.py) copies a weak local match's flag
     into the pair's info["match_weak"]; the site row exposes it (False otherwise) so a review page

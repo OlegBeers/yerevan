@@ -9,6 +9,7 @@ from taps.model import SOURCE_KINDS
 from taps.sources.manual import MANUAL_KEEP_DAYS
 from taps.sources.untappd_checkins import is_yerevan_city
 from taps.state import MARKERS, VENUE_KEEP_DAYS, PairRec, ShopMatchRec, State
+from taps.style_guess import guess_style
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 
 CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
@@ -140,6 +141,13 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: 
            "group_key": _group_key(key, info),
            "name": info.get("u_name") or _shop_name(info, key)}
     row.update({f: info.get(f) for f in INFO_FIELDS})
+    # No Untappd behind a shop/menu beer: its own name may state the style. Shown as inferred and kept out of the
+    # pair (the digest reads info["style"]); an Untappd style, matched or not, always wins.
+    if row["style"] is None and match is None and kind in ("shop", "menu") \
+            and not UNTAPPD_BEER_RE.search(row["url"] or ""):
+        row["style"] = guess_style(_shop_name(info, key))
+        if row["style"]:
+            row["style_inferred"] = True
     if info.get("servings"):   # only a beer with several servings: the fields above are its first one
         row["servings"] = info["servings"]
     row["brewery"] = info.get("u_brewery") or info.get("brewery")
