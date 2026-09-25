@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ереван на кранах</title>
-<meta name="description" content="Крафтовое пиво в барах и магазинах Еревана: что наливают и что продают сейчас">
+<title data-i18n="title">Ереван на кранах</title>
+<meta name="description" content="Крафтовое пиво в барах и магазинах Еревана: что наливают и что продают сейчас" data-i18n-content="meta.description">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -62,7 +62,17 @@
     background: var(--warn-bg); color: var(--warn-text); font-weight: 600;
     border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px;
   }
+  .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
   h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0; font-weight: 800; }
+  .lang { display: inline-flex; }
+  .lang button {
+    font: inherit; font-size: .75rem; font-weight: 700; letter-spacing: .04em; cursor: pointer;
+    padding: 4px 11px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+  }
+  .lang button:first-child { border-radius: 999px 0 0 999px; }
+  .lang button:last-child { border-radius: 0 999px 999px 0; margin-left: -1px; }
+  .lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .lang button[aria-pressed="true"], .lang button:focus-visible { position: relative; }
   .sub { margin: 6px 0 20px; color: var(--muted); }
   .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
   .tab {
@@ -162,70 +172,294 @@
 </head>
 <body>
 <div class="wrap">
-  <div id="stale-banner" class="banner" role="alert" hidden>⚠️ Данные устарели.</div>
+  <div id="stale-banner" class="banner" role="alert" data-i18n="banner.stale" hidden>⚠️ Данные устарели.</div>
   <main>
     <header>
-      <h1><span aria-hidden="true">🍺</span> Ереван на кранах</h1>
-      <p class="sub">Крафтовое пиво в барах и магазинах Еревана · <span id="updated">загружаем…</span></p>
+      <div class="head">
+        <h1><span aria-hidden="true">🍺</span> <span data-i18n="title">Ереван на кранах</span></h1>
+        <div class="lang" role="group" aria-label="Язык" data-i18n-aria-label="lang.label">
+          <button type="button" data-lang="ru" aria-pressed="true" title="Русский">RU</button>
+          <button type="button" data-lang="en" aria-pressed="false" title="English">EN</button>
+        </div>
+      </div>
+      <p class="sub"><span data-i18n="sub">Крафтовое пиво в барах и магазинах Еревана</span> · <span id="updated" data-i18n="updated.loading">загружаем…</span></p>
     </header>
-    <div class="tabs" role="group" aria-label="Раздел">
-      <button type="button" class="tab" id="tab-all" data-section="all" aria-pressed="true"><span class="ico" aria-hidden="true">🔎</span>Всё пиво</button>
-      <button type="button" class="tab" id="tab-bars" data-section="bars" aria-pressed="false"><span class="ico" aria-hidden="true">🍻</span>Бары</button>
-      <button type="button" class="tab" id="tab-shops" data-section="shops" aria-pressed="false"><span class="ico" aria-hidden="true">🛒</span>Магазины</button>
-      <button type="button" class="tab" id="tab-venues" data-section="venues" aria-pressed="false"><span class="ico" aria-hidden="true">📍</span>Где пьют</button>
+    <div class="tabs" role="group" aria-label="Раздел" data-i18n-aria-label="tabs.label">
+      <button type="button" class="tab" id="tab-all" data-section="all" aria-pressed="true"><span class="ico" aria-hidden="true">🔎</span><span data-i18n="tab.all">Всё пиво</span></button>
+      <button type="button" class="tab" id="tab-bars" data-section="bars" aria-pressed="false"><span class="ico" aria-hidden="true">🍻</span><span data-i18n="tab.bars">Бары</span></button>
+      <button type="button" class="tab" id="tab-shops" data-section="shops" aria-pressed="false"><span class="ico" aria-hidden="true">🛒</span><span data-i18n="tab.shops">Магазины</span></button>
+      <button type="button" class="tab" id="tab-venues" data-section="venues" aria-pressed="false"><span class="ico" aria-hidden="true">📍</span><span data-i18n="tab.venues">Где пьют</span></button>
     </div>
     <div id="controls" class="controls">
-      <label for="search" class="sr-only">Поиск по названию, стилю и пивоварне</label>
-      <input type="search" id="search" placeholder="Название, стиль или пивоварня" autocomplete="off">
+      <label for="search" class="sr-only" data-i18n="search.label">Поиск по названию, стилю и пивоварне</label>
+      <input type="search" id="search" placeholder="Название, стиль или пивоварня" data-i18n-placeholder="search.placeholder" autocomplete="off">
       <span class="sort">
-        <label for="sort">Сортировка</label>
+        <label for="sort" data-i18n="sort.label">Сортировка</label>
         <select id="sort">
-          <option value="since" selected>по новизне</option>
-          <option value="rating">по рейтингу</option>
-          <option value="abv">по крепости</option>
+          <option value="since" selected data-i18n="sort.since">по новизне</option>
+          <option value="rating" data-i18n="sort.rating">по рейтингу</option>
+          <option value="abv" data-i18n="sort.abv">по крепости</option>
         </select>
       </span>
-      <label class="toggle"><input type="checkbox" id="only-new"><span class="ico" aria-hidden="true">🆕</span>только новинки за 7 дней</label>
+      <label class="toggle"><input type="checkbox" id="only-new"><span class="ico" aria-hidden="true">🆕</span><span data-i18n="only.new">только новинки за 7 дней</span></label>
     </div>
-    <div id="places" class="places" role="group" aria-label="Места"></div>
+    <div id="places" class="places" role="group" aria-label="Места" data-i18n-aria-label="places.label"></div>
     <p id="count" class="count" aria-live="polite"></p>
     <div id="rows"></div>
     <section id="venues-section" hidden>
-      <p class="intro">Все места Еревана, где за последние 60 дней отмечали пиво местных пивоварен, в том числе те, которые мы пока не отслеживаем. Метка «в списке» значит, что место уже есть среди баров или магазинов. Знаете, что стоит добавить, — напишите Олегу.</p>
+      <p class="intro" data-i18n="venues.intro">Все места Еревана, где за последние 60 дней отмечали пиво местных пивоварен, в том числе те, которые мы пока не отслеживаем. Метка «в списке» значит, что место уже есть среди баров или магазинов. Знаете, что стоит добавить, — напишите Олегу.</p>
       <ul id="venues" class="cards"></ul>
     </section>
   </main>
-  <button type="button" id="to-top" aria-label="Наверх" title="Наверх" hidden>↑</button>
+  <button type="button" id="to-top" aria-label="Наверх" title="Наверх" data-i18n-aria-label="totop" data-i18n-title="totop" hidden>↑</button>
   <footer>
-    <h2>Значки</h2>
+    <h2 data-i18n="legend.title">Значки</h2>
     <ul class="legend">
-      <li>✅ — в меню бара (Untappd или buy.am)</li>
-      <li>👀 — видели в чекинах Untappd в этом месте (в барах — розлив)</li>
-      <li>✍️ — со слов: кто-то из друзей видел сам</li>
-      <li>🛒 — в онлайн-ассортименте магазина (сети, а не конкретного филиала)</li>
-      <li>🆕 — появилось за последние 7 дней</li>
-      <li id="legend-star">⭐ — возможно, впервые в Ереване (с тех пор, как следим)</li>
-      <li id="legend-hot">🔥 — высокий рейтинг Untappd</li>
+      <li data-i18n="legend.menu">✅ — в меню бара (Untappd или buy.am)</li>
+      <li data-i18n="legend.checkin">👀 — видели в чекинах Untappd в этом месте (в барах — розлив)</li>
+      <li data-i18n="legend.manual">✍️ — со слов: кто-то из друзей видел сам</li>
+      <li data-i18n="legend.shop">🛒 — в онлайн-ассортименте магазина (сети, а не конкретного филиала)</li>
+      <li data-i18n="legend.new">🆕 — появилось за последние 7 дней</li>
+      <li id="legend-star" data-i18n="legend.star">⭐ — возможно, впервые в Ереване (с тех пор, как следим)</li>
+      <li id="legend-hot" data-i18n="legend.hot">🔥 — высокий рейтинг Untappd</li>
     </ul>
-    <h2>Источники</h2>
-    <p>Untappd: меню <a href="https://untappd.com/v/gargoyle-bar/12252462">Gargoyle Bar</a> и
-      <a href="https://untappd.com/v/beatles-pub-yerevan/2162817">Beatles Pub</a>, чекины баров и пивоварен
+    <h2 data-i18n="sources.title">Источники</h2>
+    <p><span data-i18n="src.untappd">Untappd: меню</span> <a href="https://untappd.com/v/gargoyle-bar/12252462">Gargoyle Bar</a> <span data-i18n="src.and">и</span>
+      <a href="https://untappd.com/v/beatles-pub-yerevan/2162817">Beatles Pub</a><span data-i18n="src.checkins">, чекины баров и пивоварен</span>
       (<a href="https://untappd.com/">untappd.com</a>).
-      Меню Dargett Brewpub — <a href="https://buy.am/en/restaurants/dargett">buy.am</a>.
-      Магазины: <a href="https://www.beer-city.am/en/">Beer City</a>, <a href="https://yerevan-city.am/">Yerevan City</a>,
+      <span data-i18n="src.dargett">Меню Dargett Brewpub —</span> <a href="https://buy.am/en/restaurants/dargett">buy.am</a>.
+      <span data-i18n="src.shops">Магазины:</span> <a href="https://www.beer-city.am/en/">Beer City</a>, <a href="https://yerevan-city.am/">Yerevan City</a>,
       <a href="https://parma.am/en/">Parma</a>.</p>
-    <p>Сайт и бота собрал и ведёт Олег. Спасибо Ивану за идею.</p>
-    <p>Нашли ошибку, знаете бар с крафтом или хотите что-то предложить — пишите в Telegram:
+    <p data-i18n="credits">Сайт и бота собрал и ведёт Олег. Спасибо Ивану за идею.</p>
+    <p><span data-i18n="contact">Нашли ошибку, знаете бар с крафтом или хотите что-то предложить — пишите в Telegram:</span>
       <a href="https://t.me/oleg_sorokin">@oleg_sorokin</a>.</p>
-    <p>Подписывайтесь на меня в Untappd: <a href="https://untappd.com/user/Oleg_Sorokin">Oleg_Sorokin</a> 🍻</p>
-    <p><a href="matches.html">Проверка склеек</a> — как магазинные названия сопоставлены с Untappd.</p>
+    <p><span data-i18n="follow">Подписывайтесь на меня в Untappd:</span> <a href="https://untappd.com/user/Oleg_Sorokin">Oleg_Sorokin</a> 🍻</p>
+    <p><a href="matches.html" data-i18n="matches.link">Проверка склеек</a> <span data-i18n="matches.text">— как магазинные названия сопоставлены с Untappd.</span></p>
   </footer>
 </div>
 <script>
 "use strict";
 const TZ = "Asia/Yerevan";
 const STALE_HOURS = 36;
-const CONTAINER_RU = { can: "банка", bottle: "бутылка", keg: "кег", draft: "розлив" };
+const LANG_KEY = "yerevan.lang";   // localStorage key; namespaced because the origin is shared with the account's other pages
+// Interface text, one dictionary per language with the same keys (tests/test_site_i18n.py keeps them in step); {name} is
+// filled in by t(), a counted word holds the form for each plural category its language has. Whatever data.json says
+// (the names of beers, breweries and places, styles, where a place is) is shown as written and never goes through here.
+// One entry per line, so the tests can read it without a JavaScript engine.
+const I18N = {
+  ru: {
+    // the static markup; its Russian text stays in the HTML as well, so the page is never blank before this script runs
+    "title": "Ереван на кранах",
+    "meta.description": "Крафтовое пиво в барах и магазинах Еревана: что наливают и что продают сейчас",
+    "sub": "Крафтовое пиво в барах и магазинах Еревана",
+    "updated.loading": "загружаем…",
+    "banner.stale": "⚠️ Данные устарели.",
+    "lang.label": "Язык",
+    "tabs.label": "Раздел",
+    "tab.all": "Всё пиво",
+    "tab.bars": "Бары",
+    "tab.shops": "Магазины",
+    "tab.venues": "Где пьют",
+    "search.label": "Поиск по названию, стилю и пивоварне",
+    "search.placeholder": "Название, стиль или пивоварня",
+    "sort.label": "Сортировка",
+    "sort.since": "по новизне",
+    "sort.rating": "по рейтингу",
+    "sort.abv": "по крепости",
+    "only.new": "только новинки за 7 дней",
+    "places.label": "Места",
+    "venues.intro": "Все места Еревана, где за последние 60 дней отмечали пиво местных пивоварен, в том числе те, которые мы пока не отслеживаем. Метка «в списке» значит, что место уже есть среди баров или магазинов. Знаете, что стоит добавить, — напишите Олегу.",
+    "totop": "Наверх",
+    "legend.title": "Значки",
+    "legend.menu": "✅ — в меню бара (Untappd или buy.am)",
+    "legend.checkin": "👀 — видели в чекинах Untappd в этом месте (в барах — розлив)",
+    "legend.manual": "✍️ — со слов: кто-то из друзей видел сам",
+    "legend.shop": "🛒 — в онлайн-ассортименте магазина (сети, а не конкретного филиала)",
+    "legend.new": "🆕 — появилось за последние 7 дней",
+    "legend.star": "⭐ — возможно, впервые в Ереване (с тех пор, как следим)",
+    "legend.hot": "🔥 — высокий рейтинг Untappd",
+    "sources.title": "Источники",
+    "src.untappd": "Untappd: меню",
+    "src.and": "и",
+    "src.checkins": ", чекины баров и пивоварен",
+    "src.dargett": "Меню Dargett Brewpub —",
+    "src.shops": "Магазины:",
+    "credits": "Сайт и бота собрал и ведёт Олег. Спасибо Ивану за идею.",
+    "contact": "Нашли ошибку, знаете бар с крафтом или хотите что-то предложить — пишите в Telegram:",
+    "follow": "Подписывайтесь на меня в Untappd:",
+    "matches.link": "Проверка склеек",
+    "matches.text": "— как магазинные названия сопоставлены с Untappd.",
+    // what the script builds
+    "updated.unknown": "время обновления неизвестно",
+    "updated.lt1h": "обновлено меньше часа назад",
+    "updated.hours": "обновлено {hours} ч назад",
+    "updated.days": "обновлено {days} назад",
+    "updated.none": "нет данных",
+    "error.load": "Не удалось загрузить данные. Обновите страницу через минуту.",
+    "banner.stale.at": "⚠️ Данные устарели: последнее обновление {dm} в {hm}.",
+    "legend.star.since": "⭐ — возможно, впервые в Ереване (с тех пор, как следим, с {dm})",
+    "legend.hot.from": "🔥 — рейтинг Untappd от {rating}",
+    "count.all": "Позиций: {total}",
+    "count.some": "Показано {shown} из {total}",
+    "empty.filtered": "Ничего не нашлось — попробуйте другой запрос или фильтр.",
+    "empty.none": "Пока пусто.",
+    "th.beer": "Пиво",
+    "th.style": "Стиль",
+    "th.abv": "Крепость",
+    "th.ibu": "IBU",
+    "th.rating": "Рейтинг",
+    "th.price": "Цена",
+    "th.where": "Где",
+    "th.since": "Появилось",
+    "appeared": "Появилось {date}",
+    "rating.title": "рейтинг Untappd",
+    "flag.star": "возможно, впервые в Ереване",
+    "flag.new": "новинка за 7 дней",
+    "style.inferred": "определено по названию",
+    "badge.menu": "меню",
+    "badge.seen": "видели",
+    "badge.seen.ago": "видели {ago}",
+    "badge.manual": "со слов",
+    "badge.manual.by": "со слов ({by})",
+    "shop.in": "в магазине",
+    "shop.name": "в магазине: {name}",
+    "menu.on": "есть в меню",
+    "verified": "Верифицирован в Untappd",
+    "map.open": "Открыть на Яндекс Картах: {where}",
+    "map.link": "на карте",
+    "places.all": "Все",
+    "place.menu": "меню обновлено {ago}",
+    "place.fail.days": "не удалось проверить {days}",
+    "place.fail": "последняя проверка не удалась",
+    "place.ok": "проверено {when} в {hm}",
+    "place.never": "ещё не проверялось",
+    "venue.listed": "в списке",
+    "venue.checkins": "{count} за 60 дней",
+    "venue.last": "последний {dm}",
+    "time.today": "сегодня",
+    "time.yesterday": "вчера",
+    "time.ago": "{days} назад",
+    "unit.day": { one: "день", few: "дня", many: "дней" },
+    "unit.checkin": { one: "чекин", few: "чекина", many: "чекинов" },
+    "unit.ml": "мл",
+    "container.can": "банка",
+    "container.bottle": "бутылка",
+    "container.keg": "кег",
+    "container.draft": "розлив",
+    "serving.Draft": "розлив",
+    "serving.Bottle": "бутылка",
+    "serving.Can": "банка",
+    "serving.Taster": "дегустационный",
+    "serving.Cask": "из бочки",
+  },
+  en: {
+    // the static markup
+    "title": "Yerevan on Tap",
+    "meta.description": "Craft beer in Yerevan's bars and shops: what's on tap and what's on sale right now",
+    "sub": "Craft beer in Yerevan's bars and shops",
+    "updated.loading": "loading…",
+    "banner.stale": "⚠️ The data is out of date.",
+    "lang.label": "Language",
+    "tabs.label": "Section",
+    "tab.all": "All beer",
+    "tab.bars": "Bars",
+    "tab.shops": "Shops",
+    "tab.venues": "Where to drink",
+    "search.label": "Search by name, style or brewery",
+    "search.placeholder": "Name, style or brewery",
+    "sort.label": "Sort by",
+    "sort.since": "newest",
+    "sort.rating": "rating",
+    "sort.abv": "ABV",
+    "only.new": "only new arrivals (last 7 days)",
+    "places.label": "Places",
+    "venues.intro": "Every place in Yerevan where beer from local breweries was checked in over the last 60 days, including places we don't track yet. The “listed” tag means the place is already among the bars or shops. Know one we should add? Message Oleg.",
+    "totop": "Back to top",
+    "legend.title": "Legend",
+    "legend.menu": "✅ — on the bar's menu (Untappd or buy.am)",
+    "legend.checkin": "👀 — seen in Untappd check-ins at this place (at bars: on draft)",
+    "legend.manual": "✍️ — reported: a friend saw it there in person",
+    "legend.shop": "🛒 — in the shop's online catalog (the chain's, not a particular branch)",
+    "legend.new": "🆕 — appeared in the last 7 days",
+    "legend.star": "⭐ — possibly the first time in Yerevan (since we started tracking)",
+    "legend.hot": "🔥 — high Untappd rating",
+    "sources.title": "Sources",
+    "src.untappd": "Untappd: menus of",
+    "src.and": "and",
+    "src.checkins": ", check-ins at bars and breweries",
+    "src.dargett": "Dargett Brewpub menu —",
+    "src.shops": "Shops:",
+    "credits": "The site and the bot are built and maintained by Oleg. Thanks to Ivan for the idea.",
+    "contact": "Found a mistake, know a craft bar or have a suggestion? Message me on Telegram:",
+    "follow": "Follow me on Untappd:",
+    "matches.link": "Match review",
+    "matches.text": "(in Russian) — how shop names were matched to Untappd.",
+    // what the script builds
+    "updated.unknown": "update time unknown",
+    "updated.lt1h": "updated less than an hour ago",
+    "updated.hours": "updated {hours} h ago",
+    "updated.days": "updated {days} ago",
+    "updated.none": "no data",
+    "error.load": "Could not load the data. Please refresh the page in a minute.",
+    "banner.stale.at": "⚠️ The data is out of date: last updated {dm} at {hm}.",
+    "legend.star.since": "⭐ — possibly the first time in Yerevan (since we started tracking on {dm})",
+    "legend.hot.from": "🔥 — Untappd rating of {rating} or higher",
+    "count.all": "Beers: {total}",
+    "count.some": "Showing {shown} of {total}",
+    "empty.filtered": "Nothing found — try a different search or filter.",
+    "empty.none": "Nothing here yet.",
+    "th.beer": "Beer",
+    "th.style": "Style",
+    "th.abv": "ABV",
+    "th.ibu": "IBU",
+    "th.rating": "Rating",
+    "th.price": "Price",
+    "th.where": "Where",
+    "th.since": "Appeared",
+    "appeared": "Appeared {date}",
+    "rating.title": "Untappd rating",
+    "flag.star": "possibly the first time in Yerevan",
+    "flag.new": "new in the last 7 days",
+    "style.inferred": "guessed from the name",
+    "badge.menu": "menu",
+    "badge.seen": "seen",
+    "badge.seen.ago": "seen {ago}",
+    "badge.manual": "reported",
+    "badge.manual.by": "reported by {by}",
+    "shop.in": "in the shop",
+    "shop.name": "shop name: {name}",
+    "menu.on": "on the menu",
+    "verified": "Verified on Untappd",
+    "map.open": "Open in Yandex Maps: {where}",
+    "map.link": "on the map",
+    "places.all": "All",
+    "place.menu": "menu updated {ago}",
+    "place.fail.days": "couldn't check for {days}",
+    "place.fail": "last check failed",
+    "place.ok": "checked {when} at {hm}",
+    "place.never": "not checked yet",
+    "venue.listed": "listed",
+    "venue.checkins": "{count} in the last 60 days",
+    "venue.last": "last check-in {dm}",
+    "time.today": "today",
+    "time.yesterday": "yesterday",
+    "time.ago": "{days} ago",
+    "unit.day": { one: "day", other: "days" },
+    "unit.checkin": { one: "check-in", other: "check-ins" },
+    "unit.ml": "ml",
+    "container.can": "can",
+    "container.bottle": "bottle",
+    "container.keg": "keg",
+    "container.draft": "draft",
+    "serving.Draft": "draft",
+    "serving.Bottle": "bottle",
+    "serving.Can": "can",
+    "serving.Taster": "taster",
+    "serving.Cask": "cask",
+  },
+};
+const LANGS = Object.keys(I18N);
+const CONTAINER_RU ={ can: "банка", bottle: "бутылка", keg: "кег", draft: "розлив" };
 const SERVING_RU = { Draft: "розлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
 // the shops write the country of production in English; a country not listed here is shown as written
 const COUNTRY_RU = new Map(Object.entries({
@@ -236,8 +470,46 @@ const COUNTRY_RU = new Map(Object.entries({
   Mexico: "Мексика", USA: "США", "United States": "США",
 }));
 const wide = window.matchMedia("(min-width: 700px)");
-const ui = { data: null, places: new Map(), section: "all", place: null };
+const ui = { data: null, places: new Map(), section: "all", place: null, lang: "ru", failed: false };
 const $ = (id) => document.getElementById(id);
+
+const t = (key, vars) => {   // the text under `key` in the current language, with {name} taken from vars
+  const text = I18N[ui.lang][key];
+  return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name]) : text;
+};
+function saveLang(lang) {
+  try { localStorage.setItem(LANG_KEY, lang); } catch (err) { /* storage is blocked: the choice lasts until the page is reloaded */ }
+}
+function initialLang() {   // ?lang=en|ru (and remembered), else the choice made last time, else the browser's language
+  const asked = (new URLSearchParams(location.search).get("lang") || "").toLowerCase();
+  if (LANGS.includes(asked)) { saveLang(asked); return asked; }
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (LANGS.includes(saved)) return saved;
+  } catch (err) { /* storage is blocked */ }
+  return (navigator.language || "").toLowerCase().split("-")[0] === "ru" ? "ru" : "en";
+}
+function applyLang() {   // the static markup: <html lang>, the texts and attribute values it names, the switch
+  document.documentElement.lang = ui.lang;
+  for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
+  for (const attr of ["aria-label", "placeholder", "title", "content"]) {
+    for (const node of document.querySelectorAll(`[data-i18n-${attr}]`)) node.setAttribute(attr, t(node.getAttribute(`data-i18n-${attr}`)));
+  }
+  for (const b of document.querySelectorAll(".lang button")) b.setAttribute("aria-pressed", String(b.dataset.lang === ui.lang));
+}
+function showLoadError() {
+  $("updated").textContent = t("updated.none");
+  $("rows").replaceChildren(el("p", { class: "empty" }, t("error.load")));
+}
+function setLang(lang) {   // repaint in place: the filters, the sort and the open tab are left as they are
+  ui.lang = lang;
+  saveLang(lang);
+  applyLang();
+  if (ui.failed) showLoadError();
+  if (ui.data) { renderHeader(); renderPlaces(); render(); renderVenues(); }
+  const url = new URL(location.href);   // a shared ?lang= link follows the switch, so a reload keeps the choice
+  if (url.searchParams.has("lang")) { url.searchParams.set("lang", lang); history.replaceState(null, "", url); }
+}
 
 // Date parts in Yerevan time: {ymd: "2026-09-23", dm: "23.09", hm: "14:17"}.
 const fmt = new Intl.DateTimeFormat("en-GB", {
@@ -637,8 +909,8 @@ async function load() {
     ui.places = new Map(data.places.map((p) => [p.id, p]));
   } catch (err) {
     console.error(err);
-    $("updated").textContent = "нет данных";
-    $("rows").replaceChildren(el("p", { class: "empty" }, "Не удалось загрузить данные. Обновите страницу через минуту."));
+    ui.failed = true;
+    showLoadError();
     return;
   }
   renderHeader();
@@ -647,6 +919,9 @@ async function load() {
   setSection(ui.section);   // renders the venues tab too, if it was clicked before data.json loaded
 }
 
+ui.lang = initialLang();
+applyLang();
+for (const b of document.querySelectorAll(".lang button")) b.addEventListener("click", () => setLang(b.dataset.lang));
 for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => setSection(b.dataset.section));
 const toTop = $("to-top");
 window.addEventListener("scroll", () => { toTop.hidden = window.scrollY < 600; }, { passive: true });
