@@ -335,9 +335,10 @@ def ready(page, link=BEER_LINK):
     page.fill("#untappd-link", link)
 
 
-def copied_status(page):
-    page.wait_for_function("document.getElementById('merge-status').textContent !== ''")
-    return text(page, "#merge-status")
+def copied_status(page, block):
+    """The note under the button of a block ("yaml" or "text"), once it is there."""
+    page.wait_for_function(f"document.getElementById('{block}-status').textContent !== ''")
+    return text(page, f"#{block}-status")
 
 
 AWKWARD_TEXTS = [
@@ -431,14 +432,30 @@ def test_each_block_has_its_own_copy_button_and_says_what_was_copied(open_page):
     ready(page)
     assert text(page, "#copy-yaml") == "Скопировать для corrections.yaml" and text(page, "#copy-text") == "Скопировать для Олега/Claude"
     page.click("#copy-yaml")
-    assert copied_status(page) == "Скопировано — вставьте под same_as: в corrections.yaml"
+    assert copied_status(page, "yaml") == "Скопировано — вставьте под same_as: в corrections.yaml"
+    assert text(page, "#text-status") == ""
     assert page.evaluate("navigator.clipboard.readText()") == page.text_content("#yaml-out")
     page.click("#pick-list li:nth-child(1) .pick")                      # what is on screen changed: the old note goes
-    assert text(page, "#merge-status") == ""
+    assert text(page, "#yaml-status") == ""
     page.click("#copy-text")
-    assert copied_status(page) == "Скопировано — отправьте Олегу или Claude"
+    assert copied_status(page, "text") == "Скопировано — отправьте Олегу или Claude"
+    assert text(page, "#yaml-status") == ""
     assert page.evaluate("navigator.clipboard.readText()") == page.text_content("#text-out")
     assert min(size(page, "#copy-yaml")[1], size(page, "#copy-text")[1]) >= 44
+    assert problems == []
+
+
+@pytest.mark.parametrize("block", ["yaml", "text"])
+def test_the_note_about_a_copy_is_seen_together_with_the_button_that_was_tapped(open_page, block):
+    """On a phone the two blocks do not fit one screen, and the sheet covers the bottom of it, where a button is when it has
+    just been scrolled to: so the note goes right above its button, not below it."""
+    page, problems = open_page(mode="merge")
+    ready(page)
+    page.click(f"#copy-{block}")
+    copied_status(page, block)
+    button, note = page.locator(f"#copy-{block}").bounding_box(), page.locator(f"#{block}-status").bounding_box()
+    assert note["height"] > 0 and 0 <= button["y"] - (note["y"] + note["height"]) < 12
+    assert note["y"] >= 0 and button["y"] + button["height"] <= page.locator("#sheet").bounding_box()["y"]
     assert problems == []
 
 
@@ -446,13 +463,12 @@ def test_without_the_clipboard_api_a_hidden_textarea_does_the_copying(open_page)
     page, problems = open_page(mode="merge", init_script=NO_CLIPBOARD_API)
     ready(page)
     page.click("#copy-text")
-    assert copied_status(page) == "Скопировано — отправьте Олегу или Claude"
+    assert copied_status(page, "text") == "Скопировано — отправьте Олегу или Claude"
     assert page.evaluate("window.copied") == page.text_content("#text-out")
     assert page.locator("textarea").count() == 0                        # the helper cleans up after itself
     page.evaluate("document.execCommand = () => false")                # and when even that is refused, the page says so
     page.click("#copy-yaml")
-    page.wait_for_function("document.getElementById('merge-status').textContent.startsWith('Не')")
-    assert text(page, "#merge-status") == "Не удалось скопировать"
+    assert copied_status(page, "yaml") == "Не удалось скопировать"
     assert problems == []
 
 

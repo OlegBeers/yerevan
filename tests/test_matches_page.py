@@ -226,7 +226,9 @@ def test_two_copy_buttons_give_the_yaml_block_and_the_plain_text_and_both_wrap_l
         assert soup.find(id=element_id).name == "button" and soup.find(id=element_id)["type"] == "button"
     for element_id in ("yaml-out", "text-out"):
         assert soup.find(id=element_id).name == "pre"
-    assert soup.find(id="merge-status")["role"] == "status"
+    for element_id in ("yaml-status", "text-status"):     # each button has its own note, right above it (the sheet covers what is below)
+        assert soup.find(id=element_id)["role"] == "status"
+        assert soup.find(id=element_id).find_next_sibling("button")["id"] == "copy-" + element_id.split("-")[0]
     css = _css(soup)
     assert re.search(r"\.out\s*\{[^}]*white-space:\s*pre-wrap[^}]*overflow-wrap:\s*anywhere", css, re.S)   # long Cyrillic keys wrap on a phone
     js = _js(soup)
