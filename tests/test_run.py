@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+from bs4 import BeautifulSoup
 
 from taps import run as run_mod
 from taps.config import Config, ConfigError, Place, Settings
@@ -2135,3 +2136,71 @@ def test_apply_known_beer_info_gives_manual_pairs_label_and_rating_of_the_same_b
     assert state.pairs["ferment"]["u:5"].info["rating"] == 3.5 and "logo" not in state.pairs["ferment"]["u:5"].info
     assert state.pairs["ferment"]["n:x"].info == {"kind": "manual", "name": "X"}
     assert "price_amd" not in state.pairs["beatles"]["u:10722"].info
+
+
+# --- several servings of one beer at one place (whole run) ---------------------------------------
+
+def _gargoyle_with_price(size, price):
+    """The Gargoyle page with a price block on its first beer, Dahook Hell (no captured beer row has prices)."""
+    soup = BeautifulSoup(UNTAPPD_PAGES[GARGOYLE], "html.parser")
+    soup.select_one("li.menu-item").append(BeautifulSoup(
+        f'<div class="beer-prices"><p><span class="size">{size}</span><span class="price">{price}</span></p></div>',
+        "html.parser"))
+    return str(soup)
+
+
+def _site_row(world, place_id, beer_key):
+    data = json.loads((world.repo / "site" / "data.json").read_text(encoding="utf-8"))
+    return next(r for r in data["rows"] if (r["place_id"], r["beer_key"]) == (place_id, beer_key))
+
+
+def test_a_beer_that_gains_a_bottle_serving_on_the_menu_is_no_event_and_shows_both_on_the_site(world):
+    assert world.run(NOW) == 0
+    pages = {**UNTAPPD_PAGES, GARGOYLE: _gargoyle_with_price("0.5L Draft", "1,800.00 AMD"),
+             GARGOYLE + "?menu_id=203568": _gargoyle_with_price("0.33L Bottle", "1,200.00 AMD")}
+    world.next_run(untappd=FakeUntappd(pages))
+
+    assert world.run(NEXT_EVENING) == 0
+
+    assert world.sends == []                     # nothing new to announce
+    rec = world.state().pairs["gargoyle"]["u:5817007"]
+    assert (rec.event_at, rec.notified_at) == (None, "baseline")
+    assert [(s["container"], s["price_amd"], s["volume_ml"]) for s in rec.info["servings"]] == [
+        ("draft", 1800, 500), ("bottle", 1200, 330)]
+    row = _site_row(world, "gargoyle", "u:5817007")
+    assert (row["container"], row["price_amd"], row["volume_ml"]) == ("draft", 1800, 500)   # the first serving
+    assert [s["container"] for s in row["servings"]] == ["draft", "bottle"]
+    assert "servings" not in _site_row(world, "gargoyle", "u:5817002")    # the other beers stay single
+
+
+def _board(*containers_and_prices):
+    """corrections.yaml for one hand-entered beer, one entry per serving (same place, date and friend)."""
+    entries = "".join(
+        f"  - {{place: craft-story, untappd: 1715344, brewery: Rodenbach, beer: Fruitage, container: {container}, "
+        f"{price}by: Аня, date: 2026-09-24}}\n" for container, price in containers_and_prices)
+    return "sightings:\n" + entries
+
+
+def test_hand_entered_servings_are_announced_as_one_beer_and_a_later_serving_is_not_announced_again(world):
+    assert world.run(NOW) == 0
+    world.next_run()
+    (world.repo / "corrections.yaml").write_text(_board(("розлив", "price: 2800, "), ("бутылка", "")), encoding="utf-8")
+
+    assert world.run(NEXT_EVENING) == 0
+
+    [sent] = world.sends
+    assert sent["text"].count("Fruitage") == 1                            # one line for the pair, not one per serving
+    assert "Rodenbach — Fruitage · в Craft Story (от Аня)" in sent["text"]
+    assert world.state().announced_manual == ["craft-story|2026-09-24|Аня"]
+    assert [s["container"] for s in _site_row(world, "craft-story", "u:1715344")["servings"]] == ["draft", "bottle"]
+
+    # a friend adds a can the next day: the same beer at the same place, nothing to announce
+    world.next_run()
+    (world.repo / "corrections.yaml").write_text(
+        _board(("розлив", "price: 2800, "), ("бутылка", ""), ("банка", "price: 900, ")), encoding="utf-8")
+    assert world.run(NEXT_EVENING + timedelta(hours=3)) == 0
+
+    assert world.sends == []
+    row = _site_row(world, "craft-story", "u:1715344")
+    assert [(s["container"], s["price_amd"]) for s in row["servings"]] == [("draft", 2800), ("bottle", None), ("can", 900)]
+    assert row["new"] is True                                              # still the day's 🆕, not a second one
