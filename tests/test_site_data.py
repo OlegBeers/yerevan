@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from taps.config import Config, Place, Settings
 from taps.site_data import build_site_data, write_site_data
-from taps.state import PairRec, SourceRec, State, VenueRec
+from taps.state import PairRec, ShopMatchRec, SourceRec, State, VenueRec
 from taps.timeutil import iso
 
 NOW = datetime(2026, 10, 10, 12, 0, tzinfo=timezone.utc)  # 16:00 in Yerevan
@@ -159,6 +159,7 @@ def test_row_carries_display_fields():
         "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
         "badge": "menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
         "seen_days_ago": None, "new": False, "star": False, "by": None, "match_weak": False,
+        "shop_name": None, "shop_brewery": None, "match_via": None,
     }]
 
 
@@ -354,3 +355,84 @@ def test_group_key_keeps_unmatched_shop_key_and_ignores_shop_page_urls():
     st = state({"parma": {"n:corona extra": pair("parma", in_stock=True,
                                                 info={"url": "https://parma.am/en/product/product?slug=corona_1"})}})
     assert build(st)["rows"][0]["group_key"] == "n:corona extra"
+
+
+# --- v1.2 review page: the shop's own name next to the canonical one, and the matches list ---
+
+def match_state(pairs: dict, **matches: ShopMatchRec) -> State:
+    st = state(pairs)
+    st.shop_matches = {f"n:{k}": m for k, m in matches.items()}
+    return st
+
+
+CHIMAY = ShopMatchRec(untappd_beer_id=34039, url="https://untappd.com/beer/34039", rating=4.1,
+                      logo="https://x/chimay.jpg", name="Chimay Grande Réserve (Blue)",
+                      brewery="Bières de Chimay", via="local", weak=True)
+CHIMAY_INFO = {"name": "Chimay peres trappistes blue", "brewery": "Chimay",
+               "u_name": "Chimay Grande Réserve (Blue)", "u_brewery": "Bières de Chimay",
+               "shop_url": "https://beer-city.am/p/chimay", "match_weak": True}
+
+
+def test_matched_row_carries_the_shops_own_name_brewery_and_how_it_matched():
+    st = match_state({"beer-city": {"n:chimay": pair("beercity", in_stock=True, info=CHIMAY_INFO)}}, chimay=CHIMAY)
+    row = build(st)["rows"][0]
+    assert (row["name"], row["brewery"]) == ("Chimay Grande Réserve (Blue)", "Bières de Chimay")
+    assert (row["shop_name"], row["shop_brewery"], row["match_via"]) == (
+        "Chimay peres trappistes blue", "Chimay", "local")
+
+
+def test_unmatched_and_blocked_rows_have_no_shop_identity_fields():
+    """A "не то же" block (untappd_beer_id None) is not a match; nor is a pair with no record at all."""
+    blocked = ShopMatchRec(via="manual", matched_at=ago(1))
+    st = match_state({"beer-city": {"n:a": pair("beercity", in_stock=True), "n:b": pair("beercity", in_stock=True)}},
+                     b=blocked)
+    for row in build(st)["rows"]:
+        assert (row["shop_name"], row["shop_brewery"], row["match_via"]) == (None, None, None)
+    assert build(st)["matches"] == []
+
+
+def test_matches_list_carries_both_sides_of_each_visible_matched_pair():
+    st = match_state({"beer-city": {"n:chimay": pair("beercity", in_stock=True, info=CHIMAY_INFO)}}, chimay=CHIMAY)
+    assert build(st)["matches"] == [{
+        "place_id": "beer-city", "place": "Beer City", "key": "n:chimay",
+        "shop_name": "Chimay peres trappistes blue", "shop_brewery": "Chimay",
+        "shop_url": "https://beer-city.am/p/chimay", "shop_photo": None,
+        "untappd_name": "Chimay Grande Réserve (Blue)", "untappd_brewery": "Bières de Chimay",
+        "untappd_url": "https://untappd.com/beer/34039", "untappd_logo": "https://x/chimay.jpg",
+        "rating": 4.1, "via": "local", "weak": True,
+    }]
+
+
+def test_matches_list_skips_pairs_that_are_not_visible_on_the_site():
+    st = match_state({"beer-city": {"n:chimay": pair("beercity", in_stock=False, info=CHIMAY_INFO)}}, chimay=CHIMAY)
+    assert build(st)["matches"] == []
+
+
+def test_matches_list_has_one_entry_per_place_sharing_a_key():
+    st = match_state({"beer-city": {"n:chimay": pair("beercity", in_stock=True, info=CHIMAY_INFO)},
+                      "parma": {"n:chimay": pair("parma", in_stock=True, info=CHIMAY_INFO)}}, chimay=CHIMAY)
+    assert sorted(m["place_id"] for m in build(st)["matches"]) == ["beer-city", "parma"]
+
+
+def test_matches_list_is_ordered_weak_then_search_local_manual_then_place_and_name():
+    def rec(via, weak=False):
+        return ShopMatchRec(untappd_beer_id=1, url="https://untappd.com/beer/1", via=via, weak=weak)
+    pairs = {"beer-city": {f"n:{k}": pair("beercity", in_stock=True, info={"name": k})
+                           for k in ("manual1", "local1", "search1", "weak1", "search0")},
+             "parma": {"n:search0": pair("parma", in_stock=True, info={"name": "search0"})}}
+    st = match_state(pairs, manual1=rec("manual"), local1=rec("local"), search1=rec("search"),
+                     weak1=rec("local", weak=True), search0=rec("search"))
+    order = [(m["place_id"], m["shop_name"]) for m in build(st)["matches"]]
+    assert order == [("beer-city", "weak1"), ("beer-city", "search0"), ("beer-city", "search1"),
+                     ("parma", "search0"), ("beer-city", "local1"), ("beer-city", "manual1")]
+
+
+def test_match_shop_photo_is_the_pairs_own_only_when_the_overlay_did_not_replace_it():
+    """Yerevan City puts its own photo in info["logo"]; a matched Untappd label overlays it (u_overlay)."""
+    own = {"name": "Corona", "logo": "https://yc/photo.jpg"}
+    replaced = {"name": "Corona", "logo": "https://x/label.jpg", "u_overlay": {"logo": "https://x/label.jpg"}}
+    match = ShopMatchRec(untappd_beer_id=1, url="https://untappd.com/beer/1", via="search")
+    st = match_state({"parma": {"n:a": pair("yerevan_city", in_stock=True, info=own),
+                                "n:b": pair("yerevan_city", in_stock=True, info=replaced)}}, a=match, b=match)
+    photos = {m["key"]: m["shop_photo"] for m in build(st)["matches"]}
+    assert photos == {"n:a": "https://yc/photo.jpg", "n:b": None}

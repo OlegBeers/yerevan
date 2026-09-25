@@ -8,7 +8,7 @@ from taps.config import Config, Place
 from taps.model import SOURCE_KINDS
 from taps.sources.manual import MANUAL_KEEP_DAYS
 from taps.sources.untappd_checkins import is_yerevan_city
-from taps.state import MARKERS, VENUE_KEEP_DAYS, PairRec, State
+from taps.state import MARKERS, VENUE_KEEP_DAYS, PairRec, ShopMatchRec, State
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 
 CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
@@ -16,6 +16,8 @@ NEW_DAYS = 7             # 🆕/⭐ badges live this long after the event was se
 INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url", "serving",
                "shop_url")
 
+
+MATCH_VIA_ORDER = {"search": 0, "local": 1, "manual": 2}   # review page: least trustworthy first
 
 UNTAPPD_BEER_RE = re.compile(r"untappd\.com/(?:b/[^/?#]+|beer)/(\d+)")
 GLASS_BOTTLE_RE = re.compile(r" g b$")   # Yerevan City appends "G/B" to titles; the key normalizer leaves "g b"
@@ -118,7 +120,17 @@ def _is_new(rec: PairRec, now: datetime) -> bool:
     return n is not None and n not in MARKERS and age_days(parse_iso(n), now) <= NEW_DAYS
 
 
-def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict:
+def _active_match(state: State, key: str, kind: str) -> ShopMatchRec | None:
+    """The Untappd match apply_shop_matches overlays onto this pair (a "не то же" block is no match)."""
+    match = state.shop_matches.get(key)
+    return match if kind in ("shop", "menu", "manual") and match and match.untappd_beer_id is not None else None
+
+
+def _shop_name(info: dict, key: str) -> str:
+    return info.get("name") or info.get("title") or key
+
+
+def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: ShopMatchRec | None) -> dict:
     info = rec.info
     new = _is_new(rec, now)
     # v1.2 beer identity: a shop/menu/manual pair matched to Untappd carries the canonical name/
@@ -126,11 +138,15 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict
     # the site display prefers them; the digest and rules.py keep using the shop's own text.
     row = {"place_id": place.id, "section": _section(place), "beer_key": key,
            "group_key": _group_key(key, info),
-           "name": info.get("u_name") or info.get("name") or info.get("title") or key}
+           "name": info.get("u_name") or _shop_name(info, key)}
     row.update({f: info.get(f) for f in INFO_FIELDS})
     row["brewery"] = info.get("u_brewery") or info.get("brewery")
     row["beer_logo"] = info.get("logo")
     row["match_weak"] = bool(info.get("match_weak"))   # a local match that rests on an unnamed parenthetical
+    # the shop's own text next to the canonical one, so a wrong merge can be spotted on the site
+    row["shop_name"] = _shop_name(info, key) if match else None
+    row["shop_brewery"] = info.get("brewery") if match else None
+    row["match_via"] = match.via if match else None
     row.update({
         "badge": kind,
         "since": yerevan_date(parse_iso(rec.first_seen)),
@@ -142,13 +158,35 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict
     return row
 
 
+def _match_entry(place: Place, key: str, rec: PairRec, match: ShopMatchRec) -> dict:
+    """One line of the review page (site/matches.html): the shop's beer and the Untappd beer it was merged with."""
+    info = rec.info
+    logo, overlaid = info.get("logo"), (info.get("u_overlay") or {}).get("logo")
+    # only Yerevan City puts its own product photo in info["logo"]; a matched Untappd label replaces it
+    photo = logo if info.get("source") == "yerevan_city" and logo != overlaid else None
+    return {
+        "place_id": place.id, "place": place.name, "key": key,
+        "shop_name": _shop_name(info, key), "shop_brewery": info.get("brewery"),
+        "shop_url": info.get("shop_url"), "shop_photo": photo,
+        "untappd_name": match.name, "untappd_brewery": match.brewery, "untappd_url": match.url,
+        "untappd_logo": match.logo, "rating": match.rating, "via": match.via, "weak": match.weak,
+    }
+
+
+def _matches_order(m: dict) -> tuple:
+    return (not m["weak"], MATCH_VIA_ORDER.get(m["via"], len(MATCH_VIA_ORDER)), m["place_id"], m["shop_name"])
+
+
 def build_site_data(state: State, config: Config, now: datetime) -> dict:
-    rows = []
+    rows, matches = [], []
     for place in config.places.values():
         for key, rec in state.pairs.get(place.id, {}).items():
             kind = _kind(rec)
             if kind and _visible(place, rec, kind, state, now):
-                rows.append(_row(place, key, rec, kind, now))
+                match = _active_match(state, key, kind)
+                rows.append(_row(place, key, rec, kind, now, match))
+                if match:
+                    matches.append(_match_entry(place, key, rec, match))
     return {
         "generated_at": iso(now),
         "started_at": state.started_at,
@@ -156,6 +194,7 @@ def build_site_data(state: State, config: Config, now: datetime) -> dict:
         "places": [_place(p, state, now) for p in config.places.values()],
         "rows": rows,
         "venues": _venues(state, config, now),
+        "matches": sorted(matches, key=_matches_order),
     }
 
 
