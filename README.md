@@ -120,6 +120,7 @@ same_as:                         # магазинное пиво == пиво с 
   - place: beer-city              # id места из places.yaml
     beer: "n:chimay peres trappistes blue"   # ключ пива в этом магазине
     untappd_id: 34039             # число из адреса пива на Untappd
+    # name: "…", brewery: "…"      # необязательно: как пиво называется на Untappd, если ни один бар его не показывал
 brewery_aliases:                 # разные написания пивоварни
   "v engelman": "volfas engelman"
 not_craft:                       # бренды, которые не показывать в магазинах

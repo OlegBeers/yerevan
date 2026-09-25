@@ -175,6 +175,21 @@ def test_parse_same_as_entry():
     assert corrections.same_as == {("gargoyle", "n:chimay peres trappistes blue"): 34039}
 
 
+def test_parse_same_as_entry_with_display_name_and_brewery():
+    """A beer no bar has shown has no known Untappd name: the entry may carry it for the site."""
+    corrections, errors = parse(
+        "same_as:\n"
+        "  - place: gargoyle\n"
+        "    beer: 'n:x'\n"
+        "    untappd_id: 6151476\n"
+        "    name: Trehgornoe Blanche\n"
+        "    brewery: Moscow Brewing Company\n"
+    )
+    assert errors == []
+    assert corrections.same_as == {("gargoyle", "n:x"): 6151476}
+    assert corrections.same_as_names == {("gargoyle", "n:x"): ("Trehgornoe Blanche", "Moscow Brewing Company")}
+
+
 def test_parse_same_as_entry_with_null_untappd_id_is_a_not_the_same_override():
     """v1.2 beer identity: untappd_id: null blocks local/search matching for that key ("не то же")
     without claiming a (possibly wrong) Untappd id, unlike a normal same_as override."""

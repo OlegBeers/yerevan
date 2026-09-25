@@ -312,6 +312,13 @@ same_as:                         # магазинное пиво == пиво с 
   - place: beer-city
     beer: "n:bronx black cherry"
     untappd_id: null
+  # Yerevan City: «Пив.нап. Трехгорное Blan.свет.» (товар 175294): у таких «пивных напитков» магазин
+  # даёт только армянское название, поэтому склеено вручную с Trehgornoe Blanche
+  - place: yerevan-city
+    beer: "n:գարեջրային ըմպ տրյոխգորնոե բլանշ բաց ա տ"
+    untappd_id: 6151476
+    name: "Trehgornoe Blanche"
+    brewery: "Moscow Brewing Company (Московская Пивоваренная Компания)"
 
 aliases:
 

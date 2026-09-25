@@ -854,6 +854,16 @@ def test_apply_same_as_works_even_when_the_beer_is_not_otherwise_known():
     assert (match.untappd_beer_id, match.via, match.name, match.brewery) == (12345, "manual", None, None)
 
 
+def test_apply_same_as_uses_the_entrys_own_name_and_brewery_for_an_unknown_beer():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:x"): 12345},
+                                      same_as_names={("beer-city", "n:x"): ("Trehgornoe Blanche", "Moscow Brewing Company")})
+    run_mod.apply_same_as(state, corrections, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.name, match.brewery) == ("Trehgornoe Blanche", "Moscow Brewing Company")
+
+
 def test_apply_same_as_wins_over_an_existing_local_or_search_match():
     state = empty_state(NOW)
     state.pairs = {"beer-city": {"n:x": _shop_pair("X", "X")}}
