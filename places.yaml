@@ -27,6 +27,7 @@ places:
     name: Beatles Pub
     kind: bar
     address: "Пушкина 60"
+    map_url: "https://yandex.com/maps/org/bitlz/7270608616/"
     enabled: true
     sources:
       untappd_menu: {slug: beatles-pub-yerevan, venue_id: 2162817}
@@ -122,6 +123,7 @@ places:
     kind: bar
     # крафтовый бар на месте Vertigo (Teryan 65), 16 кранов
     address: "Терьяна 65"
+    map_url: "https://yandex.com/maps/org/ferment_craft_beer_bar_bottleshop/161253472087/"
     enabled: true
     sources:
       untappd_checkins: {slug: ferment, venue_id: 13510969}
