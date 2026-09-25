@@ -311,7 +311,11 @@ const servingsText = (r) => (r.servings || []).map(servingText).join(" · ");
 const singleServing = (g) => g.rows.length === 1 && !g.rows[0].servings;   // only then price and size go next to the name
 function sinceText(s) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
-  return m ? `${m[3]}.${m[2]}` : "";
+  if (m) return `${m[3]}.${m[2]}`;
+  const t = parseTime(s);   // a full timestamp: Yerevan day and clock time
+  if (!t) return "";
+  const { dm, hm } = yerevan(t);
+  return `${dm}, ${hm}`;
 }
 function iconSpan(icon) {
   return el("span", { class: "ico", "aria-hidden": "true" }, icon);
@@ -389,14 +393,15 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
       beer_logo: group.map((r) => r.beer_logo).find(Boolean),
       abv: bestOf(group, "abv"), rating: bestOf(group, "rating"),
       since: group.map((r) => r.since).sort()[0],
+      since_at: group.map((r) => r.since_at).filter(Boolean).sort()[0] || group.map((r) => r.since).sort()[0],
       new: group.some((r) => r.new), star: group.some((r) => r.star),
     };
   });
 }
 function visibleGroups() {
-  const key = $("sort").value;
+  const key = $("sort").value === "since" ? "since_at" : $("sort").value;   // newest first down to the minute
   return groupBeers(filteredRows())
-    .sort((a, b) => cmpDesc(a[key], b[key]) || cmpDesc(a.since, b.since)
+    .sort((a, b) => cmpDesc(a[key], b[key]) || cmpDesc(a.since_at, b.since_at)
       || String(a.name).localeCompare(String(b.name), "ru"));
 }
 
@@ -446,7 +451,7 @@ function table(groups) {
     el("td", { class: "num" }, ...(singleServing(g) ? [priceText(g.rows[0]),
       volumeText(g.rows[0]) ? el("span", { class: "small" }, volumeText(g.rows[0])) : null] : [])),
     el("td", null, ...(g.rows.length === 1 ? placeCell(g.rows[0], g.name) : [el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name))])),
-    el("td", { class: "nowrap" }, sinceText(g.since))));
+    el("td", { class: "nowrap" }, sinceText(g.since_at))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
 }
 function cardWhere(r, name) {
@@ -467,7 +472,7 @@ function cards(groups) {
     singleServing(g) ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
     g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
     g.rows.length === 1 ? cardWhere(g.rows[0], g.name) : el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name)),
-    sinceText(g.since) ? el("div", { class: "meta" }, `Появилось ${sinceText(g.since)}`) : null)));
+    sinceText(g.since_at) ? el("div", { class: "meta" }, `Появилось ${sinceText(g.since_at)}`) : null)));
 }
 function render() {
   if (!ui.data) return;

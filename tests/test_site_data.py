@@ -158,6 +158,7 @@ def test_row_carries_display_fields():
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
         "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
         "badge": "menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
+        "since_at": "2026-09-24T21:30:00+00:00",
         "seen_days_ago": None, "new": False, "star": False, "by": None, "match_weak": False,
         "shop_name": None, "shop_brewery": None, "match_via": None,
     }]

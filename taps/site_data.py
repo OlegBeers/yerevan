@@ -152,6 +152,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: 
     row.update({
         "badge": kind,
         "since": yerevan_date(parse_iso(rec.first_seen)),
+        "since_at": iso(parse_iso(rec.first_seen)),   # full UTC timestamp: the site shows the Yerevan clock time and sorts by it
         "seen_days_ago": _days_ago(yerevan_date(parse_iso(info["checkin_at"])), now) if kind == "checkin" else None,
         "new": new,
         "star": new and rec.star,

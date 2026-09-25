@@ -341,3 +341,13 @@ def test_a_beer_with_servings_does_not_repeat_its_first_one_next_to_the_name():
     for fn in ("table(groups)", "cards(groups)"):
         body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
         assert "singleServing(g)" in body, fn
+
+
+def test_since_shows_the_time_and_sorts_by_it():
+    js = _js(_soup())
+    since_fn = re.search(r"function sinceText\(s\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "hm" in since_fn                       # a timestamp shows the Yerevan clock time
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "since_at" in group_fn                 # earliest full timestamp of the group
+    visible_fn = re.search(r"function visibleGroups\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "since_at" in visible_fn               # 'по новизне' orders by the timestamp, not the day
