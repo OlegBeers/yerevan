@@ -730,14 +730,18 @@ def test_two_manual_entries_for_one_beer_are_one_event_with_both_servings():
     assert (info["container"], info["price_amd"], info["manual_id"]) == ("draft", 2800, tap.id)
 
 
-def test_a_manual_entry_added_to_an_announced_beer_adds_a_serving_without_a_new_event():
+@pytest.mark.parametrize("event_at, notified_at", [
+    (iso(NOW - 12 * H), iso(NOW - 6 * H)),   # announced in the digest
+    (None, "suppressed"),                    # recorded silently, like the Ferment board's Untappd-keyed pairs
+])
+def test_a_manual_entry_added_to_a_known_beer_adds_a_serving_without_a_new_event(event_at, notified_at):
     state = empty_state(NOW - 10 * DAY)
     tap = replace(entry("tap-station", "Hazy Pale", 1), container="draft", price_amd=2800)
     merge(state, manual(tap), now=NOW - 12 * H)
     rec = state.pairs["tap-station"]["n:379 hazy pale"]
-    rec.notified_at, state.announced_manual = iso(NOW - 6 * H), [tap.id]   # announced in the digest
+    rec.event_at, rec.notified_at, state.announced_manual = event_at, notified_at, [tap.id]
     out = merge(state, manual(tap, replace(tap, container="bottle", price_amd=None)))
     assert out.events == []
-    assert (rec.notified_at, state.announced_manual) == (iso(NOW - 6 * H), [tap.id])
+    assert (rec.event_at, rec.notified_at, state.announced_manual) == (event_at, notified_at, [tap.id])
     assert [s["container"] for s in rec.info["servings"]] == ["draft", "bottle"]
     assert merge(state, manual(tap)).events == [] and "servings" not in rec.info   # and back when withdrawn
