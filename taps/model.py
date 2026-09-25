@@ -1,8 +1,8 @@
 """Core data model and beer keys."""
 import re
 import unicodedata
-from collections.abc import Mapping
-from dataclasses import dataclass, field
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 
 SOURCE_KINDS: dict[str, str] = {
@@ -12,6 +12,14 @@ SOURCE_KINDS: dict[str, str] = {
     "beercity": "shop", "yerevan_city": "shop", "parma": "shop",
     "manual": "manual",
 }
+
+
+@dataclass(frozen=True)
+class Serving:
+    """One way a beer is poured at a place: a draft pour, a bottle, a can."""
+    container: str | None = None  # "can" | "bottle" | "keg" | "draft"
+    price_amd: int | None = None
+    volume_ml: int | None = None
 
 
 @dataclass(frozen=True)
@@ -45,6 +53,7 @@ class Sighting:
     manual_id: str | None = None
     manual_by: str | None = None
     manual_date: str | None = None  # "YYYY-MM-DD"
+    servings: tuple[Serving, ...] = ()   # all of them, only when several; the first is also container/price/volume
 
     @property
     def kind(self) -> str:
@@ -86,6 +95,33 @@ class SourceResult:
     brewery_beers: list[BreweryBeer] = field(default_factory=list)
     venue_meta: dict | None = None            # {"venue_id","name","url","logo","verified"} of this result's own venue
     venue_checkins: list[VenueCheckin] = field(default_factory=list)   # every venue seen in check-ins (v1.1)
+
+
+MAX_SERVINGS = 6   # a bad menu must not bloat state.json
+
+
+def _same_serving(a: Serving, b: Serving) -> bool:
+    """The same container and volume; without a volume, another price tells two pours apart."""
+    return (a.container, a.volume_ml) == (b.container, b.volume_ml) and (
+        a.volume_ml is not None or None in (a.price_amd, b.price_amd) or a.price_amd == b.price_amd)
+
+
+def with_servings(sighting: Sighting, servings: Iterable[Serving]) -> Sighting:
+    """The sighting carrying the beer's servings: the first fills container/price_amd/volume_ml (what every
+    single-serving reader uses), and all of them are listed only when there are several."""
+    distinct: list[Serving] = []
+    for serving in servings:
+        if serving == Serving():   # nothing known: no serving of its own
+            continue
+        i = next((i for i, d in enumerate(distinct) if _same_serving(d, serving)), None)
+        if i is None:
+            distinct.append(serving)
+        elif distinct[i].price_amd is None:   # a repeat completes what the first sighting lacked
+            distinct[i] = replace(distinct[i], price_amd=serving.price_amd)
+    merged = tuple(distinct[:MAX_SERVINGS])
+    first = merged[0] if merged else Serving()
+    return replace(sighting, container=first.container, price_amd=first.price_amd, volume_ml=first.volume_ml,
+                   servings=merged if len(merged) > 1 else ())
 
 
 def u_key(beer_id: int) -> str:

@@ -4,8 +4,10 @@ from datetime import datetime, timezone
 import pytest
 
 from taps.model import (
+    MAX_SERVINGS,
     SOURCE_KINDS,
     BreweryBeer,
+    Serving,
     Sighting,
     SourceResult,
     VenueCheckin,
@@ -15,6 +17,7 @@ from taps.model import (
     strip_color,
     u_key,
     untappd_n_key,
+    with_servings,
 )
 
 NOW = datetime(2026, 9, 23, 14, 17, tzinfo=timezone.utc)
@@ -150,3 +153,54 @@ def test_venue_checkin_fields():
     vc = VenueCheckin(venue_id=1, venue_name="Bar", venue_url="https://untappd.com/v/bar/1",
                       checkin_id=2, at=NOW)
     assert (vc.venue_id, vc.venue_name, vc.venue_url, vc.checkin_id, vc.at) == (1, "Bar", "https://untappd.com/v/bar/1", 2, NOW)
+
+
+# --- servings: one beer poured in several ways at one place -------------------
+
+def test_with_servings_first_serving_fills_the_single_serving_fields_and_all_are_listed():
+    tap, bottle = Serving("draft", 2800), Serving("bottle", 1500, 330)
+    s = with_servings(_sighting("untappd_menu"), [tap, bottle])
+    assert (s.container, s.price_amd, s.volume_ml) == ("draft", 2800, None)
+    assert s.servings == (tap, bottle)
+
+
+def test_with_servings_lists_nothing_for_a_single_serving_or_none():
+    one = with_servings(_sighting("untappd_menu"), [Serving("bottle", 1500, 330)])
+    assert (one.container, one.price_amd, one.volume_ml, one.servings) == ("bottle", 1500, 330, ())
+    none = with_servings(_sighting("untappd_menu"), [])
+    assert (none.container, none.price_amd, none.volume_ml, none.servings) == (None, None, None, ())
+
+
+def test_with_servings_keeps_only_the_first_of_servings_with_the_same_container_and_volume():
+    tap = Serving("draft", 1800, 500)
+    s = with_servings(_sighting("untappd_menu"), [tap, Serving("draft", 1900, 500), tap])
+    assert (s.container, s.price_amd, s.volume_ml, s.servings) == ("draft", 1800, 500, ())
+    other_size = Serving("draft", 1200, 300)
+    assert with_servings(_sighting("untappd_menu"), [tap, other_size]).servings == (tap, other_size)
+
+
+def test_with_servings_ignores_a_serving_with_nothing_known():
+    bottle = Serving("bottle", 1500, 330)   # a menu row without a price block adds no serving of its own
+    for rows in ([Serving(), bottle], [bottle, Serving()]):
+        s = with_servings(_sighting("untappd_menu"), rows)
+        assert (s.container, s.price_amd, s.volume_ml, s.servings) == ("bottle", 1500, 330, ())
+
+
+def test_with_servings_tells_servings_without_a_volume_apart_by_price():
+    small, large = Serving("draft", 1400), Serving("draft", 2000)   # a hand-entered board has no volumes
+    s = with_servings(_sighting("manual"), [small, large, Serving("draft", 1400)])
+    assert (s.price_amd, s.servings) == (1400, (small, large))
+
+
+def test_with_servings_lets_a_repeat_supply_a_missing_price():
+    for rows in ([Serving("draft"), Serving("draft", 1500)], [Serving("draft", 1500), Serving("draft")]):
+        s = with_servings(_sighting("manual"), rows)
+        assert (s.container, s.price_amd, s.servings) == ("draft", 1500, ())
+    s = with_servings(_sighting("untappd_menu"), [Serving("draft", None, 500), Serving("draft", 1800, 500)])
+    assert (s.price_amd, s.volume_ml, s.servings) == (1800, 500, ())
+
+
+def test_with_servings_keeps_at_most_max_servings():
+    rows = [Serving("draft", 1000 + i, 100 * (i + 1)) for i in range(MAX_SERVINGS + 4)]
+    s = with_servings(_sighting("untappd_menu"), rows)
+    assert (MAX_SERVINGS, s.servings) == (6, tuple(rows[:6]))
