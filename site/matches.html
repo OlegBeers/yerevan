@@ -97,7 +97,7 @@
   .verdict .ok input { accent-color: var(--accent); }
   .verdict .bad input { accent-color: var(--danger); }
   .card.confirmed { opacity: .6; }
-  #confirm-visible { font: inherit; font-size: .85rem; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; }
+  #confirm-visible, #transfer { font: inherit; font-size: .85rem; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; }
   #bar {
     position: sticky; bottom: 0; z-index: 5; margin: 16px -20px 0; padding: 10px 20px;
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
@@ -127,6 +127,7 @@
       <label class="toggle"><input type="checkbox" id="only-weak"><span>только слабые</span></label>
       <label class="toggle"><input type="checkbox" id="show-ok"><span>показать проверенные</span></label>
       <button type="button" id="confirm-visible">Всё показанное — верно</button>
+      <button type="button" id="transfer">Перенести отметки на другое устройство</button>
     </div>
     <p id="count" class="count" aria-live="polite">загружаем…</p>
     <div id="list"></div>
@@ -142,7 +143,7 @@
 const STORAGE_KEY = "matches-wrong";
 const OK_KEY = "matches-ok";   // {entry id: the Untappd link it was confirmed against}
 const VIA_RU = { local: "авто по названию", search: "поиск Untappd", manual: "вручную" };
-const ui = { matches: [], marked: new Set(), ok: {} };
+const ui = { matches: [], marked: new Set(), ok: {}, note: "" };
 const $ = (id) => document.getElementById(id);
 
 // Every value from data.json goes into the DOM as text, never as HTML.
@@ -285,6 +286,48 @@ function render() {
       : ui.matches.every(isOk) ? "Все склейки проверены." : "Ничего не нашлось — попробуйте другой запрос или фильтр."));
   renderBar();
 }
+// Marks live in this browser only. To move them to another device: a link whose #marks= part carries
+// the confirmed entries (id -> Untappd beer number) and the "wrong" ones; the other device merges them.
+const beerNumber = (url) => (/(\d+)\/?$/.exec(String(url || "").split(/[?#]/)[0]) || [])[1] || "";
+const toB64 = (text) => btoa(String.fromCharCode(...new TextEncoder().encode(text)));
+const fromB64 = (b64) => new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+function transferLink() {
+  const ok = {};
+  for (const m of ui.matches) if (isOk(m)) ok[idOf(m)] = beerNumber(m.untappd_url);
+  const payload = { ok, bad: markedMatches().map(idOf) };
+  return `${location.origin}${location.pathname}#marks=${toB64(JSON.stringify(payload))}`;
+}
+function importFromHash() {
+  const m = /^#marks=(.+)$/.exec(location.hash);
+  if (!m) return;
+  try {
+    const payload = JSON.parse(fromB64(m[1]));
+    for (const entry of ui.matches) {
+      const id = idOf(entry);
+      if (payload.ok && payload.ok[id] !== undefined && payload.ok[id] === beerNumber(entry.untappd_url)) {
+        ui.ok[id] = entry.untappd_url || "";
+        ui.marked.delete(id);
+      } else if (Array.isArray(payload.bad) && payload.bad.includes(id)) {
+        ui.marked.add(id);
+        delete ui.ok[id];
+      }
+    }
+    saveOk(); saveMarked();
+    ui.note = "Отметки загружены";
+  } catch (err) {
+    ui.note = "Ссылка с отметками повреждена";
+  }
+  history.replaceState(null, "", location.pathname + location.search);   // keep the address bar clean
+}
+async function copyTransfer() {
+  const text = transferLink();
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    fallbackCopy(text);
+  }
+  $("copy-status").textContent = "Ссылка скопирована: откройте её на другом устройстве";
+}
 function confirmVisible() {   // one tap for the long tail once the doubtful ones were looked at
   const todo = visibleMatches().filter((m) => !isOk(m) && !ui.marked.has(idOf(m)));
   if (!todo.length) return;
@@ -331,13 +374,16 @@ async function load() {
   }
   ui.marked = loadMarked();
   ui.ok = loadOk();
+  importFromHash();
   render();
+  if (ui.note) $("copy-status").textContent = ui.note;   // render() clears the status line, so set it after
 }
 
 $("search").addEventListener("input", render);
 $("only-weak").addEventListener("change", render);
 $("show-ok").addEventListener("change", render);
 $("confirm-visible").addEventListener("click", confirmVisible);
+$("transfer").addEventListener("click", copyTransfer);
 $("copy").addEventListener("click", copyMarked);
 load();
 </script>
