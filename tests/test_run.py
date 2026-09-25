@@ -125,7 +125,10 @@ BUYAM_NAMES = ["Bohemian Pilsner", "Bavarian Weizen", "Oatmeal Stout", "Munich L
                "India Pale Ale", "Black IPA", "Apple Cider", "Cherry Ale", "Baltic Porter", "Imperial IPA"]
 BUYAM_LISTING = json.dumps({"code": 200, "data": {"totalCount": 16, "items": [
     {"id": 174894 + i, "name": f"Draught beer Dargett {n} 1l", "nameEn": f"Draught beer Dargett {n} 1l",
-     "basePrice": 2500} for i, n in enumerate(BUYAM_NAMES)]}})
+     "basePrice": 2500,
+     "imagesPaths": {"large": "media/image/01/ce/96/Dargett_1l.webp",
+                     "small": "media/image/02/b8/1b/Dargett_1l_200x200@2x.webp"}}
+    for i, n in enumerate(BUYAM_NAMES)]}})
 SHOP_PAGES = {
     # Beer City: one page per category (18 beers), counters rewritten to "1 of 1"
     "https://www.beer-city.am/en/catalog/sshalcavac-garejur/?sorting=-id&page=1":
@@ -243,6 +246,29 @@ def test_first_run_is_silent_and_saves_state_and_site(world):
     assert data["generated_at"] == iso(NOW)
     assert [p["id"] for p in data["places"]][:2] == ["gargoyle", "beatles"]
     assert any(r["name"] == "Guinness Draught" for r in data["rows"])
+
+
+def test_shop_rows_get_the_shops_photo_and_a_guessed_style_that_stays_out_of_the_pairs(world):
+    """Fixtures through the four shop adapters, the merge and the site data: every shop's own photo reaches
+    beer_logo, and a beer with no Untappd behind it gets a style guessed from its name -- on the site row only."""
+    assert world.run(NOW) == 0
+    rows = {(r["place_id"], r["name"]): r for r in
+            json.loads((world.repo / "site" / "data.json").read_text(encoding="utf-8"))["rows"]}
+    hard_root = rows[("beer-city", "Hard root Double IPA")]
+    assert hard_root["beer_logo"] == "https://www.beer-city.am/media/product-img/small_3_wCYfvQC.jpg"
+    assert (hard_root["style"], hard_root["style_inferred"]) == ("IPA", True)
+    dahook = rows[("parma", "Dahook Ipa light")]
+    assert dahook["beer_logo"] == "https://static.parma.am/cache/product/28051/thumb_28051.jpg?v=11790128223"
+    assert (dahook["style"], dahook["style_inferred"]) == ("IPA", True)
+    pilsner = rows[("dargett-brewpub", "Bohemian Pilsner")]
+    assert pilsner["beer_logo"] == "https://buy.am/media/image/02/b8/1b/Dargett_1l_200x200@2x.webp"
+    assert (pilsner["style"], pilsner["style_inferred"]) == ("Pilsner", True)
+    yerevan = [r for (place, _), r in rows.items() if place == "yerevan-city"]
+    assert yerevan and all(r["beer_logo"].startswith("https://media.yerevan-city.am/") for r in yerevan if r["beer_logo"])
+    assert sum(1 for r in yerevan if r["beer_logo"]) > 0.9 * len(yerevan)
+    state = world.state()
+    assert "style" not in state.pairs["beer-city"]["n:hard root double ipa"].info      # the digest reads the pair
+    assert state.pairs["beer-city"]["n:hard root double ipa"].info["logo"] == hard_root["beer_logo"]
 
 
 # --- v1.1: venue meta / discovery -----------------------------------------------------
