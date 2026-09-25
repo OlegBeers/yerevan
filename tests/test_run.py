@@ -696,6 +696,26 @@ def test_beer_page_candidates_ask_for_a_country_once_per_brewery():
     assert keys == ["u:1"]          # Konix is known, and one Zagovor beer is enough
 
 
+def test_apply_untappd_country_by_beer_and_by_brewery_and_beats_the_shops_own():
+    state = empty_state(NOW)
+    state.pairs = {
+        "gargoyle": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu", "brewery": "Zagovor"}),
+                     "u:2": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu", "brewery": "Zagovor"}),
+                     "u:3": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu", "brewery": "Nobody"})},
+        "beer-city": {"n:x": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                     info={"kind": "shop", "name": "X", "country": "Russia"}),
+                      "n:y": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                     info={"kind": "shop", "name": "Y", "country": "Ukraine"})}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), country="Armenia")
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=1, matched_at=iso(NOW), via="local")
+    run_mod.apply_untappd_country(state)
+    assert state.pairs["gargoyle"]["u:1"].info["country"] == "Armenia"       # the beer's own page
+    assert state.pairs["gargoyle"]["u:2"].info["country"] == "Armenia"       # same brewery, another beer
+    assert "country" not in state.pairs["gargoyle"]["u:3"].info
+    assert state.pairs["beer-city"]["n:x"].info["country"] == "Armenia"      # matched shop row: Untappd wins
+    assert state.pairs["beer-city"]["n:y"].info["country"] == "Ukraine"      # unmatched: the shop's own stays
+
+
 def test_apply_known_beer_info_uses_the_cached_label_of_a_beer_page():
     state = empty_state(NOW)
     state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}

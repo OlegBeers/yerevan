@@ -585,6 +585,33 @@ def apply_shop_matches(state: State) -> None:
                 rec.info["u_brewery"] = match.brewery
 
 
+def apply_untappd_country(state: State) -> None:
+    """The country from an Untappd beer page onto every pair of that beer (a bar's own u: pair, or a
+    shop row matched to it) and onto other beers of the same brewery: it beats the shop's own
+    "Country of origin" text. Unmatched shop rows keep theirs.
+    shortcut: a match later blocked (untappd_id: null) leaves Untappd's country on that shop row until
+    the shop's own next page read; fine for a display-only field"""
+    by_brewery: dict[str, str] = {}
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            beer = state.beers.get(key)
+            if key.startswith("u:") and beer and beer.country and rec.info.get("brewery"):
+                by_brewery.setdefault(rec.info["brewery"], beer.country)
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            beer_key = key
+            if not key.startswith("u:"):
+                match = state.shop_matches.get(key)
+                if match is None or match.untappd_beer_id is None:
+                    continue
+                beer_key = f"u:{match.untappd_beer_id}"
+            beer = state.beers.get(beer_key)
+            country = (beer.country if beer else None) or by_brewery.get(
+                rec.info.get("u_brewery") or rec.info.get("brewery") or "")
+            if country and (key.startswith("u:") or beer_key != key):
+                rec.info["country"] = country
+
+
 def apply_known_beer_info(state: State) -> None:
     """A hand-entered Untappd beer borrows its label and rating from the same beer seen elsewhere
     (a menu, a check-in, a matched shop item) or from the cached beer page: nothing is fetched for
@@ -824,6 +851,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     outcome = merge_results(state, results, config, corrections, now)
     apply_shop_matches(state)   # v1.1 §3: overlay this run's (or an earlier) Untappd match onto shop rows
     apply_known_beer_info(state)   # hand-entered beers borrow label/rating from the same beer elsewhere
+    apply_untappd_country(state)   # Untappd's country (beer page / same brewery) beats a shop's own
     prune(state, now)
     update_alerts(alerter, state, outcome, client, load.errors)
     site_data = build_site_data(state, config, now)
