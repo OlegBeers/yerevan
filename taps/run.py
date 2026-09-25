@@ -261,6 +261,7 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
     Cloudflare error stops this step only, same client/pauses as the other Untappd sources. A page
     that doesn't come back parseable as a beer page is dumped for debugging (TAPS_DEBUG_DIR) --
     the cache is still stamped as checked, so it isn't refetched every run."""
+    sampled = False
     for key, url in _beer_rating_candidates(state, now):
         try:
             html = client.get(url)
@@ -272,6 +273,9 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
             data = None
         if not data or all(v is None for v in data.values()):
             dump_debug_html(f"untappd_beer_{key.removeprefix('u:')}", client)
+        elif not sampled:   # one parsed page per run: real markup to check parsers against, no extra page
+            dump_debug_html(f"untappd_beer_sample_{key.removeprefix('u:')}", client)
+            sampled = True
         beer = state.beers.setdefault(key, BeerRec(first_seen_city=iso(now)))
         if data:
             for field in ("rating", "style", "abv", "ibu"):
