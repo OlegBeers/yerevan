@@ -92,6 +92,14 @@ def test_russian_dictionary_keeps_the_wording_the_page_has_always_had():
         "count.some": "Показано {shown} из {total}", "banner.stale.at": "⚠️ Данные устарели: последнее обновление {dm} в {hm}.",
         "legend.star.since": "⭐ — возможно, впервые в Ереване (с тех пор, как следим, с {dm})",
         "place.ok": "проверено {when} в {hm}", "updated.hours": "обновлено {hours} ч назад",
+        "shop.name": "в магазине: {name}", "shop.in": "в магазине", "unit.ml": "мл", "style.inferred": "определено по названию",
+        "map.open": "Открыть на Яндекс Картах: {where}", "map.link": "на карте", "menu.on": "есть в меню",
+        "verified": "Верифицирован в Untappd", "appeared": "Появилось {date}", "venue.checkins": "{count} за 60 дней",
+        "container.draft": "розлив", "container.keg": "кег", "serving.Taster": "дегустационный", "serving.Cask": "из бочки",
+        "badge.manual.by": "со слов ({by})", "badge.seen.ago": "видели {ago}", "time.ago": "{days} назад",
+        "place.fail.days": "не удалось проверить {days}", "place.never": "ещё не проверялось",
+        "empty.filtered": "Ничего не нашлось — попробуйте другой запрос или фильтр.", "empty.none": "Пока пусто.",
+        "error.load": "Не удалось загрузить данные. Обновите страницу через минуту.",
     }.items():
         assert ru[key] == text, key
     assert ru["unit.day"] == {"one": "день", "few": "дня", "many": "дней"}
@@ -194,3 +202,35 @@ def test_the_script_initialises_the_language_before_it_loads_the_data():
     js = _js()
     start = js.rindex("ui.lang = initialLang();")
     assert start < js.rindex("applyLang();") < js.rindex("\nload();")
+
+
+def _code():
+    """The script without the dictionary and without COUNTRY_RU, the only places that may spell things in Russian."""
+    js = re.sub(r"^const I18N = \{\n.*?^\};$", "", _js(), flags=re.S | re.M)
+    return re.sub(r"const COUNTRY_RU = new Map\(Object\.entries\(\{.*?\}\)\);", "", js, flags=re.S)
+
+
+def test_no_cyrillic_is_left_in_the_script_outside_the_russian_dictionary_and_the_country_names():
+    """Interface text goes through t(); COUNTRY_RU is data (Russian names for the countries the shops write in English)."""
+    left = [line.strip() for line in _code().splitlines() if CYRILLIC.search(line)]
+    assert left == []
+
+
+def test_every_key_the_script_asks_for_is_defined_and_every_defined_key_is_used():
+    soup, ru, code = _soup(), _dictionaries()["ru"], _code()
+    asked = set(re.findall(r'\bt\("([\w.]+)"', code))                            # t("key"), t("key", {...})
+    asked |= set(re.findall(r'\bplural\([^,()]+, "([\w.]+)"\)', code))           # plural(n, "unit.day")
+    asked |= set(re.findall(r'"(th\.\w+)"', code))                               # the table's column list
+    for prefix in re.findall(r"\[`(\w+)\.\$\{", code):                           # I18N[ui.lang][`container.${value}`]
+        asked |= {key for key in ru if key.startswith(f"{prefix}.")}
+    for tag in soup.find_all(True):
+        asked |= {value for name, value in tag.attrs.items() if name.startswith("data-i18n")}
+    assert asked - set(ru) == set(), "asked for, but not in the dictionary"
+    assert set(ru) - asked == set(), "in the dictionary, but nothing uses it"
+
+
+def test_counted_words_take_their_form_from_the_languages_plural_rules():
+    js = _js()
+    assert re.search(r"const plural = \(n, key\) => t\(key\)\[new Intl\.PluralRules\(ui\.lang\)\.select\(n\)\];", js)
+    assert 'const days = (n) => `${n} ${plural(n, "unit.day")}`;' in js
+    assert not re.search(r"plural\([^)]*[Ѐ-ӿ]", js)                    # no Russian forms passed in by hand

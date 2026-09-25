@@ -310,7 +310,7 @@ def test_shop_name_line_shows_only_when_it_differs_from_the_displayed_name():
     """v1.2 review aid: `в магазине: <shop_name>` under the place, for every layout that draws a place line."""
     js = _js(_soup())
     line_fn = re.search(r"function shopNameLine\(r, name\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert "r.shop_name" in line_fn and "в магазине: " in line_fn
+    assert "r.shop_name" in line_fn and 't("shop.name", { name: r.shop_name })' in line_fn   # «в магазине: {name}», see test_site_i18n
     assert re.search(r"toLowerCase\(\)", line_fn) and r"\s" in line_fn   # case/space-insensitive comparison
     for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)"):
         body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
@@ -331,8 +331,8 @@ def test_several_servings_read_as_container_price_and_volume_joined_by_dots():
     """v1.3: «розлив 2800 ֏ · бутылка 1500 ֏ 330 мл» -- container, price, then volume; dots between servings."""
     js = _js(_soup())
     serving_fn = re.search(r"const servingText = .*", js).group(0)
-    assert "CONTAINER_RU[s.container]" in serving_fn and "priceText(s)" in serving_fn
-    assert "s.volume_ml" in serving_fn and "мл" in serving_fn
+    assert "containerText(s.container)" in serving_fn and "priceText(s)" in serving_fn
+    assert "s.volume_ml" in serving_fn and 't("unit.ml")' in serving_fn
     assert re.search(r'const servingsText = \(r\) => .*\.map\(servingText\)\.join\(" · "\)', js)
 
 
@@ -367,8 +367,10 @@ def test_country_reads_in_russian_for_the_countries_seen_and_as_the_shop_wrote_i
     for english, russian in (("Ukraine", "Украина"), ("Czech Republic", "Чехия"), ("Germany", "Германия"),
                              ("Belgium", "Бельгия"), ("Russia", "Россия"), ("Armenia", "Армения")):
         assert re.search(rf'"?{english}"?:\s*"{russian}"', table), english
-    # a Map, so a country called "constructor" cannot pick up an Object property; unknown ones stay as written
-    assert re.search(r'const countryText = \(r\) => COUNTRY_RU\.get\(r\.country\) \|\| r\.country \|\| ""', js)
+    # a Map, so a country called "constructor" cannot pick up an Object property; unknown ones stay as written,
+    # and in English every country stays as the shop wrote it
+    assert re.search(r'const countryText = \(r\) => \(ui\.lang === "ru" \? COUNTRY_RU\.get\(r\.country\) : null\) '
+                     r'\|\| r\.country \|\| ""', js)
 
 
 def test_country_follows_style_and_abv_in_a_card_and_the_brewery_in_a_table_row():
@@ -390,7 +392,7 @@ def test_a_style_guessed_from_the_name_is_set_apart_and_says_so():
     soup = _soup()
     js, css = _js(soup), _css(soup)
     style_fn = re.search(r"function styleNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert "g.style_inferred" in style_fn and '"inferred"' in style_fn and "определено по названию" in style_fn
+    assert "g.style_inferred" in style_fn and '"inferred"' in style_fn and 'title: t("style.inferred")' in style_fn
     assert re.search(r"\.inferred\s*\{[^}]*font-style:\s*italic", css)
     group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "style_inferred: r0.style_inferred" in group_fn          # travels with the style it belongs to
@@ -412,8 +414,8 @@ def test_the_map_link_is_a_safe_pin_plus_address_link_that_opens_yandex_maps_in_
     assert "safeUrl(place.map_url)" in fn                       # the same URL check as every other link
     assert "https:" in fn                                       # https only: an http link is dropped
     assert 'target: "_blank"' in fn and 'rel: "noopener noreferrer"' in fn
-    assert "Открыть на Яндекс Картах: ${place.address || place.name}" in fn
-    assert "pinIcon()" in fn and 'place.address || "на карте"' in fn    # the address is the link text; chains keep a button
+    assert 't("map.open", { where: place.address || place.name })' in fn     # «Открыть на Яндекс Картах: …», see test_site_i18n
+    assert "pinIcon()" in fn and 'place.address || t("map.link")' in fn     # the address is the link text; chains keep a button
     assert "null" in fn                                         # no map_url: no link
 
 

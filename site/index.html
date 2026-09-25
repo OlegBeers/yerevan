@@ -459,9 +459,8 @@ const I18N = {
   },
 };
 const LANGS = Object.keys(I18N);
-const CONTAINER_RU ={ can: "банка", bottle: "бутылка", keg: "кег", draft: "розлив" };
-const SERVING_RU = { Draft: "розлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
-// the shops write the country of production in English; a country not listed here is shown as written
+// the shops write the country of production in English; the Russian page names the ones listed here, and shows any other
+// country, and every country on the English page, as written
 const COUNTRY_RU = new Map(Object.entries({
   Armenia: "Армения", Georgia: "Грузия", Russia: "Россия", Ukraine: "Украина", Belarus: "Беларусь",
   "Czech Republic": "Чехия", Czechia: "Чехия", Germany: "Германия", Belgium: "Бельгия", Netherlands: "Нидерланды",
@@ -529,14 +528,10 @@ function parseTime(s) {
 function daysBetween(then, now) {  // calendar days in Yerevan
   return Math.max(0, Math.round((Date.parse(yerevan(now).ymd) - Date.parse(yerevan(then).ymd)) / 864e5));
 }
-function plural(n, one, few, many) {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-}
-const days = (n) => `${n} ${plural(n, "день", "дня", "дней")}`;
-const ago = (n) => (n === 0 ? "сегодня" : n === 1 ? "вчера" : `${days(n)} назад`);
+// the form of a counted word for n: the language's own plural rule picks one, few or many in Russian, one or other in English
+const plural = (n, key) => t(key)[new Intl.PluralRules(ui.lang).select(n)];
+const days = (n) => `${n} ${plural(n, "unit.day")}`;
+const ago = (n) => (n === 0 ? t("time.today") : n === 1 ? t("time.yesterday") : t("time.ago", { days: days(n) }));
 const dot = (parts) => parts.filter(Boolean).join(" · ");
 
 // Every value from data.json goes into the DOM as text, never as HTML.
@@ -573,7 +568,7 @@ function beerLogoNode(url) {
   return img;
 }
 function verifiedBadge() {
-  return el("span", { class: "verified", role: "img", "aria-label": "Верифицирован в Untappd", title: "Верифицирован в Untappd" }, "✓");
+  return el("span", { class: "verified", role: "img", "aria-label": t("verified"), title: t("verified") }, "✓");
 }
 function placeNameNode(place) {   // the address, when known, is the tooltip
   const url = safeUrl(place.untappd_url);
@@ -594,12 +589,12 @@ function pinIcon() {   // a map pin in currentColor
   svg.append(path, hole);
   return svg;
 }
-function mapLinkNode(place) {   // «pin + address» as one link to the place on Yandex Maps; «на карте» when there is no address
+function mapLinkNode(place) {   // "pin + address" as one link to the place on Yandex Maps; "on the map" when there is no address
   const url = safeUrl(place.map_url);
   return url && /^https:/i.test(url)
     ? el("a", { class: "map-link", href: url, target: "_blank", rel: "noopener noreferrer",
-        "aria-label": `Открыть на Яндекс Картах: ${place.address || place.name}` },
-      pinIcon(), el("span", null, place.address || "на карте"))
+        "aria-label": t("map.open", { where: place.address || place.name }) },
+      pinIcon(), el("span", null, place.address || t("map.link")))
     : null;
 }
 function placeObj(id) {
@@ -608,19 +603,22 @@ function placeObj(id) {
 
 const abvText = (r) => (r.abv != null ? `${r.abv}%` : "");
 const ibuText = (r) => (r.ibu != null ? `IBU ${r.ibu}` : "");
-const countryText = (r) => COUNTRY_RU.get(r.country) || r.country || "";
+const countryText = (r) => (ui.lang === "ru" ? COUNTRY_RU.get(r.country) : null) || r.country || "";
 const priceText = (r) => (r.price_amd != null ? `${r.price_amd} ֏` : "");
-const volumeText = (r) => [r.volume_ml != null ? `${r.volume_ml} мл` : "", CONTAINER_RU[r.container] || ""].filter(Boolean).join(" ");
-// several servings of one beer at one place, compactly: "розлив 2800 ֏ · бутылка 1500 ֏ 330 мл"
-const servingText = (s) => [CONTAINER_RU[s.container] || "", priceText(s), s.volume_ml != null ? `${s.volume_ml} мл` : ""].filter(Boolean).join(" ");
+// a container or serving the dictionary has no word for shows nothing, as it always has
+const containerText = (c) => I18N[ui.lang][`container.${c}`] || "";
+const servingLabel = (s) => I18N[ui.lang][`serving.${s}`] || "";
+const volumeText = (r) => [r.volume_ml != null ? `${r.volume_ml} ${t("unit.ml")}` : "", containerText(r.container)].filter(Boolean).join(" ");
+// several servings of one beer at one place, compactly: "draft 2800 ֏ · bottle 1500 ֏ 330 ml"
+const servingText = (s) => [containerText(s.container), priceText(s), s.volume_ml != null ? `${s.volume_ml} ${t("unit.ml")}` : ""].filter(Boolean).join(" ");
 const servingsText = (r) => (r.servings || []).map(servingText).join(" · ");
 const singleServing = (g) => g.rows.length === 1 && !g.rows[0].servings;   // only then price and size go next to the name
 function sinceText(s) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
   if (m) return `${m[3]}.${m[2]}`;
-  const t = parseTime(s);   // a full timestamp: Yerevan day and clock time
-  if (!t) return "";
-  const { dm, hm } = yerevan(t);
+  const time = parseTime(s);   // a full timestamp: Yerevan day and clock time
+  if (!time) return "";
+  const { dm, hm } = yerevan(time);
   return `${dm}, ${hm}`;
 }
 function iconSpan(icon) {
@@ -628,20 +626,20 @@ function iconSpan(icon) {
 }
 function badgeNodes(r) {
   switch (r.badge) {
-    case "menu": return [iconSpan("✅"), "меню"];
+    case "menu": return [iconSpan("✅"), t("badge.menu")];
     case "checkin": {
-      const seen = r.seen_days_ago == null ? "видели" : `видели ${ago(r.seen_days_ago)}`;
-      const serving = SERVING_RU[r.serving];
+      const seen = r.seen_days_ago == null ? t("badge.seen") : t("badge.seen.ago", { ago: ago(r.seen_days_ago) });
+      const serving = servingLabel(r.serving);
       return [iconSpan("👀"), serving ? `${serving}, ${seen}` : seen];
     }
-    case "manual": return [iconSpan("✍️"), r.by ? `со слов (${r.by})` : "со слов"];
-    case "shop": return [iconSpan("🛒"), "в магазине"];
+    case "manual": return [iconSpan("✍️"), r.by ? t("badge.manual.by", { by: r.by }) : t("badge.manual")];
+    case "shop": return [iconSpan("🛒"), t("shop.in")];
     default: return [];
   }
 }
 function flagNodes(r) {
   const flag = (label, sign) => [el("span", { class: "flag", role: "img", "aria-label": label, title: label }, sign), " "];
-  return [...(r.star ? flag("возможно, впервые в Ереване", "⭐") : []), ...(r.new ? flag("новинка за 7 дней", "🆕") : [])];
+  return [...(r.star ? flag(t("flag.star"), "⭐") : []), ...(r.new ? flag(t("flag.new"), "🆕") : [])];
 }
 function nameNode(r) {
   const url = safeUrl(r.url);
@@ -653,10 +651,10 @@ function shopLinkNode(r) {
   const safe = safeUrl(r.shop_url);
   if (!safe || safe === r.url) return null;   // matched to Untappd: url already points elsewhere
   return el("a", { class: "small", href: safe, target: "_blank", rel: "noopener noreferrer" },
-    iconSpan("🛒"), "в магазине");
+    iconSpan("🛒"), t("shop.in"));
 }
 function styleNode(g) {   // a style guessed from the beer's name (not from Untappd) is set apart and says so
-  return g.style && g.style_inferred ? el("span", { class: "inferred", title: "определено по названию" }, g.style) : g.style;
+  return g.style && g.style_inferred ? el("span", { class: "inferred", title: t("style.inferred") }, g.style) : g.style;
 }
 const smallNode = (text) => (text ? el("span", { class: "small" }, text) : null);
 function metaNode(parts) {   // "a · b · c" out of text and nodes, skipping the empty ones
@@ -667,8 +665,8 @@ function ratingNode(r) {
   if (r.rating == null) return null;
   const value = Number(r.rating).toFixed(2);
   return r.rating >= ui.data.hot_rating
-    ? el("span", { class: "hot", title: "рейтинг Untappd" }, iconSpan("🔥"), value)
-    : el("span", { title: "рейтинг Untappd" }, value);
+    ? el("span", { class: "hot", title: t("rating.title") }, iconSpan("🔥"), value)
+    : el("span", { title: t("rating.title") }, value);
 }
 
 function cmpDesc(a, b) {  // descending, empty values last
@@ -724,7 +722,7 @@ function visibleGroups() {
 
 function shopNameLine(r, name) {   // v1.2: what the shop calls a matched beer, when it differs from the displayed name
   const same = (a, b) => String(a).toLowerCase().replace(/\s+/g, "") === String(b).toLowerCase().replace(/\s+/g, "");
-  return r.shop_name && !same(r.shop_name, name) ? el("div", { class: "shop-name" }, `в магазине: ${r.shop_name}`) : null;
+  return r.shop_name && !same(r.shop_name, name) ? el("div", { class: "shop-name" }, t("shop.name", { name: r.shop_name })) : null;
 }
 function placeCell(r, name) {
   const place = placeObj(r.place_id);
@@ -742,7 +740,7 @@ function placeLines(rows, name) {   // one line per place a grouped beer is avai
     const extra = r.servings ? servingsText(r) : dot([priceText(r), volumeText(r)]);
     // the plain "on the menu" status is the common case: a tooltip icon saves a line, other statuses keep their text
     const status = r.badge === "menu"
-      ? el("span", { class: "flag", role: "img", "aria-label": "есть в меню", title: "есть в меню" }, "✅")
+      ? el("span", { class: "flag", role: "img", "aria-label": t("menu.on"), title: t("menu.on") }, "✅")
       : el("span", { class: "meta-inline" }, ...badgeNodes(r));
     return el("div", { class: "where" },
       logoNode(place.name, place.logo, 20),
@@ -755,9 +753,9 @@ function placeLines(rows, name) {   // one line per place a grouped beer is avai
   });
 }
 function table(groups) {
-  const heads = ["Пиво", "Стиль", "Крепость", "IBU", "Рейтинг", "Цена", "Где", "Появилось"];
-  const numeric = new Set(["Крепость", "IBU", "Рейтинг", "Цена"]);
-  const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: numeric.has(h) ? "num" : null }, h)));
+  const heads = ["th.beer", "th.style", "th.abv", "th.ibu", "th.rating", "th.price", "th.where", "th.since"];
+  const numeric = new Set(["th.abv", "th.ibu", "th.rating", "th.price"]);
+  const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: numeric.has(h) ? "num" : null }, t(h))));
   const body = groups.map((g) => el("tr", null,
     el("td", null,
       el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)),
@@ -792,15 +790,15 @@ function cards(groups) {
     singleServing(g) ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
     g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
     g.rows.length === 1 ? cardWhere(g.rows[0], g.name) : el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name)),
-    sinceText(g.since_at) ? el("div", { class: "meta" }, `Появилось ${sinceText(g.since_at)}`) : null)));
+    sinceText(g.since_at) ? el("div", { class: "meta" }, t("appeared", { date: sinceText(g.since_at) })) : null)));
 }
 function render() {
   if (!ui.data) return;
   const groups = visibleGroups();
   const total = groupBeers(ui.data.rows.filter(inSection)).length;
-  $("count").textContent = groups.length === total ? `Позиций: ${total}` : `Показано ${groups.length} из ${total}`;
+  $("count").textContent = groups.length === total ? t("count.all", { total }) : t("count.some", { shown: groups.length, total });
   if (!groups.length) {
-    $("rows").replaceChildren(el("p", { class: "empty" }, total ? "Ничего не нашлось — попробуйте другой запрос или фильтр." : "Пока пусто."));
+    $("rows").replaceChildren(el("p", { class: "empty" }, total ? t("empty.filtered") : t("empty.none")));
     return;
   }
   $("rows").replaceChildren(wide.matches ? table(groups) : cards(groups));
@@ -810,20 +808,21 @@ function placeStatus(p, now) {
   const lines = [];
   if (p.address) lines.push({ text: p.address, warn: false });
   const menu = parseTime(p.menu_updated_at);
-  if (menu) lines.push({ text: `меню обновлено ${ago(daysBetween(menu, now))}`, warn: false });
+  if (menu) lines.push({ text: t("place.menu", { ago: ago(daysBetween(menu, now)) }), warn: false });
   const ok = parseTime(p.last_ok);
   if (p.failing) {
     const n = Number(p.failing_days) || 0;
     lines.push({
       icon: "⚠️",
-      text: n > 0 ? `не удалось проверить ${days(n)}` : "последняя проверка не удалась",
+      text: n > 0 ? t("place.fail.days", { days: days(n) }) : t("place.fail"),
       warn: true,
     });
   } else if (ok) {
-    const n = daysBetween(ok, now), t = yerevan(ok);
-    lines.push({ text: `проверено ${n === 0 ? "сегодня" : n === 1 ? "вчера" : t.dm} в ${t.hm}`, warn: false });
+    const n = daysBetween(ok, now), at = yerevan(ok);
+    const when = n === 0 ? t("time.today") : n === 1 ? t("time.yesterday") : at.dm;
+    lines.push({ text: t("place.ok", { when, hm: at.hm }), warn: false });
   } else {
-    lines.push({ text: "ещё не проверялось", warn: false });
+    lines.push({ text: t("place.never"), warn: false });
   }
   return lines;
 }
@@ -840,7 +839,7 @@ function renderPlaces() {
     return button;
   };
   $("places").replaceChildren(
-    chip(null, el("b", null, "Все")),
+    chip(null, el("b", null, t("places.all"))),
     ...ui.data.places.filter((p) => ui.section === "all" || p.section === ui.section).map((p) => {
       // compact chip: one line; status goes to the tooltip, only a warning stays visible
       const status = placeStatus(p, now);
@@ -858,10 +857,10 @@ function venueNode(v) {
   return el("li", { class: "card" },
     el("div", { class: "top" },
       el("span", { class: "where-head" }, logoNode(v.name, v.logo, 28), placeNameNode(place)),
-      v.tracked ? el("span", { class: "tracked-badge" }, "в списке") : null),
+      v.tracked ? el("span", { class: "tracked-badge" }, t("venue.listed")) : null),
     mapLinkNode(place),
-    el("div", { class: "meta" }, `${v.checkins_30d} ${plural(v.checkins_30d, "чекин", "чекина", "чекинов")} за 60 дней`),
-    last ? el("div", { class: "meta" }, `последний ${yerevan(last).dm}`) : null);
+    el("div", { class: "meta" }, t("venue.checkins", { count: `${v.checkins_30d} ${plural(v.checkins_30d, "unit.checkin")}` })),
+    last ? el("div", { class: "meta" }, t("venue.last", { dm: yerevan(last).dm })) : null);
 }
 function renderVenues() {
   if (!ui.data) return;
@@ -871,19 +870,19 @@ function renderHeader() {
   const now = new Date();
   const generated = parseTime(ui.data.generated_at);
   const hours = generated ? Math.floor((now - generated) / 36e5) : null;
-  $("updated").textContent = generated == null ? "время обновления неизвестно"
-    : hours < 1 ? "обновлено меньше часа назад"
-    : hours < 48 ? `обновлено ${hours} ч назад`
-    : `обновлено ${days(Math.floor(hours / 24))} назад`;
+  $("updated").textContent = generated == null ? t("updated.unknown")
+    : hours < 1 ? t("updated.lt1h")
+    : hours < 48 ? t("updated.hours", { hours })
+    : t("updated.days", { days: days(Math.floor(hours / 24)) });
   const banner = $("stale-banner");
   banner.hidden = generated != null && hours < STALE_HOURS;
   if (generated) {
-    const t = yerevan(generated);
-    banner.textContent = `⚠️ Данные устарели: последнее обновление ${t.dm} в ${t.hm}.`;
+    const at = yerevan(generated);
+    banner.textContent = t("banner.stale.at", { dm: at.dm, hm: at.hm });
   }
   const started = parseTime(ui.data.started_at);
-  if (started) $("legend-star").textContent = `⭐ — возможно, впервые в Ереване (с тех пор, как следим, с ${yerevan(started).dm})`;
-  if (ui.data.hot_rating != null) $("legend-hot").textContent = `🔥 — рейтинг Untappd от ${ui.data.hot_rating}`;
+  if (started) $("legend-star").textContent = t("legend.star.since", { dm: yerevan(started).dm });
+  if (ui.data.hot_rating != null) $("legend-hot").textContent = t("legend.hot.from", { rating: ui.data.hot_rating });
 }
 function setSection(section) {
   ui.section = section;
