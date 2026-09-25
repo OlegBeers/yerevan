@@ -19,6 +19,7 @@ places:
     name: Gargoyle Bar
     kind: bar
     address: "Рафаэля Исраеляна 73"
+    map_url: "https://yandex.com/maps/org/gargoyle_kruzhok/84867664974/"
     enabled: true
     sources:
       untappd_menu: {slug: gargoyle-bar, venue_id: 12252462}
