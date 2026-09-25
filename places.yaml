@@ -8,6 +8,8 @@
 # id — строчная латиница, цифры и дефис. id существующего места не меняйте: бот примет его за новое.
 # Источники: untappd_menu и untappd_checkins {slug, venue_id}, buyam {url}, beercity / yerevan_city / parma {}.
 # Место с несколькими барами на Untappd: untappd_checkins: {venues: [{slug, venue_id, address}, ...]} — см. beer-academy.
+# Адрес: address: "Арама 72" (улица и номер, как пишут в Ереване) — на сайте у места появится адрес и кнопка 🗺 на Яндекс Картах.
+#   Без адреса кнопка ищет место по названию: сетям с несколькими точками (магазинам) адрес не нужен.
 # Объединение старого id места в новый: merged_from: [старый-id] — пары старого места молча переносятся в новое.
 # Пивоварни: list_enabled: true (список сортов, 🏭) — только после проверки на первом ручном прогоне.
 # Числа-названия ("379") и время ("17:00") пишите в кавычках.
@@ -16,6 +18,7 @@ places:
   - id: gargoyle
     name: Gargoyle Bar
     kind: bar
+    address: "Рафаэля Исраеляна 73"
     enabled: true
     sources:
       untappd_menu: {slug: gargoyle-bar, venue_id: 12252462}
@@ -23,6 +26,7 @@ places:
   - id: beatles
     name: Beatles Pub
     kind: bar
+    address: "Пушкина 60"
     enabled: true
     sources:
       untappd_menu: {slug: beatles-pub-yerevan, venue_id: 2162817}
@@ -30,6 +34,7 @@ places:
   - id: dargett-brewpub
     name: Dargett Brewpub
     kind: brewpub
+    address: "Арама 72"
     enabled: true
     brewery_id: 265165
     brewery_name: Dargett
@@ -40,6 +45,7 @@ places:
   - id: dors
     name: Dors Craft Beer & Kitchen
     kind: brewpub
+    address: "Амиряна 4/6"
     enabled: true
     brewery_id: 441775
     brewery_name: Dors
@@ -49,6 +55,7 @@ places:
   - id: pulpulak
     name: Pulpulak Craft Beer & Kitchen
     kind: brewpub
+    address: "Арама 2"
     enabled: true
     brewery_id: 573921
     brewery_name: Pulpulak
@@ -74,6 +81,7 @@ places:
     kind: brewpub
     # пивоварня-ресторан в австрийском стиле, Арама 48; собственный бренд на Untappd — "Alpenberg Yerevan",
     # brewery_id неизвестен, поэтому не указан
+    address: "Арама 48"
     enabled: true
     brewery_name: Alpenberg
     sources:
@@ -111,6 +119,7 @@ places:
     name: Ferment
     kind: bar
     # крафтовый бар на месте Vertigo (Teryan 65), 16 кранов
+    address: "Терьяна 65"
     enabled: true
     sources:
       untappd_checkins: {slug: ferment, venue_id: 13510969}
@@ -158,6 +167,7 @@ places:
   - id: shame
     name: Shame Bar
     kind: bar
+    address: "Хоренаци 2"
     enabled: true
     sources:
       untappd_checkins: {slug: shame-bar, venue_id: 9324104}
@@ -195,6 +205,7 @@ places:
     name: Houl
     kind: shop
     # магазин крафтового пива, Хоренаци 28 (в Untappd указан как коктейль-бар)
+    address: "Хоренаци 28"
     enabled: true
     sources:
       untappd_checkins: {slug: houl, venue_id: 9709804}
