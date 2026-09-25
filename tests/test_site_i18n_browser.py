@@ -666,6 +666,75 @@ def test_no_card_overflows_on_a_phone_however_long_the_name_or_the_english(open_
     assert problems == []
 
 
+TABLE_JS = """() => [...document.querySelectorAll('#rows tbody tr')].map((row) => {
+  const cell = (i) => row.children[i];
+  const rect = (e) => { const r = e.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height}; };
+  const chip = row.querySelector('.chip-rating');
+  return {
+    title: row.querySelector('.beer').textContent.trim(),
+    align: [3, 4, 5, 6].map((i) => getComputedStyle(cell(i - 1)).textAlign),
+    figures: [3, 4, 5, 6].map((i) => getComputedStyle(cell(i - 1)).fontVariantNumeric),
+    rating: chip ? rect(chip) : null,
+    price: [...cell(5).querySelectorAll('.chip-serving')].map(rect),
+    flagsIn: [...row.querySelectorAll('.chip-flag')].map((f) => f.closest('td').cellIndex),
+    head: row.querySelector('.place-block .pb-head') ? rect(row.querySelector('.place-block .pb-head')) : null,
+    name: row.querySelector('.place-block .pb-head').children[1].getBoundingClientRect().top,
+    source: row.querySelector('.place-block .chip-source') ? row.querySelector('.place-block .chip-source').getBoundingClientRect().top : null,
+    chips: [...row.querySelectorAll('.chip-serving, .chip-note, .chip-source')].map((c) => c.textContent).sort(),
+  };
+})"""
+
+
+def test_table_numbers_are_right_aligned_in_tabular_figures_and_chips_share_their_edge(open_page):
+    page, problems = open_page(layout_data(), width=1280)
+    rows = {row["title"]: row for row in page.evaluate(TABLE_JS)}
+    for row in rows.values():
+        assert row["align"] == ["right"] * 4 and all("tabular-nums" in f for f in row["figures"]), row["title"]
+    aligns = page.eval_on_selector_all("#rows thead th", "els => els.map((e) => getComputedStyle(e).textAlign)")
+    assert aligns == ["left", "left", "right", "right", "right", "right", "left", "left"]
+    rated = [row["rating"] for row in rows.values() if row["rating"]]
+    assert len(rated) >= 3 and len({round(r["right"], 1) for r in rated}) == 1                  # one right edge, one size
+    assert len({(round(r["width"], 1), round(r["height"], 1)) for r in rated}) == 1
+    priced = [row["price"][0] for row in rows.values() if row["price"]]
+    assert len(priced) >= 5 and len({round(p["right"], 1) for p in priced}) == 1
+    assert problems == []
+
+
+def test_a_table_place_block_keeps_its_source_on_the_line_of_the_place_name(open_page):
+    page, problems = open_page(layout_data(), width=1280)
+    rows = page.evaluate(TABLE_JS)
+    # a long "reported by ..." chip may wrap under the name in a tight column, as it does on a phone; the others never do
+    with_source = [row for row in rows if row["source"] is not None and row["title"] not in ("Friend Sour", "Anon Gose")]
+    assert len(with_source) >= 8
+    for row in with_source:
+        assert abs(row["source"] - row["head"]["top"]) < 12, row["title"]                        # beside the name, not wrapped under it
+        assert row["head"]["height"] < 34, row["title"]
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_the_flags_of_a_table_row_stand_beside_its_date_and_never_shift_the_name(open_page, lang):
+    page, problems = open_page(layout_data(), width=1280, query=f"?lang={lang}")
+    rows = {row["title"]: row for row in page.evaluate(TABLE_JS)}
+    assert rows["Test IPA"]["flagsIn"] == [7, 7] and rows["Fresh Unrated"]["flagsIn"] == [7]
+    assert rows["Dark Stout"]["flagsIn"] == []
+    lefts = page.eval_on_selector_all("#rows tbody tr .beer", "els => els.map((e) => e.getBoundingClientRect().left)")
+    assert len({round(left, 1) for left in lefts}) == 1                                          # every name starts in one place
+    assert problems == []
+
+
+def test_a_beer_carries_the_same_chips_in_the_table_and_in_its_card(open_page):
+    """The table and the cards say the same about a beer: same sources, same servings, same seen-when notes."""
+    wide, problems = open_page(layout_data(), width=1280)
+    in_table = {row["title"]: row["chips"] for row in wide.evaluate(TABLE_JS)}
+    narrow, more_problems = open_page(layout_data(), width=375)
+    in_cards = narrow.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#rows .card')].map((card) => [
+      card.querySelector('.card-name').textContent.trim(),
+      [...card.querySelectorAll('.chip-serving, .chip-note, .chip-source')].map((c) => c.textContent).sort()]))""")
+    assert in_table == in_cards and len(in_table) == 12
+    assert problems == [] and more_problems == []
+
+
 @pytest.mark.parametrize("lang", ["ru", "en"])
 def test_a_phone_needs_no_sideways_scrolling_in_either_language(open_page, lang):
     page, problems = open_page(width=375, query=f"?lang={lang}")

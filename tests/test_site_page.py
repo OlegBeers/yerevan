@@ -380,6 +380,33 @@ def test_card_and_chip_spacing_comes_from_the_scale():
                 assert False, f"{selector} {prop}: {value} is not on the scale"
 
 
+def test_table_numbers_line_up_on_the_right_in_tabular_figures():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    num = re.search(r"\.num\s*\{([^}]*)\}", css).group(1)
+    assert "text-align: right" in num and "font-variant-numeric: tabular-nums" in num
+    table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r'columnClass = \{ "th\.abv": "num", "th\.ibu": "num", "th\.rating": "num", "th\.price": "num"', table_fn)   # the headings too
+    assert re.search(r"td\.num \.chips\s*\{[^}]*flex-direction:\s*column[^}]*align-items:\s*flex-end", css)   # several servings, stacked on the right
+
+
+def test_a_table_row_reads_like_a_card_the_same_chips_in_the_same_style():
+    js = _js(_soup())
+    table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for part in ("thumbNode(g.beer_logo)", "ratingNode(g)", "servingChips(g.rows[0])", "placeBlock(r, g.name", "flagNodes(g)"):
+        assert part in table_fn, part
+    assert 'class: "beer-cell"' in table_fn                            # the photo beside the name and, under the name, the brewery
+    assert 'el("div", { class: "since" }, ...flagNodes(g), sinceText(g.since_at))' in table_fn   # the flags go with the date
+
+
+def test_the_beer_and_where_columns_have_room_for_a_name_and_for_a_place_block():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert '"th.beer": "col-beer"' in table_fn and '"th.where": "col-where"' in table_fn
+    assert re.search(r"\.col-beer\s*\{[^}]*min-width:\s*\d+rem", css) and re.search(r"\.col-where\s*\{[^}]*min-width:\s*\d+rem", css)
+
+
 def test_footer_sources_legend_and_credits():
     soup = _soup()
     footer = soup.find("footer")

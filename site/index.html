@@ -124,7 +124,7 @@
   .place b { font-size: .85rem; color: var(--text); font-weight: 600; white-space: nowrap; }
   .place .warn { color: var(--danger); }
   .place[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
-  .place-head, .where-head, .beer-head { display: inline-flex; align-items: center; gap: var(--s2); }
+  .place-head, .where-head { display: inline-flex; align-items: center; gap: var(--s2); }
   .logo { border-radius: 50%; object-fit: cover; vertical-align: middle; flex-shrink: 0; background: var(--surface-2); }
   .avatar {
     display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
@@ -143,10 +143,15 @@
   table { width: 100%; border-collapse: collapse; font-size: .92rem; }
   th {
     text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--muted); background: var(--surface-2); padding: 12px 14px; white-space: nowrap;
+    color: var(--muted); background: var(--surface-2); padding: var(--s3) var(--s2); white-space: nowrap;
   }
-  td { padding: 12px 14px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: normal; }
-  .num { text-align: right; white-space: nowrap; }
+  td { padding: var(--s3) var(--s2); border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: normal; }
+  .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.num .chips { flex-direction: column; align-items: flex-end; }   /* several servings stack on the right, like the price they carry */
+  .col-beer { min-width: 11rem; }
+  .col-where { min-width: 14rem; }
+  .beer-cell { display: flex; align-items: flex-start; gap: var(--s2); }
+  .since { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--s1); }   /* the flags go above the date when the column is tight */
   .nowrap { white-space: nowrap; }
   .beer { font-weight: 700; }
   .small { display: block; color: var(--muted); font-size: .82rem; }
@@ -757,19 +762,19 @@ function placeBlock(r, name, withServings = true) {   // one place a beer is at:
 }
 function table(groups) {
   const heads = ["th.beer", "th.style", "th.abv", "th.ibu", "th.rating", "th.price", "th.where", "th.since"];
-  const numeric = new Set(["th.abv", "th.ibu", "th.rating", "th.price"]);
-  const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: numeric.has(h) ? "num" : null }, t(h))));
+  const columnClass = { "th.abv": "num", "th.ibu": "num", "th.rating": "num", "th.price": "num",   // numbers on the right;
+    "th.beer": "col-beer", "th.where": "col-where" };                                             // room for a name and for a place block
+  const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: columnClass[h] }, t(h))));
   const body = groups.map((g) => el("tr", null,
-    el("td", null,
-      el("span", { class: "beer-head" }, thumbNode(g.beer_logo), nameNode(g)),
-      smallNode(dot([g.brewery, countryText(g)]))),
+    el("td", null, el("div", { class: "beer-cell" }, thumbNode(g.beer_logo),
+      el("div", null, nameNode(g), smallNode(dot([g.brewery, countryText(g)]))))),
     el("td", null, styleNode(g)),
     el("td", { class: "num" }, abvText(g)),
     el("td", { class: "num" }, g.ibu ?? ""),
     el("td", { class: "num" }, ratingNode(g)),
     el("td", { class: "num" }, g.rows.length === 1 ? chipsNode(servingChips(g.rows[0])) : null),
     el("td", null, el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name, g.rows.length > 1)))),
-    el("td", { class: "nowrap" }, ...flagNodes(g), sinceText(g.since_at))));
+    el("td", { class: "nowrap" }, el("div", { class: "since" }, ...flagNodes(g), sinceText(g.since_at)))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
 }
 function cardNode(g) {   // the same anatomy for every beer: header, meta line, a block per place, footer
