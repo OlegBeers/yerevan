@@ -146,6 +146,12 @@
   .field[aria-invalid="true"] { border-color: var(--danger); }
   .link-status { min-height: 1.55em; margin: 6px 0 0; color: var(--muted); }
   .link-status.bad { color: var(--danger); }
+  .out {
+    margin: 0 0 10px; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius); font: .82rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .out-title { font-size: .95rem; margin: 16px 0 4px; }
   .sheet-head { display: flex; align-items: center; gap: 8px 12px; }
   .sheet-head > span { flex: 1 1 auto; }
   .chips { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto; }
@@ -162,6 +168,7 @@
   @media (max-width: 640px) {
     .pair { grid-template-columns: 1fr; gap: 6px; }
     .arrow { transform: rotate(90deg); width: 1.3em; text-align: center; }
+    #output .act { width: 100%; }
   }
 </style>
 </head>
@@ -198,6 +205,18 @@
       <label for="untappd-link" class="field-label">Ссылка на пиво в Untappd</label>
       <input type="url" id="untappd-link" class="field" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://untappd.com/b/название/1941326" aria-describedby="link-status">
       <p id="link-status" class="link-status" role="status"></p>
+      <h2 class="step"><span class="num" aria-hidden="true">3</span>Готовый текст</h2>
+      <p id="output-hint" class="count"></p>
+      <div id="output" hidden>
+        <h3 class="out-title">Для corrections.yaml</h3>
+        <p class="small">Вставьте под <code>same_as:</code>. Если для позиции там уже есть запись — замените её.</p>
+        <pre id="yaml-out" class="out"></pre>
+        <button type="button" id="copy-yaml" class="act main">Скопировать для corrections.yaml</button>
+        <h3 class="out-title">Для Олега или Claude</h3>
+        <pre id="text-out" class="out"></pre>
+        <button type="button" id="copy-text" class="act">Скопировать для Олега/Claude</button>
+        <p id="merge-status" class="count" role="status"></p>
+      </div>
       <div id="sheet" tabindex="-1">
         <div class="sheet-head">
           <span>Выбрано: <b id="picked-count">0</b></span>
@@ -422,16 +441,21 @@ function fallbackCopy(text) {   // older browsers and non-secure origins have no
   area.remove();
   return ok;
 }
-async function copyMarked() {
-  const text = copyText();
-  let ok = false;
+async function clipboardCopy(text) {   // did it work?
   try {
     await navigator.clipboard.writeText(text);
-    ok = true;
+    return true;
   } catch (err) {
-    ok = fallbackCopy(text);
+    return fallbackCopy(text);
   }
+}
+async function copyMarked() {
+  const ok = await clipboardCopy(copyText());
   $("copy-status").textContent = ok ? "Скопировано — отправьте Олегу" : "Не удалось скопировать";
+}
+async function copyMerged(id, done) {
+  const ok = await clipboardCopy($(id).textContent);
+  $("merge-status").textContent = ok ? done : "Не удалось скопировать";
 }
 
 // «Объединить пиво»: the shop items the owner says are one Untappd beer, collected here into a block for corrections.yaml
@@ -485,6 +509,7 @@ function chipNode(it) {
 function pick(it, on) {
   if (on) ui.picked.set(idOf(it), it); else ui.picked.delete(idOf(it));
   renderPicked();
+  renderResult();
 }
 function renderResults() {
   const found = foundItems();
@@ -522,10 +547,30 @@ function renderLink() {
     el("a", { href: safeUrl(beerUrl(link.id)), target: "_blank", rel: "noopener noreferrer" }, "открыть на Untappd")]));
   return link;
 }
+// a JSON string is a valid double-quoted YAML scalar (\ and " escaped, Cyrillic kept); only what JSON leaves raw
+// and YAML refuses or reads as a line break (DEL, C1 controls, U+2028/9, U+FFFE/F) is written out as \uXXXX
+const yamlQuote = (s) => JSON.stringify(String(s)).replace(/[\u007f-\u009f\u2028\u2029\ufffe\uffff]/g,
+  (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+const mergeYaml = (items, id) => items
+  .map((it) => `  - place: ${yamlQuote(it.place_id)}\n    beer: ${yamlQuote(it.key)}\n    untappd_id: ${id}`).join("\n");
+const mergeText = (items, id) => items.map((it) => `${it.place_id} | ${it.key} | ${it.name} → ${beerUrl(id)}`).join("\n");
+function renderResult() {   // the two blocks appear once there is something to merge and a beer to merge it with
+  const link = renderLink();
+  const items = [...ui.picked.values()];
+  const ready = items.length > 0 && Boolean(link && link.id);
+  $("output").hidden = !ready;
+  $("output-hint").hidden = ready;
+  $("output-hint").textContent = items.length ? "Вставьте ссылку на пиво (шаг 2)." : "Отметьте хотя бы одну позицию (шаг 1).";
+  $("merge-status").textContent = "";   // a note about a copy says nothing about what is on screen now
+  if (ready) {
+    $("yaml-out").textContent = mergeYaml(items, link.id);
+    $("text-out").textContent = mergeText(items, link.id);
+  }
+}
 function renderMerge() {
   renderResults();
   renderPicked();
-  renderLink();
+  renderResult();
 }
 
 const LOAD_FAILED = "Не удалось загрузить данные. Обновите страницу через минуту.";
@@ -563,7 +608,9 @@ function setMode(mode) {
 $("mode-review").addEventListener("click", () => setMode("review"));
 $("mode-merge").addEventListener("click", () => setMode("merge"));
 $("pick-search").addEventListener("input", renderResults);
-$("untappd-link").addEventListener("input", renderLink);
+$("untappd-link").addEventListener("input", renderResult);
+$("copy-yaml").addEventListener("click", () => copyMerged("yaml-out", "Скопировано — вставьте под same_as: в corrections.yaml"));
+$("copy-text").addEventListener("click", () => copyMerged("text-out", "Скопировано — отправьте Олегу или Claude"));
 $("to-link").addEventListener("click", () => {
   $("step-link").scrollIntoView({ block: "start" });
   $("untappd-link").focus({ preventScroll: true });

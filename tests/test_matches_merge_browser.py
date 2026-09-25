@@ -5,13 +5,21 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import pytest
+import yaml
 
+from taps.corrections import parse_corrections
 from tests.test_site_i18n_browser import browser  # noqa: F401  (the shared fixture: a launched Chrome; the import skips this module without Playwright)
 
 PAGE = Path(__file__).resolve().parent.parent / "site" / "matches.html"
 ORIGIN = "https://taps.test"
 PIXEL = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
 LOGO = "https://img.test/label.png"
+PLACE_IDS = {"beer-city", "parma", "yerevan-city", "gargoyle"}
+BEER_LINK = "https://untappd.com/b/wolf-s-brewery-indian-pale-ale-ipa/1941326"
+NO_CLIPBOARD_API = """
+Object.defineProperty(navigator, 'clipboard', { value: undefined });
+document.addEventListener('copy', () => { const a = document.activeElement; window.copied = a.value.slice(a.selectionStart, a.selectionEnd); });
+"""
 
 
 def row(place_id, key, name, brewery=None, **kw):
@@ -27,6 +35,14 @@ WOLF_IPA_LIGHT = row("parma", "n:wolfs ipa light", "Wolfs Brewery IPA light", "�
 WOLF_APA_LIGHT = row("parma", "n:wolfs apa light", "Wolfs Brewery APA light", "ЗАО МПК", abv=5.5, price_amd=830)
 OTHER_LAGER = row("yerevan-city", "n:other lager", "Other Lager", "Some Brewery", abv=4.8)
 AT_A_BAR = row("gargoyle", "u:1561153", "Nepravilnyi Mead", "Wolf's Brewery (Волковская Пиваварня)")   # a bar's Untappd beer: no n: key
+
+
+# names and keys that would break a careless YAML block or the page's markup
+AWKWARD_ROWS = [
+    row("beer-city", "n:l'chaim: \"ipa\" \\ x # y", "L'Chaim: \"IPA\" \\ x # y", "Q"),
+    row("parma", "n:" + "очень" * 25, "Очень" * 25, "Пивоварня"),
+    row("parma", "n:<b>x</b> {a: [b]} - c", "<b>Bold</b> <img src=x onerror=alert(1)>", "<i>i</i>"),
+]
 
 
 def make_data(*extra_rows):
@@ -45,10 +61,13 @@ def open_page(browser):
     """open_page(...) -> (page, problems): matches.html loaded with its data, and the list that collects script errors."""
     contexts = []
 
-    def open_page(data=None, *, width=375, mode="review", dark=False, status=200):
+    def open_page(data=None, *, width=375, mode="review", dark=False, status=200, init_script=None):
         context = browser.new_context(viewport={"width": width, "height": 800}, color_scheme="dark" if dark else "light")
         context.set_default_timeout(5000)   # everything is served from memory: a broken page should fail fast
         contexts.append(context)
+        context.grant_permissions(["clipboard-read", "clipboard-write"], origin=ORIGIN)
+        if init_script:
+            context.add_init_script(init_script)
         page = context.new_page()
         problems = []
         page.on("pageerror", lambda error: problems.append(str(error)))
@@ -196,6 +215,8 @@ def test_a_phone_needs_no_sideways_scrolling_even_with_names_that_never_break(op
     page, problems = open_page(make_data(row("parma", f"n:{long_name.lower()}", long_name, long_name)), mode="merge")
     page.fill("#pick-search", "оченьдлинное")
     page.click("#pick-list .pick")
+    page.fill("#untappd-link", BEER_LINK)
+    assert page.is_visible("#yaml-out") and long_name.lower() in page.text_content("#yaml-out")
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert problems == []
 
@@ -277,3 +298,144 @@ def test_a_failed_load_is_said_in_both_panels(open_page):
     assert text(page, "#pick-list") == "Не удалось загрузить данные. Обновите страницу через минуту."
     page.click("#mode-review")
     assert text(page, "#list") == "Не удалось загрузить данные. Обновите страницу через минуту."
+
+
+def ready(page, link=BEER_LINK):
+    """Two items picked (the unlinked Parma one first) and the beer's link typed in."""
+    page.fill("#pick-search", "wolf ipa")
+    page.click("#pick-list li:nth-child(1) .pick")
+    page.click("#pick-list li:nth-child(2) .pick")
+    page.fill("#untappd-link", link)
+
+
+def copied_status(page):
+    page.wait_for_function("document.getElementById('merge-status').textContent !== ''")
+    return text(page, "#merge-status")
+
+
+AWKWARD_TEXTS = [
+    "n:волковская пиваварня indian pale ale ipa", "n:l'chaim: \"ipa\" \\ x # y", "n:a\\\"b", "n:\\", "n:\"", "n:'",
+    "n:- not a list: [x, {y}] & *z !t %p @q `r | > ? # c", "  padded  ", "tab\there", "line\nbreak", "cr\r\nlf",
+    "n:\u0085\u2028\u2029 separators", "n:🍺 emoji ёж ß Ω", "n:null", "n:yes", "n:123", "n:~", "true", "", "\x7f\x1b",
+]
+
+
+@pytest.mark.parametrize("value", AWKWARD_TEXTS)
+def test_a_value_is_written_as_a_double_quoted_yaml_string_that_reads_back_as_it_was(open_page, value):
+    page, problems = open_page(mode="merge")
+    quoted = page.evaluate("(v) => yamlQuote(v)", value)
+    assert quoted.startswith('"') and quoted.endswith('"') and "\n" not in quoted
+    assert yaml.safe_load(f"key: {quoted}") == {"key": value}
+    assert problems == []
+
+
+def test_nothing_is_offered_to_copy_until_there_are_items_and_a_beer(open_page):
+    page, problems = open_page(mode="merge")
+    assert text(page, "#output-hint") == "Отметьте хотя бы одну позицию (шаг 1)." and not page.is_visible("#output")
+    page.fill("#untappd-link", BEER_LINK)      # a beer, no items
+    assert text(page, "#output-hint") == "Отметьте хотя бы одну позицию (шаг 1)." and not page.is_visible("#output")
+    page.click("#pick-list .pick")
+    assert not page.is_visible("#output-hint") and page.is_visible("#output")
+    page.fill("#untappd-link", "https://untappd.com/brewery/1")    # items, a link that is no beer
+    assert text(page, "#output-hint") == "Вставьте ссылку на пиво (шаг 2)." and not page.is_visible("#output")
+    page.fill("#untappd-link", "")
+    assert text(page, "#output-hint") == "Вставьте ссылку на пиво (шаг 2)." and not page.is_visible("#output")
+    page.fill("#untappd-link", "1941326")
+    assert page.is_visible("#output")
+    page.click("#picked-list .chip-x")                                # the last item taken back
+    assert text(page, "#output-hint") == "Отметьте хотя бы одну позицию (шаг 1)." and not page.is_visible("#output")
+    assert problems == []
+
+
+def test_one_yaml_entry_and_one_line_of_text_per_item_in_the_order_they_were_picked(open_page):
+    page, problems = open_page(mode="merge")
+    ready(page)
+    assert page.text_content("#yaml-out") == (
+        '  - place: "parma"\n'
+        '    beer: "n:wolfs ipa light"\n'
+        '    untappd_id: 1941326\n'
+        '  - place: "beer-city"\n'
+        '    beer: "n:волковская пиваварня indian pale ale ipa"\n'
+        '    untappd_id: 1941326')
+    assert page.text_content("#text-out") == (
+        "parma | n:wolfs ipa light | Wolfs Brewery IPA light → https://untappd.com/beer/1941326\n"
+        "beer-city | n:волковская пиваварня indian pale ale ipa | Волковская пиваварня Indian Pale Ale Ipa"
+        " → https://untappd.com/beer/1941326")
+    page.click("#picked-list li:nth-child(1) .chip-x")                  # taking one back, or changing the beer, rewrites both
+    page.fill("#untappd-link", "untappd.com/beer/777")
+    assert page.text_content("#yaml-out") == (
+        '  - place: "beer-city"\n'
+        '    beer: "n:волковская пиваварня indian pale ale ipa"\n'
+        '    untappd_id: 777')
+    assert page.text_content("#text-out").endswith(" → https://untappd.com/beer/777") and "\n" not in page.text_content("#text-out")
+    assert problems == []
+
+
+def test_the_block_is_read_by_the_bot_as_same_as_entries_even_for_awkward_names_and_keys(open_page):
+    data = make_data(*AWKWARD_ROWS)
+    page, problems = open_page(data, mode="merge")
+    for card in page.locator("#pick-list .pick").all():
+        card.click()
+    assert page.locator("#picked-list .chip").count() == 7
+    page.fill("#untappd-link", BEER_LINK)
+    raw = yaml.safe_load("same_as:\n" + page.text_content("#yaml-out"))     # what corrections.yaml becomes once it is pasted under same_as:
+    corrections, errors = parse_corrections(raw, PLACE_IDS)
+    shop_rows = [r for r in data["rows"] if r["beer_key"].startswith("n:")]
+    assert errors == [] and len(shop_rows) == 7
+    assert corrections.same_as == {(r["place_id"], r["beer_key"]): 1941326 for r in shop_rows}
+    lines = page.text_content("#text-out").split("\n")
+    assert len(lines) == 7 and all(line.endswith(" → https://untappd.com/beer/1941326") for line in lines)
+    assert problems == []
+
+
+def test_names_are_shown_as_text_never_as_markup(open_page):
+    page, problems = open_page(make_data(*AWKWARD_ROWS), mode="merge")
+    page.fill("#pick-search", "bold")
+    page.click("#pick-list .pick")
+    page.fill("#untappd-link", BEER_LINK)
+    assert page.locator("#merge b:not(#picked-count), #merge i, #merge img[onerror]").count() == 0
+    assert "<b>Bold</b> <img src=x onerror=alert(1)>" in page.text_content("#picked-list")
+    assert "<b>Bold</b> <img src=x onerror=alert(1)>" in page.text_content("#text-out")
+    assert problems == []
+
+
+def test_each_block_has_its_own_copy_button_and_says_what_was_copied(open_page):
+    page, problems = open_page(mode="merge")
+    ready(page)
+    assert text(page, "#copy-yaml") == "Скопировать для corrections.yaml" and text(page, "#copy-text") == "Скопировать для Олега/Claude"
+    page.click("#copy-yaml")
+    assert copied_status(page) == "Скопировано — вставьте под same_as: в corrections.yaml"
+    assert page.evaluate("navigator.clipboard.readText()") == page.text_content("#yaml-out")
+    page.click("#pick-list li:nth-child(1) .pick")                      # what is on screen changed: the old note goes
+    assert text(page, "#merge-status") == ""
+    page.click("#copy-text")
+    assert copied_status(page) == "Скопировано — отправьте Олегу или Claude"
+    assert page.evaluate("navigator.clipboard.readText()") == page.text_content("#text-out")
+    assert min(size(page, "#copy-yaml")[1], size(page, "#copy-text")[1]) >= 44
+    assert problems == []
+
+
+def test_without_the_clipboard_api_a_hidden_textarea_does_the_copying(open_page):
+    page, problems = open_page(mode="merge", init_script=NO_CLIPBOARD_API)
+    ready(page)
+    page.click("#copy-text")
+    assert copied_status(page) == "Скопировано — отправьте Олегу или Claude"
+    assert page.evaluate("window.copied") == page.text_content("#text-out")
+    assert page.locator("textarea").count() == 0                        # the helper cleans up after itself
+    page.evaluate("document.execCommand = () => false")                # and when even that is refused, the page says so
+    page.click("#copy-yaml")
+    page.wait_for_function("document.getElementById('merge-status').textContent.startsWith('Не')")
+    assert text(page, "#merge-status") == "Не удалось скопировать"
+    assert problems == []
+
+
+def test_the_review_lists_copy_button_still_puts_the_marked_lines_on_the_clipboard(open_page):
+    page, problems = open_page()
+    page.click("#list .verdict .bad input")
+    page.click("#copy")
+    page.wait_for_function("document.getElementById('copy-status').textContent !== ''")
+    assert text(page, "#copy-status") == "Скопировано — отправьте Олегу"
+    assert page.evaluate("navigator.clipboard.readText()") == (
+        "beer-city | n:волковская пиваварня indian pale ale ipa | Волковская пиваварня Indian Pale Ale Ipa"
+        " → Wolf IPA (https://untappd.com/beer/1941326)")
+    assert problems == []

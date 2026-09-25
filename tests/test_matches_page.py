@@ -216,3 +216,24 @@ def test_the_untappd_link_field_is_a_big_url_field_and_the_number_is_read_with_a
     fn = re.search(r"function renderLink\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "safeUrl(" in fn and "noopener" in fn and "noreferrer" in fn      # the link to the beer goes through the same checks
     assert soup.find(id="to-link").name == "button" and "Дальше" in soup.find(id="to-link").get_text()
+
+
+def test_two_copy_buttons_give_the_yaml_block_and_the_plain_text_and_both_wrap_long_lines():
+    soup = _soup()
+    assert soup.find(id="copy-yaml").get_text(strip=True) == "Скопировать для corrections.yaml"
+    assert soup.find(id="copy-text").get_text(strip=True) == "Скопировать для Олега/Claude"
+    for element_id in ("copy-yaml", "copy-text"):
+        assert soup.find(id=element_id).name == "button" and soup.find(id=element_id)["type"] == "button"
+    for element_id in ("yaml-out", "text-out"):
+        assert soup.find(id=element_id).name == "pre"
+    assert soup.find(id="merge-status")["role"] == "status"
+    css = _css(soup)
+    assert re.search(r"\.out\s*\{[^}]*white-space:\s*pre-wrap[^}]*overflow-wrap:\s*anywhere", css, re.S)   # long Cyrillic keys wrap on a phone
+    js = _js(soup)
+    assert "JSON.stringify" in re.search(r"const yamlQuote = (.*?);\n", js, re.S).group(1)   # a JSON string is a YAML double-quoted scalar
+    fn = re.search(r"const mergeText = (.*?);\n", js, re.S).group(1)
+    assert re.search(r"\$\{it\.place_id\} \| \$\{it\.key\} \| \$\{it\.name\} → \$\{beerUrl\(id\)\}", fn)
+    assert 'join("\\n")' in fn
+    assert js.count("navigator.clipboard.writeText") == js.count("async function clipboardCopy") + 1   # one helper, plus the old transfer link
+    assert "clipboardCopy(" in re.search(r"async function copyMarked\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "clipboardCopy(" in re.search(r"async function copyMerged\(.*?\)\s*\{(.*?)\n\}", js, re.S).group(1)
