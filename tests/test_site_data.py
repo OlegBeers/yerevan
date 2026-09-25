@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
+from urllib.parse import parse_qs, urlsplit
 
 from taps.config import Config, Place, Settings
 from taps.site_data import build_site_data, write_site_data
@@ -8,6 +9,7 @@ from taps.timeutil import iso
 
 NOW = datetime(2026, 10, 10, 12, 0, tzinfo=timezone.utc)  # 16:00 in Yerevan
 STARTED = "2026-09-20T10:00:00+00:00"
+YEREVAN = "%D0%95%D1%80%D0%B5%D0%B2%D0%B0%D0%BD%2C%20"   # "Ереван, " percent-encoded: the city leads every map search
 
 GARGOYLE = Place(id="gargoyle", name="Gargoyle Bar", kind="bar",
                  sources={"untappd_menu": {"slug": "gargoyle", "venue_id": 1},
@@ -286,7 +288,8 @@ def test_places_status():
         "id": "gargoyle", "name": "Gargoyle Bar", "kind": "bar", "section": "bars",
         "last_ok": ago(0.2), "menu_updated_at": "2026-10-08T09:00:00+00:00",
         "failing": False, "failing_days": 0,
-        "logo": None, "verified": False, "untappd_url": None, "addresses": []}
+        "logo": None, "verified": False, "untappd_url": None, "address": None,
+        "map_url": f"https://yandex.com/maps/?text={YEREVAN}Gargoyle%20Bar&z=16"}
     assert (places["dors"]["failing"], places["dors"]["failing_days"]) == (True, 3)
     assert places["dors"]["menu_updated_at"] is None
     # never succeeded: days counted from started_at
@@ -327,21 +330,69 @@ def test_place_carries_venue_logo_and_verified_from_state():
     assert places["gargoyle"] == {
         "logo": "https://x/logo.jpg", "verified": True, "untappd_url": "https://untappd.com/v/gargoyle/1",
         "id": "gargoyle", "name": "Gargoyle Bar", "kind": "bar", "section": "bars",
-        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0, "addresses": []}
+        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0, "address": None,
+        "map_url": f"https://yandex.com/maps/?text={YEREVAN}Gargoyle%20Bar&z=16"}
     assert places["parma"] == {
         "logo": None, "verified": False, "untappd_url": None,
         "id": "parma", "name": "Парма", "kind": "shop", "section": "shops",
-        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0, "addresses": []}
+        "last_ok": None, "menu_updated_at": None, "failing": False, "failing_days": 0, "address": None,
+        "map_url": f"https://yandex.com/maps/?text={YEREVAN}%D0%9F%D0%B0%D1%80%D0%BC%D0%B0&z=16"}
 
 
-def test_place_carries_addresses_of_a_multi_venue_place():
+def places_of(*places: Place) -> dict:
+    config = Config(places={p.id: p for p in places}, breweries=(), settings=Settings())
+    return {p["id"]: p for p in build_site_data(state({}), config, NOW)["places"]}
+
+
+def map_query(url: str) -> dict:
+    """A Yandex Maps link taken apart: the origin and path, and the decoded query parameters."""
+    parts = urlsplit(url)
+    return {"origin": f"{parts.scheme}://{parts.netloc}{parts.path}", **{k: v[0] for k, v in parse_qs(parts.query).items()}}
+
+
+def test_place_carries_its_address_and_a_yandex_maps_search_for_it():
+    dargett = Place(id="dargett", name="Dargett Brewpub", kind="brewpub", address="Арама 72",
+                    sources={"untappd_checkins": {"slug": "dargett", "venue_id": 3}})
+    place = places_of(dargett)["dargett"]
+    assert place["address"] == "Арама 72"
+    # the city goes first; z=16 zooms a single address in to street level (Yandex ignores it for a list of results)
+    assert place["map_url"] == f"https://yandex.com/maps/?text={YEREVAN}%D0%90%D1%80%D0%B0%D0%BC%D0%B0%2072&z=16"
+    assert map_query(place["map_url"]) == {"origin": "https://yandex.com/maps/", "text": "Ереван, Арама 72", "z": "16"}
+
+
+def test_place_without_an_address_is_searched_on_the_map_by_its_name():
+    """The button still works for a chain or a place nobody has an address for: Yandex lists the branches."""
+    shop = places_of(BEER_CITY)["beer-city"]
+    assert shop["address"] is None
+    assert map_query(shop["map_url"])["text"] == "Ереван, Beer City"
+
+
+def test_map_search_is_percent_encoded_so_a_slash_or_ampersand_cannot_split_the_query():
+    dors = Place(id="dors", name="Dors Craft Beer & Kitchen", kind="brewpub", address="Амиряна 4/6",
+                 sources={"untappd_checkins": {"slug": "dors", "venue_id": 2}})
+    nameless = Place(id="dors2", name="Dors Craft Beer & Kitchen", kind="brewpub",
+                     sources={"untappd_checkins": {"slug": "dors2", "venue_id": 4}})
+    places = places_of(dors, nameless)
+    assert map_query(places["dors"]["map_url"])["text"] == "Ереван, Амиряна 4/6"
+    assert "%2F" in places["dors"]["map_url"] and "/6" not in places["dors"]["map_url"]
+    assert map_query(places["dors2"]["map_url"])["text"] == "Ереван, Dors Craft Beer & Kitchen"
+    assert "%26" in places["dors2"]["map_url"] and "&Kitchen" not in places["dors2"]["map_url"]
+
+
+def test_place_with_several_addresses_shows_them_all_and_is_searched_by_name():
+    """A multi-venue place: one address query would find one branch, the name lists them all."""
     ba = Place(id="beer-academy", name="Beer Academy", kind="brewpub", sources={"untappd_checkins": {
         "venues": [{"slug": "beer-academy", "venue_id": 1, "address": "Московян 8"},
                    {"slug": "beer-academy-ethnograph", "venue_id": 2, "address": "Абовяна 10"}],
     }})
-    config = Config(places={"beer-academy": ba}, breweries=(), settings=Settings())
-    places = {p["id"]: p for p in build_site_data(state({}), config, NOW)["places"]}
-    assert places["beer-academy"]["addresses"] == ["Московян 8", "Абовяна 10"]
+    place = places_of(ba)["beer-academy"]
+    assert place["address"] == "Московян 8, Абовяна 10"
+    assert map_query(place["map_url"])["text"] == "Ереван, Beer Academy"
+
+
+def test_a_place_carries_a_map_link_whatever_its_kind():
+    places = places_of(GARGOYLE, DORS, BEER_CITY, PARMA)
+    assert all(map_query(p["map_url"])["origin"] == "https://yandex.com/maps/" for p in places.values())
 
 
 def test_venues_list_sorted_by_checkins_then_name():
@@ -360,10 +411,29 @@ def test_venues_list_sorted_by_checkins_then_name():
         "venue_id": 99, "name": "KER U SUS", "url": "https://untappd.com/v/ker-u-sus/99",
         "logo": None, "verified": False, "checkins_30d": 3, "last_checkin": ago(1),
         "tracked": False, "place_id": None,
+        "address": None, "map_url": f"https://yandex.com/maps/?text={YEREVAN}KER%20U%20SUS&z=16",
     }
     gargoyle = venues[1]
     assert (gargoyle["venue_id"], gargoyle["checkins_30d"], gargoyle["tracked"], gargoyle["place_id"]) == (
         1, 2, True, "gargoyle")
+
+
+def test_a_tracked_venue_takes_its_address_and_map_link_from_its_place():
+    dargett = Place(id="dargett", name="Dargett Brewpub", kind="brewpub", address="Арама 72",
+                    sources={"untappd_checkins": {"slug": "dargett-brewpub", "venue_id": 3}})
+    config = Config(places={"dargett": dargett}, breweries=(), settings=Settings())
+    st = state({}, venues={"3": VenueRec(name="Dargett Brewpub Yerevan", url="https://untappd.com/v/dargett-brewpub/3",
+                                         checkins=[{"id": 1, "at": ago(1)}])})
+    venue = build_site_data(st, config, NOW)["venues"][0]
+    assert (venue["tracked"], venue["place_id"], venue["address"]) == (True, "dargett", "Арама 72")
+    assert venue["map_url"] == places_of(dargett)["dargett"]["map_url"]
+
+
+def test_a_tracked_venue_without_an_address_is_searched_by_its_places_name():
+    st = state({}, venues={"1": VenueRec(name="Gargoyle Bar Yerevan", url="u1", checkins=[{"id": 1, "at": ago(1)}])})
+    venue = build(st)["venues"][0]
+    assert venue["address"] is None
+    assert map_query(venue["map_url"])["text"] == "Ереван, Gargoyle Bar"        # the place's name, not Untappd's
 
 
 def test_venues_list_ties_break_by_name():

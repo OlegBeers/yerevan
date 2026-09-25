@@ -3,6 +3,7 @@ import json
 import re
 from datetime import date, datetime
 from pathlib import Path
+from urllib.parse import quote, urlencode
 
 from taps.config import Config, Place
 from taps.model import SOURCE_KINDS
@@ -19,6 +20,7 @@ INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_
 
 
 MATCH_VIA_ORDER = {"search": 0, "local": 1, "manual": 2}   # review page: least trustworthy first
+YANDEX_MAPS = "https://yandex.com/maps/"
 
 UNTAPPD_BEER_RE = re.compile(r"untappd\.com/(?:b/[^/?#]+|beer)/(\d+)")
 GLASS_BOTTLE_RE = re.compile(r" g b$")   # Yerevan City appends "G/B" to titles; the key normalizer leaves "g b"
@@ -40,6 +42,15 @@ def _latest(values) -> str | None:
     return max(values, key=parse_iso) if values else None
 
 
+def _location(name: str, addresses: list[str]) -> dict:
+    """Where a place is, for the site: its address text and a Yandex Maps search for it. A single address is
+    searched as such (z=16 zooms it in to street level; Yandex ignores z for a list of results); no address on
+    file, or several branches, is searched by name, which lists every branch."""
+    where = addresses[0] if len(addresses) == 1 else name
+    query = urlencode({"text": f"Ереван, {where}", "z": 16}, quote_via=quote)
+    return {"address": ", ".join(addresses) or None, "map_url": f"{YANDEX_MAPS}?{query}"}
+
+
 def _place(place: Place, state: State, now: datetime) -> dict:
     recs = [state.sources[k] for k in place.source_keys() if k in state.sources]  # never create records
     last_ok = _latest(r.last_ok for r in recs)
@@ -55,7 +66,7 @@ def _place(place: Place, state: State, now: datetime) -> dict:
         "logo": venue.logo if venue else None,
         "verified": venue.verified if venue else False,
         "untappd_url": venue.url if venue else None,
-        "addresses": place.addresses,
+        **_location(place.name, place.addresses),
     }
 
 
@@ -75,10 +86,13 @@ def _venues(state: State, config: Config, now: datetime) -> list[dict]:
         recent = [c for c in rec.checkins if age_days(parse_iso(c["at"]), now) <= VENUE_KEEP_DAYS]
         if not recent:
             continue
+        place = config.places.get(tracked.get(vid))   # None for a venue we do not track
+        name, addresses = (place.name, place.addresses) if place else (rec.name, [])
         out.append({
             "venue_id": vid, "name": rec.name, "url": rec.url, "logo": rec.logo, "verified": rec.verified,
             "checkins_30d": len(recent), "last_checkin": max(c["at"] for c in recent),
             "tracked": vid in tracked, "place_id": tracked.get(vid),
+            **_location(name, addresses),
         })
     out.sort(key=lambda v: (-v["checkins_30d"], v["name"]))
     return out
