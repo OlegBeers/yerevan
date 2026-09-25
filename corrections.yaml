@@ -27,6 +27,87 @@
 #   Если в названии есть стиль (IPA, Stout, Porter…), пиво показывается всё равно.
 
 sightings:
+  # Ferment: доска кранов из Instagram-сторис бара, 24.09
+  - place: ferment
+    brewery: "Two Hills"
+    beer: "Nitro Lager"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Dahook"
+    beer: "Hell"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Dahook"
+    beer: "Red IPA"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "DAB"
+    beer: "Dortmunder Export"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok"
+    beer: "Лихо (грейпфрут)"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewmen"
+    beer: "Пряный мёд"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "379"
+    beer: "Weizen"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok"
+    beer: "Wild Ale Blueberry"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Bullevie"
+    beer: "Semi Sweet"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "379"
+    beer: "Barleywine"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Double Hazy"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Punk IPA"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Baladin"
+    beer: "4.8"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Rodenbach"
+    beer: "Fruitage"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Ballantine"
+    beer: "Stout"
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brugse Zot"
+    beer: "Blonde"
+    by: Instagram бара
+    date: 2026-09-24
 
 hide:
 
