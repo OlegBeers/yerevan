@@ -386,3 +386,24 @@ def test_a_whole_board_entered_by_hand_is_one_line_about_the_place():
 def test_a_few_manual_entries_are_listed_one_by_one():
     d = build_digest(full_state(), CONFIG, SETTINGS, NOW)
     assert "Hazy Pale" in d.html and "обновился список" not in d.html
+
+
+def test_a_beer_with_several_servings_is_announced_by_its_first_one_as_before():
+    """The digest stays keyed by pair and unchanged for single-serving beers; extra servings show on the site only."""
+    servings = [{"container": "draft", "price_amd": 2300, "volume_ml": 500},
+                {"container": "bottle", "price_amd": 1500, "volume_ml": 330}]
+
+    def digest_with(**extra):
+        st = new_state(pairs={
+            "gargoyle": {"u:1": pair(yv(24, 10), kind="menu", brewery="Zagovor", name="Black Sails", rating=3.9,
+                                     container="draft", price_amd=2300, volume_ml=500, **extra)},
+            "tap-station": {"n:379 hazy pale": pair(yv(24, 14), kind="manual", brewery="379", name="Hazy Pale",
+                                                    container="draft", price_amd=1900, manual_id="m1",
+                                                    manual_by="Аня", **extra)},
+        })
+        return build_digest(st, CONFIG, SETTINGS, NOW)
+
+    several, single = digest_with(servings=servings), digest_with()
+    assert several.html == single.html
+    assert "Zagovor — Black Sails · 🔥3.90 · 2300 ֏" in several.html and "1500 ֏" not in several.html   # first price only
+    assert (several.lines_total, several.pairs, several.manual_ids) == (2, single.pairs, ["m1"])
