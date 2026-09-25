@@ -353,3 +353,18 @@ def test_shop_with_untappd_checkins_source_is_valid(tmp_path):
     assert houl.kind == "shop"
     assert houl.venue_id == 9709804
     assert not houl.has_menu
+
+
+def test_map_url_must_be_a_yandex_maps_https_link(tmp_path):
+    import pytest
+    from taps.config import ConfigError, load_config
+    def load(link):
+        f = tmp_path / "places.yaml"
+        f.write_text("places:\n  - id: dors\n    name: Dors\n    kind: brewpub\n"
+                     f"    map_url: \"{link}\"\n"
+                     "    sources:\n      untappd_checkins: {slug: dors, venue_id: 3}\n", encoding="utf-8")
+        return load_config(f)
+    assert load("https://yandex.com/maps/org/dors/1/").places["dors"].map_url == "https://yandex.com/maps/org/dors/1/"
+    for bad in ("http://yandex.com/maps/x", "https://evil.example/maps", "javascript:alert(1)"):
+        with pytest.raises(ConfigError):
+            load(bad)

@@ -605,3 +605,12 @@ def test_row_lists_servings_only_for_a_pair_that_has_several():
     assert rows["u:1"]["servings"] == servings
     assert (rows["u:1"]["container"], rows["u:1"]["price_amd"]) == ("draft", 2800)   # the first serving, as before
     assert "servings" not in rows["u:2"]
+
+
+def test_place_map_link_given_in_places_yaml_wins_over_the_address_search():
+    dors = Place(id="dors", name="Dors", kind="brewpub", address="Павстоса Бюзанда",
+                 map_url="https://yandex.com/maps/org/dors_kraft_garejur_yev_khohanots/167907282429/",
+                 sources={"untappd_checkins": {"slug": "dors", "venue_id": 3}})
+    place = places_of(dors)["dors"]
+    assert place["map_url"] == "https://yandex.com/maps/org/dors_kraft_garejur_yev_khohanots/167907282429/"
+    assert place["address"] == "Павстоса Бюзанда"

@@ -20,7 +20,7 @@ SOURCE_PARAMS: dict[str, dict[str, type]] = {
 ID_RE = re.compile(r"[a-z0-9][a-z0-9-]*")
 CHECKIN_VENUE_FIELDS = ("slug", "venue_id", "address")
 PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewery_name", "untappd_venue_id",
-                "merged_from", "address")
+                "merged_from", "address", "map_url")
 BREWERY_FIELDS = ("id", "name", "brewery_id", "slug", "list_enabled")
 SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages",
                    "boost_until", "boost_daily_pages", "boost_search_per_run", "discovery_daily_until")
@@ -43,6 +43,7 @@ class Place:
     untappd_venue_id: int | None = None
     merged_from: tuple[str, ...] = ()   # old place ids merged into this one (state.merge_places), v1.1
     address: str | None = None          # street address of a single-venue place, as people write it (v1.4)
+    map_url: str | None = None          # an exact Yandex Maps link (a place card); wins over the address search
 
     def source_keys(self) -> list[str]:
         return [f"{s}:{self.id}" for s in self.sources]
@@ -145,6 +146,13 @@ def _fail(where: str, msg: str) -> ConfigError:
     return ConfigError(f"places.yaml, {where}: {msg}")
 
 
+def _map_url(d: dict, where: str) -> str | None:
+    url = _get(d, "map_url", str, where, None)
+    if url is not None and not url.startswith(("https://yandex.com/maps/", "https://yandex.ru/maps/")):
+        raise _fail(where, f"map_url {url!r}: нужна ссылка вида https://yandex.com/maps/...")
+    return url
+
+
 def _mapping(value: Any, where: str, allowed: tuple[str, ...] | None = None) -> dict:
     if not isinstance(value, dict):
         raise _fail(where, "ожидался словарь «поле: значение»")
@@ -223,6 +231,7 @@ def _place(raw: Any, n: int) -> Place:
         untappd_venue_id=_get(d, "untappd_venue_id", int, where, None),
         merged_from=tuple(merged_from),
         address=_get(d, "address", str, where, None),
+        map_url=_map_url(d, where),
     )
 
 
