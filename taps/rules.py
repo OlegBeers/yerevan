@@ -17,6 +17,7 @@ MANUAL_EVENT_DAYS = 3      # older manual entries are stored silently
 TRIP_REASONS = ("shrink", "mass_new", "list_mass_new")   # breaker trips; any other discard is a failure
 INFO_FIELDS = ("title", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container",
                "serving", "url", "shop_url", "logo", "menu_id", "shop_item_id", "manual_id", "manual_by", "manual_date")
+SERVING_FIELDS = ("container", "price_amd", "volume_ml")   # the first serving, as single-serving readers see it
 BREWERY_INFO_FIELDS = ("name", "brewery", "style", "abv", "url")
 CHECKIN_BACKFILL_FIELDS = ("style", "abv", "ibu", "rating")   # filled from a menu pair when the check-in lacks them
 # Who may rewrite a pair's display fields: menus and shops over check-ins over manual entries.
@@ -53,6 +54,22 @@ def merge_results(state: State, results: Sequence[SourceResult], config: Config,
 
 def _rank(kind: str | None) -> int:
     return KIND_RANK.get(kind, 2)
+
+
+def _set_servings(info: dict, s: Sighting) -> None:
+    """The list is the source's whole answer: a serving that left is gone."""
+    if s.servings:
+        info["servings"] = [asdict(serving) for serving in s.servings]
+    else:
+        info.pop("servings", None)
+
+
+def _refresh_board_servings(rec: PairRec, s: Sighting) -> None:
+    """A check-in owns the pair but brings no serving data, so a hand-entered board that lists several servings
+    (or did until now) keeps supplying them. A board with a single serving leaves the pair as it was."""
+    if s.servings or rec.info.get("servings"):
+        rec.info.update({f: getattr(s, f) for f in SERVING_FIELDS if getattr(s, f) is not None})
+        _set_servings(rec.info, s)
 
 
 def _drop(rec: PairRec) -> None:
@@ -176,6 +193,8 @@ class _Merger:
         owner = rec.info.get("kind")
         if owner is None or _rank(s.kind) >= _rank(owner):
             self._update_info(rec, s, key, refresh)
+        elif s.kind == "manual" and owner == "checkin":
+            _refresh_board_servings(rec, s)
         if drop:
             _drop(rec)
             return
@@ -195,13 +214,11 @@ class _Merger:
         old_checkin = rec.info.get("checkin_at")
         rec.info.update({f: getattr(s, f) for f in INFO_FIELDS if getattr(s, f) is not None})
         rec.info.update(source=s.source, kind=s.kind)
-        if s.servings:
-            rec.info["servings"] = [asdict(serving) for serving in s.servings]
-        else:
-            rec.info.pop("servings", None)   # the list is the source's whole answer: a serving that left is gone
         if s.kind == "checkin":
             rec.info["checkin_at"] = iso(max(s.seen_at, parse_iso(old_checkin)) if old_checkin else s.seen_at)
             self._backfill_checkin(rec, key)
+        else:   # a check-in brings no serving data: it must not wipe the list a board gave
+            _set_servings(rec.info, s)
         rec.info.pop("hidden", None)      # set again by _drop while hidden or filtered
 
     def _backfill_checkin(self, rec: PairRec, key: str) -> None:

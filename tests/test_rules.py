@@ -745,3 +745,57 @@ def test_a_manual_entry_added_to_a_known_beer_adds_a_serving_without_a_new_event
     assert (rec.event_at, rec.notified_at, state.announced_manual) == (event_at, notified_at, [tap.id])
     assert [s["container"] for s in rec.info["servings"]] == ["draft", "bottle"]
     assert merge(state, manual(tap)).events == [] and "servings" not in rec.info   # and back when withdrawn
+
+
+# --- a check-in takes a hand-entered pair over but carries no serving data ------------------------------
+
+def board(beer_id=5, place="tap-station"):
+    """A hand-entered board: one Untappd beer on tap and in bottles."""
+    tap = replace(entry(place, None, 1, brewery=None, untappd_id=beer_id), container="draft", price_amd=2800)
+    return tap, replace(tap, container="bottle", price_amd=None)
+
+
+def test_a_check_in_leaves_the_servings_of_a_hand_entered_beer_and_the_board_keeps_supplying_them():
+    state = ready("untappd_checkins:tap-station")
+    tap, bottle = board()
+    merge(state, manual(tap, bottle), now=NOW - 12 * H)
+    merge(state, venue_checkins(checkin(5)))       # the check-in takes the pair over; on its own it must not wipe the list
+    info = state.pairs["tap-station"]["u:5"].info
+    assert (info["kind"], info["source"], info["serving"], info["name"]) == (
+        "checkin", "untappd_checkins", "Draft", "Ale 5")              # everything else is the check-in's, as before
+    assert [(s["container"], s["price_amd"]) for s in info["servings"]] == [("draft", 2800), ("bottle", None)]
+    assert (info["container"], info["price_amd"]) == ("draft", 2800)
+    can = replace(tap, container="can", price_amd=900)                # the board grows: the pair follows it
+    merge(state, venue_checkins(checkin(5)), manual(tap, bottle, can))
+    assert [s["container"] for s in info["servings"]] == ["draft", "bottle", "can"]
+
+
+def test_a_board_gives_servings_to_a_pair_a_check_in_already_owns():
+    state = ready("untappd_checkins:tap-station")
+    merge(state, venue_checkins(checkin(5)), now=NOW - 12 * H)
+    tap, bottle = board()
+    merge(state, venue_checkins(checkin(5)), manual(tap, bottle))
+    info = state.pairs["tap-station"]["u:5"].info
+    assert (info["kind"], info["name"]) == ("checkin", "Ale 5")
+    assert [s["container"] for s in info["servings"]] == ["draft", "bottle"]
+    assert (info["container"], info["price_amd"]) == ("draft", 2800)
+
+
+def test_a_board_that_shrinks_to_one_serving_takes_the_list_off_a_check_in_owned_pair():
+    state = ready("untappd_checkins:tap-station")
+    tap, bottle = board()
+    merge(state, manual(tap, bottle), now=NOW - 12 * H)
+    merge(state, venue_checkins(checkin(5)), manual(tap, bottle))
+    merge(state, venue_checkins(checkin(5)), manual(replace(bottle, price_amd=1500)))   # only a priced bottle is left
+    info = state.pairs["tap-station"]["u:5"].info
+    assert "servings" not in info and info["kind"] == "checkin"
+    assert (info["container"], info["price_amd"]) == ("bottle", 1500)
+
+
+def test_a_single_serving_board_leaves_a_check_in_owned_pair_as_it_was():
+    state = ready("untappd_checkins:tap-station")
+    merge(state, venue_checkins(checkin(5)), now=NOW - 12 * H)
+    tap, _ = board()
+    merge(state, venue_checkins(checkin(5)), manual(tap))
+    info = state.pairs["tap-station"]["u:5"].info
+    assert not {"container", "price_amd", "volume_ml", "servings"} & set(info)   # a beer with one serving shows as before
