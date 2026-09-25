@@ -319,6 +319,13 @@ same_as:                         # магазинное пиво == пиво с 
     untappd_id: 6151476
     name: "Trehgornoe Blanche"
     brewery: "Moscow Brewing Company (Московская Пивоваренная Компания)"
+  # Wolf's Brewery IPA: Beer City «Волковская пиваварня Indian Pale Ale Ipa» и Parma «Wolfs Brewery IPA light» (ссылка от Олега)
+  - place: beer-city
+    beer: "n:волковская пиваварня indian pale ale ipa"
+    untappd_id: 1941326
+  - place: parma
+    beer: "n:wolfs ipa light"
+    untappd_id: 1941326
 
 aliases:
 
