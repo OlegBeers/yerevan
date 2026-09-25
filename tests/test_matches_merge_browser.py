@@ -245,7 +245,7 @@ def test_nothing_is_cut_off_or_pushed_out_of_the_screen_at_any_width(open_page, 
     page.fill("#untappd-link", BEER_LINK)
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert size(page, "#reset-merge")[1] <= 50 and size(page, "#to-link")[1] <= 50     # a button label is one line, never broken in the middle of a word
-    assert size(page, "#sheet .sheet-head > span")[1] <= 30
+    assert size(page, "#sheet .sheet-head > span")[1] <= 30 and size(page, "#sheet .sheet-head")[1] <= 50   # count and both buttons in one row
     for selector in ("#sheet", "#sheet *", "#mode-review", "#mode-merge", "#copy-yaml", "#pick-search", "#untappd-link"):
         assert page.eval_on_selector_all(selector, "(els) => els.every((e) => e.getBoundingClientRect().left >= 0 && "
                                                    "e.getBoundingClientRect().right <= window.innerWidth + 0.5)"), selector
