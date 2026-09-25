@@ -9,6 +9,7 @@
 #   Вместо brewery и beer можно написать untappd: 1234567.
 #   Несколько сортов из одного похода — несколько записей с одинаковыми place, date и by.
 #   Исправить название в уже объявленной записи можно, повторно она не объявится.
+#   Необязательно: container (розлив, банка или бутылка), style, abv (крепость), ibu, price (драм).
 #   - place: tap-station
 #     brewery: "379"
 #     beer: "Hazy Pale"
@@ -27,6 +28,264 @@
 #   Если в названии есть стиль (IPA, Stout, Porter…), пиво показывается всё равно.
 
 sightings:
+  # Ferment: доска кранов из Instagram-сторис бара, 24.09, сверено с Untappd (цена — меньшая порция)
+  - place: ferment
+    brewery: "Moscow Brewing Company"
+    beer: "Хамовники Нитро Лагер"
+    untappd: 5579736
+    container: розлив
+    style: "Nitro Lager"
+    abv: 5.5
+    ibu: 25
+    price: 1700
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Dahook"
+    beer: "Hell"
+    untappd: 5817007
+    container: розлив
+    style: "Helles"
+    abv: 4.8
+    ibu: 20
+    price: 1400
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Dahook"
+    beer: "Red IPA"
+    untappd: 5817002
+    container: розлив
+    style: "Red IPA"
+    abv: 6
+    ibu: 45
+    price: 1600
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Dortmunder Actien-Brauerei"
+    beer: "DAB Export"
+    untappd: 30445
+    container: розлив
+    style: "Lager"
+    abv: 5
+    ibu: 23
+    price: 1500
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Лихо Грейпфрут"
+    untappd: 6583573
+    container: розлив
+    style: "Fruited DIPA"
+    abv: 6.9
+    ibu: 120
+    price: 2200
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "379 Torch & Brew"
+    beer: "Weizen"
+    untappd: 4775562
+    container: розлив
+    style: "Wheat Beer"
+    abv: 5
+    ibu: 11
+    price: 1500
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Wild Ale Blueberry"
+    untappd: 6166058
+    container: розлив
+    style: "Wild Ale"
+    abv: 8
+    price: 3200
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Bullevie"
+    beer: "Semi Sweet"
+    untappd: 6424372
+    container: розлив
+    style: "Cider"
+    abv: 5.5
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "379 Torch & Brew"
+    beer: "Barley Wine"
+    untappd: 5953168
+    container: розлив
+    style: "Barley Wine"
+    abv: 10
+    ibu: 50
+    price: 2000
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Double Hazy"
+    untappd: 2152137
+    container: розлив
+    style: "NEIPA"
+    abv: 7.2
+    ibu: 30
+    price: 2600
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Punk IPA"
+    untappd: 5702
+    container: розлив
+    style: "IPA"
+    abv: 5.2
+    ibu: 35
+    price: 2400
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Baladin"
+    beer: "Baladin 4.8"
+    untappd: 3679980
+    container: розлив
+    style: "Golden Ale"
+    abv: 4.8
+    ibu: 30
+    price: 2000
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Rodenbach"
+    beer: "Fruitage"
+    untappd: 1715344
+    container: розлив
+    style: "Cherry Ale"
+    abv: 3.4
+    ibu: 7
+    price: 2800
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Moscow Brewing Company"
+    beer: "Ballantine"
+    untappd: 2897667
+    container: розлив
+    style: "Nitro Stout"
+    abv: 4.1
+    price: 1700
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "De Halve Maan"
+    beer: "Brugse Zot"
+    untappd: 4713
+    container: розлив
+    style: "Blonde"
+    abv: 6
+    ibu: 23
+    price: 1900
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewmen"
+    beer: "Пряный мёд"
+    untappd: 5138327
+    container: розлив
+    style: "Mead"
+    abv: 4.5
+    price: 1600
+    by: Instagram бара
+    date: 2026-09-24
+  # Ferment: холодильник из той же сторис, сверено с Untappd
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Hazy Jane"
+    untappd: 3560731
+    container: банка
+    price: 2800
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Double Hazy Jane"
+    untappd: 6565995
+    container: банка
+    price: 3200
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Elvis Juice"
+    untappd: 1441008
+    container: банка
+    price: 2800
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Punk IPA Alcohol Free"
+    untappd: 3217482
+    container: банка
+    price: 2200
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Jever"
+    beer: "Jever Pilsener"
+    untappd: 5325
+    container: бутылка
+    price: 1600
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Bullevie"
+    beer: "Petit"
+    untappd: 3263126
+    container: бутылка
+    price: 2200
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Rochefort"
+    beer: "Trappistes Rochefort 6"
+    untappd: 10722
+    container: бутылка
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Rochefort"
+    beer: "Trappistes Rochefort 8"
+    untappd: 11473
+    container: бутылка
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Rochefort"
+    beer: "Trappistes Rochefort 10"
+    untappd: 6766
+    container: бутылка
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Лихо"
+    untappd: 1802346
+    container: банка
+    price: 2800
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Чёрное Лихо"
+    untappd: 6101438
+    container: банка
+    price: 2800
+    by: Instagram бара
+    date: 2026-09-24
 
 hide:
 

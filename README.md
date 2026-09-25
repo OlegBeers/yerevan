@@ -108,6 +108,7 @@ sightings:                       # ✍️ со слов: попадёт в св�
     beer: "Hazy Pale"            # или untappd: 1234567 (число из адреса пива на Untappd)
     by: Аня
     date: 2026-09-24
+    container: розлив            # необязательно: розлив, банка или бутылка; ещё style, abv, ibu, price
 hide:                            # «этого уже нет» или мусор
   - place: gargoyle
     beer: u:3539672              # u:<число из адреса пива на Untappd>

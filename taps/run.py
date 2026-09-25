@@ -514,6 +514,31 @@ def apply_shop_matches(state: State) -> None:
                 rec.info["u_brewery"] = match.brewery
 
 
+def apply_known_beer_info(state: State) -> None:
+    """A hand-entered Untappd beer borrows its label and rating from the same beer seen elsewhere
+    (a menu, a check-in, a matched shop item) or from the cached beer page: nothing is fetched for
+    manual entries themselves. The board's own style/abv/price stay as entered."""
+    known: dict[str, dict] = {}
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            if key.startswith("u:") and rec.info.get("kind") != "manual":
+                got = known.setdefault(key, {})
+                for field in ("logo", "rating"):
+                    if got.get(field) is None and rec.info.get(field) is not None:
+                        got[field] = rec.info[field]
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            if rec.info.get("kind") != "manual" or not key.startswith("u:"):
+                continue
+            got = dict(known.get(key, {}))
+            beer = state.beers.get(key)
+            if got.get("rating") is None and beer is not None and beer.rating is not None:
+                got["rating"] = beer.rating
+            for field, value in got.items():
+                if value is not None:
+                    rec.info[field] = value
+
+
 # --- alerts ------------------------------------------------------------------
 
 def update_alerts(alerter: Alerter, state: State, outcome: MergeOutcome, client: UntappdClient | None,
@@ -725,6 +750,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     record_venues(state, results, now, config.known_venue_ids)
     outcome = merge_results(state, results, config, corrections, now)
     apply_shop_matches(state)   # v1.1 §3: overlay this run's (or an earlier) Untappd match onto shop rows
+    apply_known_beer_info(state)   # hand-entered beers borrow label/rating from the same beer elsewhere
     prune(state, now)
     update_alerts(alerter, state, outcome, client, load.errors)
     site_data = build_site_data(state, config, now)

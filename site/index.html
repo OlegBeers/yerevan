@@ -193,7 +193,7 @@
     <h2>Значки</h2>
     <ul class="legend">
       <li>✅ — в меню бара (Untappd или buy.am)</li>
-      <li>👀 — видели в чекинах Untappd в этом месте (в барах — разлив)</li>
+      <li>👀 — видели в чекинах Untappd в этом месте (в барах — розлив)</li>
       <li>✍️ — со слов: кто-то из друзей видел сам</li>
       <li>🛒 — в онлайн-ассортименте магазина (сети, а не конкретного филиала)</li>
       <li>🆕 — появилось за последние 7 дней</li>
@@ -217,8 +217,8 @@
 "use strict";
 const TZ = "Asia/Yerevan";
 const STALE_HOURS = 36;
-const CONTAINER_RU = { can: "банка", bottle: "бутылка", keg: "кег", draft: "разлив" };
-const SERVING_RU = { Draft: "разлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
+const CONTAINER_RU = { can: "банка", bottle: "бутылка", keg: "кег", draft: "розлив" };
+const SERVING_RU = { Draft: "розлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
 const wide = window.matchMedia("(min-width: 700px)");
 const ui = { data: null, places: new Map(), section: "all", place: null };
 const $ = (id) => document.getElementById(id);

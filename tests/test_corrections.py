@@ -148,6 +148,10 @@ def test_unknown_place_skips_entry_with_russian_error():
         ("{place: tap-station, bear: X, by: Аня, date: 2026-09-24}", "неизвестные поля: bear"),
         ("{place: tap-station, beer: Пиво, by: Аня, date: 2026-09-24}", "не получается ключ пива"),
         ("tap-station", "запись должна быть вида"),
+        ("{place: tap-station, beer: X, by: Аня, date: 2026-09-24, container: кружка}", "container 'кружка'"),
+        ("{place: tap-station, beer: X, by: Аня, date: 2026-09-24, abv: '5%'}", "abv '5%'"),
+        ("{place: tap-station, beer: X, by: Аня, date: 2026-09-24, price: 17.5}", "price 17.5"),
+        ("{place: tap-station, beer: X, by: Аня, date: 2026-09-24, ibu: 0}", "ibu 0"),
     ],
 )
 def test_bad_sighting_is_skipped(entry, fragment):
@@ -314,3 +318,14 @@ def test_live_corrections_file_invariants():
     c = load.corrections
     assert SPEC_NOT_CRAFT <= set(c.not_craft)
     assert len(c.not_craft) == len(set(c.not_craft))
+
+
+def test_sighting_details_are_optional():
+    corrections, errors = parse(
+        "sightings:\n  - {place: tap-station, brewery: '379', beer: Weizen, by: Аня, date: 2026-09-24,\n"
+        "     container: банка, style: Wheat Beer, abv: 5, ibu: 11, price: 1500}\n"
+    )
+    assert errors == []
+    [e] = corrections.sightings
+    assert (e.container, e.style, e.abv, e.ibu, e.price_amd) == ("can", "Wheat Beer", 5.0, 11, 1500)
+    assert HAZY.container is None and HAZY.price_amd is None

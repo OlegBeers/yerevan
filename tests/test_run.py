@@ -2076,3 +2076,27 @@ def test_shop_match_candidates_skip_beers_not_shown_on_the_site():
     state.pairs = {"parma": {"n:baltika 3": hidden, "n:bronx": oos, "n:pale": gone,
                              "n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
     assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia", None)]
+
+
+def test_apply_known_beer_info_gives_manual_pairs_label_and_rating_of_the_same_beer():
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:10722": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={
+            "kind": "menu", "logo": "https://x/rochefort.jpg", "rating": 3.9, "style": "Belgian Dubbel"})},
+        "ferment": {
+            "u:10722": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={
+                "kind": "manual", "name": "Trappistes Rochefort 6", "style": "Dubbel", "price_amd": 2500}),
+            "u:5": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "manual", "name": "Cached"}),
+            "n:x": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "manual", "name": "X"}),
+        },
+    }
+    state.beers["u:5"] = BeerRec(first_seen_city=iso(NOW), rating=3.5)
+
+    run_mod.apply_known_beer_info(state)
+
+    info = state.pairs["ferment"]["u:10722"].info
+    assert (info["logo"], info["rating"]) == ("https://x/rochefort.jpg", 3.9)
+    assert (info["style"], info["price_amd"]) == ("Dubbel", 2500)   # the board's own details stay
+    assert state.pairs["ferment"]["u:5"].info["rating"] == 3.5 and "logo" not in state.pairs["ferment"]["u:5"].info
+    assert state.pairs["ferment"]["n:x"].info == {"kind": "manual", "name": "X"}
+    assert "price_amd" not in state.pairs["beatles"]["u:10722"].info

@@ -90,7 +90,7 @@ EXPECTED = """🍺 <b>Новое в Ереване</b> · чт, 24 сен
 🏭 <b>Новые сорта пивоварен</b>
 • ⭐ Dargett — DDH NEIPA · 6.5% (новый сорт в Untappd, где наливают — пока неизвестно)
 👀 <b>Похоже, появилось</b>
-• Dors — Smoked Porter · в Dors Craft Beer &amp; Kitchen, разлив, видели 2 дня назад
+• Dors — Smoked Porter · в Dors Craft Beer &amp; Kitchen, розлив, видели 2 дня назад
 ✍️ <b>Со слов</b>
 • 379 — Hazy Pale · в Tap Station (от Аня)
 
@@ -189,7 +189,7 @@ def test_bar_and_shop_checkins_dont_interleave_blocks():
     ("Bottle", "бутылка"), ("Can", "банка"), ("Taster", "дегустационный"), ("Cask", "из бочки"),
 ])
 def test_serving_ru_translates_container_types(serving, ru):
-    """M-2: a shop's own check-ins (e.g. Houl) report a container, not "разлив"."""
+    """M-2: a shop's own check-ins (e.g. Houl) report a container, not "розлив"."""
     s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving=serving,
                                               checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
@@ -356,3 +356,22 @@ def test_mark_sent_and_rollback():
 
     rollback(s, mark)
     assert s.to_dict() == before
+
+
+def test_a_whole_board_entered_by_hand_is_one_line_about_the_place():
+    st = full_state()
+    st.pairs["tap-station"].update({
+        f"n:beer {i}": pair(yv(24, 14), kind="manual", brewery="B", name=f"Beer {i}",
+                            manual_id="tap-station|2026-09-24|Instagram бара", manual_by="Instagram бара")
+        for i in range(6)})
+    d = build_digest(st, CONFIG, SETTINGS, NOW)
+    assert "<b>Tap Station</b>: обновился список, 7 позиций (от Instagram бара, Аня) — на сайте" in d.html
+    assert "Beer 0" not in d.html and "Hazy Pale" not in d.html
+    assert d.html.count("✍️ <b>Со слов</b>") == 1
+    # every entry is still marked as announced
+    assert ("tap-station", "n:beer 5") in d.pairs and "tap-station|2026-09-24|Instagram бара" in d.manual_ids
+
+
+def test_a_few_manual_entries_are_listed_one_by_one():
+    d = build_digest(full_state(), CONFIG, SETTINGS, NOW)
+    assert "Hazy Pale" in d.html and "обновился список" not in d.html
