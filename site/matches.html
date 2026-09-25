@@ -154,7 +154,10 @@
   .out-title { font-size: .95rem; margin: 16px 0 4px; }
   .sheet-head { display: flex; align-items: center; gap: 8px 12px; }
   .sheet-head > span { flex: 1 1 auto; }
-  .chips { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto; }
+  .chips {
+    list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto;
+    grid-template-columns: minmax(0, 1fr);   /* a column that may be narrower than its longest name, or the remove button is pushed out */
+  }
   .chips:empty { display: none; }
   .chip {
     display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 2px 2px 2px 12px;

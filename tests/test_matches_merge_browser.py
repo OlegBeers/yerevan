@@ -231,6 +231,9 @@ def test_a_chip_in_the_sheet_keeps_to_one_line_of_name_however_long_it_is(open_p
     page.click("#pick-list .pick")
     assert 48 <= size(page, "#picked-list .chip")[1] <= 56     # a few picked items must not fill a phone's screen
     assert long_name in page.text_content("#picked-list .chip .name")   # cut by the eye, not in the text (a screen reader reads it all)
+    remove = page.locator("#picked-list .chip-x").bounding_box()
+    assert remove["x"] + remove["width"] <= 375 and remove["width"] >= 44    # a long name does not push the remove button out of sight
+    assert page.eval_on_selector("#picked-list", "(e) => e.scrollWidth <= e.clientWidth")
     assert problems == []
 
 
