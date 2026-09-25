@@ -5793,6 +5793,18 @@
    "Staročeské",
    "Santanos"
   ],
+  "same_as": [
+   {
+    "beer": "n:bronx",
+    "place": "beer-city",
+    "untappd_id": null
+   },
+   {
+    "beer": "n:bronx black cherry",
+    "place": "beer-city",
+    "untappd_id": null
+   }
+  ],
   "sightings": [
    {
     "abv": 5.5,
@@ -9318,8 +9330,10 @@
      "u_brewery": "379 Torch & Brew",
      "u_name": "Cherry",
      "u_overlay": {
+      "abv": 7.0,
       "logo": "https://labels.untappd.com/6385601",
-      "rating": 3.4513
+      "rating": 3.4513,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/6385601",
      "volume_ml": 330
@@ -9420,8 +9434,10 @@
      "u_brewery": "379 Torch & Brew",
      "u_name": "Pilsner",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/4775549",
-      "rating": 3.36535
+      "rating": 3.36535,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/4775549",
      "volume_ml": 330
@@ -9850,8 +9866,10 @@
      "style": "Pilsner - Other",
      "title": "Beer \"Baltika 3\" 0,45l",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-5580398_7a12b_sm.jpeg",
-      "rating": 3.17
+      "rating": 3.17,
+      "style": "Pilsner - Other"
      },
      "url": "https://untappd.com/b/baltika-breweries-baltika-baltika-3-classic-baltika-3-klassicheskoe/5580398",
      "volume_ml": 450
@@ -9930,8 +9948,10 @@
      "style": "Lager - Dortmunder / Export",
      "title": "Beer \"Baltika 7\" 0,45l",
      "u_overlay": {
+      "abv": 5.4,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-7097_3bd06_sm.jpeg",
-      "rating": 3.02
+      "rating": 3.02,
+      "style": "Lager - Dortmunder / Export"
      },
      "url": "https://untappd.com/b/baltika-breweries-baltika-baltika-7-export-baltika-7-eksportnoe/7097",
      "volume_ml": 450
@@ -9985,8 +10005,10 @@
      "style": "Lager - Strong",
      "title": "Beer \"Baltika 9\" 0,45l",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-5483_0f2b8_sm.jpeg",
-      "rating": 2.97
+      "rating": 2.97,
+      "style": "Lager - Strong"
      },
      "url": "https://untappd.com/b/baltika-breweries-baltika-baltika-9-legendarnoe-baltika-9-legendarnoe/5483",
      "volume_ml": 450
@@ -10018,8 +10040,10 @@
      "u_brewery": "Brouwerij De Brabandere",
      "u_name": "Bavik Super Pils",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://labels.untappd.com/17265",
-      "rating": 3.32762
+      "rating": 3.32762,
+      "style": "Pilsner - Other"
      },
      "url": "https://untappd.com/beer/17265",
      "volume_ml": 330
@@ -10210,8 +10234,10 @@
      "style": "Pilsner - German",
      "title": "Beer «Bitburger Premium Pils» 0,5l",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-17252_fc89f_sm.jpeg",
-      "rating": 3.2
+      "rating": 3.2,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/b/bitburger-brauerei-bitburger-premium-pils/17252",
      "volume_ml": 500
@@ -10230,25 +10256,18 @@
      "brewery": "Bronx",
      "container": "can",
      "kind": "shop",
-     "logo": "https://assets.untappd.com/site/beer_logos/beer-77455_d66a7_sm.jpeg",
-     "match_weak": false,
      "name": "Bronx",
      "price_amd": 730,
-     "rating": 3.49,
      "shop_item_id": "2053",
      "shop_url": "https://www.beer-city.am/en/products/garejur-bronx-05l/",
      "source": "beercity",
      "style": "Pale Ale - American",
      "title": "Beer \"Bronx\" 0.5L",
-     "u_overlay": {
-      "logo": "https://assets.untappd.com/site/beer_logos/beer-77455_d66a7_sm.jpeg",
-      "rating": 3.49
-     },
-     "url": "https://untappd.com/b/the-bronx-brewery-bronx-american-pale-ale/77455",
+     "url": "https://www.beer-city.am/en/products/garejur-bronx-05l/",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -10271,7 +10290,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -10369,8 +10388,10 @@
      "u_brewery": "Brasserie d'Achouffe",
      "u_name": "Chouffe Cherry",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/1824901",
-      "rating": 3.55308
+      "rating": 3.55308,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/1824901",
      "volume_ml": 330
@@ -10492,7 +10513,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -10565,8 +10586,10 @@
      "u_brewery": "Dahook",
      "u_name": "Hell",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/5817007",
-      "rating": 3.37464
+      "rating": 3.37464,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/5817007",
      "volume_ml": 330
@@ -10621,8 +10644,10 @@
      "u_brewery": "Dahook",
      "u_name": "Red IPA",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/5817002",
-      "rating": 3.65385
+      "rating": 3.65385,
+      "style": "IPA - Red"
      },
      "url": "https://untappd.com/beer/5817002",
      "volume_ml": 330
@@ -10654,8 +10679,10 @@
      "u_brewery": "Dahook",
      "u_name": "Weiss",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://labels.untappd.com/5817020",
-      "rating": 3.37016
+      "rating": 3.37016,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/5817020",
      "volume_ml": 330
@@ -10687,8 +10714,10 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Apricot Ale (Prunus Armeniaca)",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/1674726",
-      "rating": 3.46134
+      "rating": 3.46134,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/1674726",
      "volume_ml": 330
@@ -10720,8 +10749,10 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Belgian Tripel (Seven Sins)",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/1775517",
-      "rating": 3.56892
+      "rating": 3.56892,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/1775517",
      "volume_ml": 330
@@ -10750,7 +10781,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -10845,8 +10876,10 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Pale Ale (Coney Island)",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/1518441",
-      "rating": 3.5824
+      "rating": 3.5824,
+      "style": "Pale Ale - American"
      },
      "url": "https://untappd.com/beer/1518441",
      "volume_ml": 330
@@ -10876,8 +10909,10 @@
      "style": "Pilsner - German",
      "title": "Beer \"Dargett\" pilsner 0,33l",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-1518439_867cb_sm.jpeg",
-      "rating": 3.31
+      "rating": 3.31,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/b/dargett-brewery-pilsner-la-rapsodia/1518439",
      "volume_ml": 330
@@ -10932,8 +10967,10 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Vienna Lager (Metamorphosis)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1538345",
-      "rating": 3.31902
+      "rating": 3.31902,
+      "style": "Lager - Vienna"
      },
      "url": "https://untappd.com/beer/1538345",
      "volume_ml": 330
@@ -10965,8 +11002,10 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Weizen (Steppenwolf)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1554084",
-      "rating": 3.45846
+      "rating": 3.45846,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/1554084",
      "volume_ml": 330
@@ -11322,7 +11361,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11370,8 +11409,10 @@
      "u_brewery": "Gletcher Brewery (Глетчер)",
      "u_name": "Blue Monkey Wheat Ale",
      "u_overlay": {
+      "abv": 5.4,
       "logo": "https://labels.untappd.com/4804233",
-      "rating": 3.53918
+      "rating": 3.53918,
+      "style": "Wheat Beer - Witbier / Blanche"
      },
      "url": "https://untappd.com/beer/4804233",
      "volume_ml": 500
@@ -11400,7 +11441,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11446,7 +11487,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11538,7 +11579,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11654,7 +11695,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11700,7 +11741,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11746,7 +11787,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11794,7 +11835,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -11935,7 +11976,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -12009,8 +12050,10 @@
      "u_brewery": "Obolon (Оболонь)",
      "u_name": "Hike Blanche",
      "u_overlay": {
+      "abv": 4.9,
       "logo": "https://labels.untappd.com/2890547",
-      "rating": 2.63388
+      "rating": 2.63388,
+      "style": "Wheat Beer - Witbier / Blanche"
      },
      "url": "https://untappd.com/beer/2890547",
      "volume_ml": 500
@@ -12087,8 +12130,10 @@
      "u_brewery": "Staatliches Hofbräuhaus München",
      "u_name": "Hofbräu Original",
      "u_overlay": {
+      "abv": 5.1,
       "logo": "https://labels.untappd.com/38001",
-      "rating": 3.55104
+      "rating": 3.55104,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/38001",
      "volume_ml": 500
@@ -12140,7 +12185,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -12256,14 +12301,16 @@
      "style": "Wheat Beer - Hefeweizen",
      "title": "Draught beer «Kellers» weizen 1l",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-4426822_d28cd_sm.jpeg",
-      "rating": 3.35
+      "rating": 3.35,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/b/kellers-sevan-brewery-kellers-weizen-wheat/4426822",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -12337,8 +12384,10 @@
      "u_brewery": "Konix Brewery",
      "u_name": "Hemoglobin",
      "u_overlay": {
+      "abv": 7.0,
       "logo": "https://labels.untappd.com/3507579",
-      "rating": 3.59036
+      "rating": 3.59036,
+      "style": "Sour - Fruited"
      },
      "url": "https://untappd.com/beer/3507579",
      "volume_ml": 450
@@ -12393,8 +12442,10 @@
      "u_brewery": "Konix Brewery",
      "u_name": "Ice Cream Porter Chocolate",
      "u_overlay": {
+      "abv": 7.0,
       "logo": "https://labels.untappd.com/2995910",
-      "rating": 3.65694
+      "rating": 3.65694,
+      "style": "Porter - Baltic"
      },
      "url": "https://untappd.com/beer/2995910",
      "volume_ml": 500
@@ -12426,8 +12477,10 @@
      "u_brewery": "Konix Brewery",
      "u_name": "Ice Cream Porter Hazelnut",
      "u_overlay": {
+      "abv": 7.0,
       "logo": "https://labels.untappd.com/4637119",
-      "rating": 3.75918
+      "rating": 3.75918,
+      "style": "Porter - Baltic"
      },
      "url": "https://untappd.com/beer/4637119",
      "volume_ml": 500
@@ -12459,8 +12512,10 @@
      "u_brewery": "Konix Brewery",
      "u_name": "Ice Cream Porter Plombeer",
      "u_overlay": {
+      "abv": 7.0,
       "logo": "https://labels.untappd.com/2995901",
-      "rating": 3.58268
+      "rating": 3.58268,
+      "style": "Porter - Baltic"
      },
      "url": "https://untappd.com/beer/2995901",
      "volume_ml": 500
@@ -12492,8 +12547,10 @@
      "u_brewery": "Konix Brewery",
      "u_name": "Ice Cream | Strawberry, Banana",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/6084790",
-      "rating": 3.8547
+      "rating": 3.8547,
+      "style": "Sour - Smoothie / Pastry"
      },
      "url": "https://untappd.com/beer/6084790",
      "volume_ml": 500
@@ -12785,8 +12842,10 @@
      "u_brewery": "Brasserie d'Achouffe",
      "u_name": "La Chouffe Blonde",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/52593",
-      "rating": 3.81027
+      "rating": 3.81027,
+      "style": "Belgian Strong Golden Ale"
      },
      "url": "https://untappd.com/beer/52593",
      "volume_ml": 330
@@ -12979,7 +13038,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -13145,8 +13204,10 @@
      "style": "Lager - Helles",
      "title": "Draught beer \"Paulaner Munchner Hell\" 1l",
      "u_overlay": {
+      "abv": 4.9,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-3235_c64ae_sm.jpeg",
-      "rating": 3.46
+      "rating": 3.46,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/b/paulaner-brauerei-munchner-hell-munchner-lager-original-munich-lager/3235",
      "volume_ml": 1000
@@ -13176,8 +13237,10 @@
      "style": "Wheat Beer - Hefeweizen",
      "title": "Beer \"Paulaner Weissbier\" 0,33l",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-15677_e4b29_sm.jpeg",
-      "rating": 3.67
+      "rating": 3.67,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/b/paulaner-brauerei-paulaner-hefe-weissbier-hefe-weizen-weissbier/15677",
      "volume_ml": 330
@@ -13325,8 +13388,10 @@
      "u_brewery": "Brouwerij De Brabandere",
      "u_name": "Petrus Flanders",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/3978915",
-      "rating": 3.75997
+      "rating": 3.75997,
+      "style": "Sour - Flanders Red Ale"
      },
      "url": "https://untappd.com/beer/3978915",
      "volume_ml": 330
@@ -13358,8 +13423,10 @@
      "u_brewery": "Brouwerij De Brabandere",
      "u_name": "Petrus Infinitum",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/5955018",
-      "rating": 3.58924
+      "rating": 3.58924,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/5955018",
      "volume_ml": 750
@@ -13437,8 +13504,10 @@
      "u_brewery": "Brouwerij De Brabandere",
      "u_name": "Petrus Tripel",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/76",
-      "rating": 3.47341
+      "rating": 3.47341,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/76",
      "volume_ml": 330
@@ -13492,7 +13561,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -13700,7 +13769,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -13723,7 +13792,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -13745,7 +13814,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14119,8 +14188,10 @@
      "style": "Wheat Beer - Witbier / Blanche",
      "title": "Beer \"Volfas Engelman\" Blanc  0,5l",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-3777934_48889_sm.jpeg",
-      "rating": 3.42
+      "rating": 3.42,
+      "style": "Wheat Beer - Witbier / Blanche"
      },
      "url": "https://untappd.com/b/volfas-engelman-blanc/3777934",
      "volume_ml": 500
@@ -14173,8 +14244,10 @@
      "style": "Lager - Pale",
      "title": "Beer \"Volfas Engelman Rinktinis\" 0,5l",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-87115_068d6_sm.jpeg",
-      "rating": 3.12
+      "rating": 3.12,
+      "style": "Lager - Pale"
      },
      "url": "https://untappd.com/b/volfas-engelman-rinktinis/87115",
      "volume_ml": 500
@@ -14274,14 +14347,16 @@
      "style": "Kellerbier / Zwickelbier",
      "title": "Beer \"Warsteiner gold\" 0.5l",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-3492053_7cb37_sm.jpeg",
-      "rating": 3.2
+      "rating": 3.2,
+      "style": "Kellerbier / Zwickelbier"
      },
      "url": "https://untappd.com/b/warsteiner-brewers-gold-landbier/3492053",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14329,8 +14404,10 @@
      "style": "Pilsner - German",
      "title": "Beer «Warsteiner Premium» 0,33l",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-10703_c60bb_sm.jpeg",
-      "rating": 3.21
+      "rating": 3.21,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/b/warsteiner-premium-pilsener-german-pilsener/10703",
      "volume_ml": 330
@@ -14408,8 +14485,10 @@
      "u_brewery": "Bayerische Staatsbrauerei Weihenstephan",
      "u_name": "Weihenstephaner Pils",
      "u_overlay": {
+      "abv": 5.1,
       "logo": "https://labels.untappd.com/16774",
-      "rating": 3.56585
+      "rating": 3.56585,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/16774",
      "volume_ml": 500
@@ -14716,7 +14795,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14740,14 +14819,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Apple Cider (Semi-Sweet)",
      "u_overlay": {
+      "abv": 5.6,
       "logo": "https://labels.untappd.com/5711927",
-      "rating": 3.60035
+      "rating": 3.60035,
+      "style": "Cider - Sweet"
      },
      "url": "https://untappd.com/beer/5711927",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14771,14 +14852,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Apricot Ale (Prunus Armeniaca)",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/1674726",
-      "rating": 3.46134
+      "rating": 3.46134,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/1674726",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14798,7 +14881,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14818,7 +14901,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14842,14 +14925,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Belgian Tripel (Seven Sins)",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/1775517",
-      "rating": 3.56892
+      "rating": 3.56892,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/1775517",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14869,7 +14954,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14889,7 +14974,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14909,7 +14994,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14929,7 +15014,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14949,7 +15034,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14969,7 +15054,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -14989,7 +15074,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -15013,14 +15098,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Oatmeal Stout",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/1533350",
-      "rating": 3.46386
+      "rating": 3.46386,
+      "style": "Stout - Oatmeal"
      },
      "url": "https://untappd.com/beer/1533350",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -15040,7 +15127,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -15064,14 +15151,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Vienna Lager (Metamorphosis)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1538345",
-      "rating": 3.31902
+      "rating": 3.31902,
+      "style": "Lager - Vienna"
      },
      "url": "https://untappd.com/beer/1538345",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -15668,8 +15757,10 @@
      "u_brewery": "Dahook",
      "u_name": "Hell",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/5817007",
-      "rating": 3.37464
+      "rating": 3.37464,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/5817007"
     },
@@ -15702,8 +15793,10 @@
      "u_brewery": "Dahook",
      "u_name": "Red IPA",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/5817002",
-      "rating": 3.65385
+      "rating": 3.65385,
+      "style": "IPA - Red"
      },
      "url": "https://untappd.com/beer/5817002"
     },
@@ -15840,7 +15933,7 @@
      "url": "https://untappd.com/beer/10722"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -15863,7 +15956,7 @@
      "url": "https://untappd.com/beer/11473"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -15887,7 +15980,7 @@
      "url": "https://untappd.com/beer/1441008"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -15944,7 +16037,7 @@
      "url": "https://untappd.com/beer/1715344"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -15966,7 +16059,7 @@
      "url": "https://untappd.com/beer/1802346"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16006,7 +16099,7 @@
      "url": "https://untappd.com/b/brewdog-double-hazy/2152137"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -16046,7 +16139,7 @@
      "url": "https://untappd.com/b/moscow-brewing-company-moskovskaya-pivovarennaya-kompaniya-ballantine/2897667"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -16071,7 +16164,7 @@
      "url": "https://untappd.com/beer/30445"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16093,7 +16186,7 @@
      "url": "https://untappd.com/beer/3217482"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16117,7 +16210,7 @@
      "url": "https://untappd.com/beer/3263126"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -16139,7 +16232,7 @@
      "url": "https://untappd.com/beer/3560731"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16164,7 +16257,7 @@
      "url": "https://untappd.com/beer/3679980"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16189,7 +16282,7 @@
      "url": "https://untappd.com/beer/4713"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16216,7 +16309,7 @@
      "url": "https://untappd.com/beer/4775562"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -16240,7 +16333,7 @@
      "url": "https://untappd.com/beer/5138327"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16262,7 +16355,7 @@
      "url": "https://untappd.com/beer/5325"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16287,7 +16380,7 @@
      "url": "https://untappd.com/beer/5579736"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16314,7 +16407,7 @@
      "url": "https://untappd.com/beer/5702"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -16341,7 +16434,7 @@
      "url": "https://untappd.com/beer/5817002"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -16368,7 +16461,7 @@
      "url": "https://untappd.com/beer/5817007"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -16395,7 +16488,7 @@
      "url": "https://untappd.com/beer/5953168"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -16417,7 +16510,7 @@
      "url": "https://untappd.com/beer/6101438"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16437,7 +16530,7 @@
      "url": "https://untappd.com/b/brewlok-brewery-wild-ale-blueberry/6166058"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -16460,7 +16553,7 @@
      "url": "https://untappd.com/beer/6424372"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16482,7 +16575,7 @@
      "url": "https://untappd.com/beer/6565995"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -16506,7 +16599,7 @@
      "url": "https://untappd.com/b/brewlok-brewery-liho-grejpfrut/6583573"
     },
     "last_in_result": false,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-24T13:27:33+00:00",
     "star": true
    },
@@ -16548,7 +16641,7 @@
      "url": "https://untappd.com/beer/6766"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": false
    }
@@ -19497,7 +19590,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19519,7 +19612,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19541,7 +19634,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19563,7 +19656,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19585,7 +19678,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19608,7 +19701,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19630,7 +19723,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19652,7 +19745,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19674,7 +19767,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19697,7 +19790,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19719,7 +19812,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19742,7 +19835,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19765,7 +19858,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19788,7 +19881,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19811,7 +19904,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19834,7 +19927,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19857,7 +19950,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19880,7 +19973,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19902,7 +19995,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19924,7 +20017,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19947,7 +20040,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19969,7 +20062,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19991,7 +20084,7 @@
      "volume_ml": 5000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20013,7 +20106,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20035,7 +20128,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20058,7 +20151,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20081,7 +20174,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20104,7 +20197,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20127,7 +20220,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20150,7 +20243,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20172,7 +20265,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20194,7 +20287,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20216,7 +20309,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20238,7 +20331,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20260,7 +20353,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20282,7 +20375,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20304,7 +20397,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20326,7 +20419,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20349,7 +20442,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20372,7 +20465,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20394,7 +20487,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20419,14 +20512,16 @@
      "u_brewery": "Dahook",
      "u_name": "Hell",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/5817007",
-      "rating": 3.37464
+      "rating": 3.37464,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/5817007",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20448,7 +20543,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20470,7 +20565,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20492,7 +20587,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20517,14 +20612,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Apricot Ale (Prunus Armeniaca)",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/1674726",
-      "rating": 3.46134
+      "rating": 3.46134,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/1674726",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20549,14 +20646,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Belgian Tripel (Seven Sins)",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/1775517",
-      "rating": 3.56892
+      "rating": 3.56892,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/1775517",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20578,7 +20677,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20603,14 +20702,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Pale Ale (Coney Island)",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/1518441",
-      "rating": 3.5824
+      "rating": 3.5824,
+      "style": "Pale Ale - American"
      },
      "url": "https://untappd.com/beer/1518441",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20635,14 +20736,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Pilsner (La Rapsodia)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1518439",
-      "rating": 3.30575
+      "rating": 3.30575,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/1518439",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20664,7 +20767,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20689,14 +20792,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Vienna Lager (Metamorphosis)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1538345",
-      "rating": 3.31902
+      "rating": 3.31902,
+      "style": "Lager - Vienna"
      },
      "url": "https://untappd.com/beer/1538345",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20721,14 +20826,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Weizen (Steppenwolf)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1554084",
-      "rating": 3.45846
+      "rating": 3.45846,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/1554084",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20750,7 +20857,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20772,7 +20879,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20794,7 +20901,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20817,7 +20924,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20839,7 +20946,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20861,7 +20968,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20886,14 +20993,16 @@
      "u_brewery": "Duvel Moortgat",
      "u_name": "Duvel Tripel Hop Citra",
      "u_overlay": {
+      "abv": 9.5,
       "logo": "https://labels.untappd.com/1948530",
-      "rating": 3.67412
+      "rating": 3.67412,
+      "style": "IPA - Belgian"
      },
      "url": "https://untappd.com/beer/1948530",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20916,7 +21025,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20938,7 +21047,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20960,7 +21069,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20982,7 +21091,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21004,7 +21113,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21027,7 +21136,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21049,7 +21158,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21071,7 +21180,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21093,7 +21202,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21114,7 +21223,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21139,14 +21248,16 @@
      "u_brewery": "Brouwerij Van Steenberge",
      "u_name": "Fourchette",
      "u_overlay": {
+      "abv": 7.5,
       "logo": "https://labels.untappd.com/2549239",
-      "rating": 3.69727
+      "rating": 3.69727,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/2549239",
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21168,7 +21279,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21191,7 +21302,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21213,7 +21324,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21235,7 +21346,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21258,7 +21369,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21281,7 +21392,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21304,7 +21415,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21326,7 +21437,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21348,7 +21459,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21371,7 +21482,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21393,7 +21504,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21415,7 +21526,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21438,7 +21549,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21461,7 +21572,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21484,7 +21595,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21507,7 +21618,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21530,7 +21641,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21553,7 +21664,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21576,7 +21687,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21598,7 +21709,7 @@
      "url": "https://parma.am/en/product/product?slug=beer-kozel-500m_1794"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21621,7 +21732,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21643,7 +21754,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21665,7 +21776,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21687,7 +21798,7 @@
      "volume_ml": 5000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21709,7 +21820,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21731,7 +21842,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21753,7 +21864,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21776,7 +21887,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21798,7 +21909,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21820,7 +21931,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21842,7 +21953,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21864,7 +21975,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21889,14 +22000,16 @@
      "u_brewery": "Bierbrouwerij de Koningshoeven",
      "u_name": "La Trappe Isid'or",
      "u_overlay": {
+      "abv": 7.5,
       "logo": "https://labels.untappd.com/6646",
-      "rating": 3.73999
+      "rating": 3.73999,
+      "style": "Belgian Strong Golden Ale"
      },
      "url": "https://untappd.com/beer/6646",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21921,14 +22034,16 @@
      "u_brewery": "Bierbrouwerij de Koningshoeven",
      "u_name": "La Trappe Tripel",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/2013",
-      "rating": 3.74266
+      "rating": 3.74266,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/2013",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21950,7 +22065,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21975,14 +22090,16 @@
      "u_brewery": "Brouwerij Liefmans",
      "u_name": "Kriek Brut",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/8472",
-      "rating": 3.67055
+      "rating": 3.67055,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/8472",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22004,7 +22121,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22027,7 +22144,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22050,7 +22167,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22073,7 +22190,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22096,7 +22213,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22119,7 +22236,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22142,7 +22259,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22165,7 +22282,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22187,7 +22304,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22212,14 +22329,16 @@
      "u_brewery": "Paulaner Brauerei",
      "u_name": "Hefe-Weißbier / Hefe-Weizen / Weissbier",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/15677",
-      "rating": 3.67126
+      "rating": 3.67126,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/15677",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22242,7 +22361,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22264,7 +22383,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22286,7 +22405,7 @@
      "volume_ml": 400
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22308,7 +22427,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22330,7 +22449,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22352,7 +22471,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22374,7 +22493,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22397,7 +22516,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22422,14 +22541,16 @@
      "u_brewery": "Abbaye Notre-Dame de Saint-Rémy",
      "u_name": "Trappistes Rochefort 10",
      "u_overlay": {
+      "abv": 11.3,
       "logo": "https://labels.untappd.com/6766",
-      "rating": 4.04349
+      "rating": 4.04349,
+      "style": "Belgian Quadrupel"
      },
      "url": "https://untappd.com/beer/6766",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22454,14 +22575,16 @@
      "u_brewery": "Abbaye Notre-Dame de Saint-Rémy",
      "u_name": "Trappistes Rochefort 6",
      "u_overlay": {
+      "abv": 7.5,
       "logo": "https://labels.untappd.com/10722",
-      "rating": 3.71107
+      "rating": 3.71107,
+      "style": "Belgian Dubbel"
      },
      "url": "https://untappd.com/beer/10722",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22486,14 +22609,16 @@
      "u_brewery": "Abbaye Notre-Dame de Saint-Rémy",
      "u_name": "Trappistes Rochefort 8",
      "u_overlay": {
+      "abv": 9.2,
       "logo": "https://labels.untappd.com/11473",
-      "rating": 3.83689
+      "rating": 3.83689,
+      "style": "Belgian Strong Dark Ale"
      },
      "url": "https://untappd.com/beer/11473",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22515,7 +22640,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22537,7 +22662,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22559,7 +22684,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22582,7 +22707,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22605,7 +22730,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22630,14 +22755,16 @@
      "u_brewery": "Volfas Engelman",
      "u_name": "APA",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/2073098",
-      "rating": 3.37276
+      "rating": 3.37276,
+      "style": "Pale Ale - Australian"
      },
      "url": "https://untappd.com/beer/2073098",
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22659,7 +22786,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22681,7 +22808,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22706,14 +22833,16 @@
      "u_brewery": "Volfas Engelman",
      "u_name": "IPA",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/1517697",
-      "rating": 3.34215
+      "rating": 3.34215,
+      "style": "IPA - Other"
      },
      "url": "https://untappd.com/beer/1517697",
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22735,7 +22864,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22757,7 +22886,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22779,7 +22908,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22801,7 +22930,7 @@
      "volume_ml": 5000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22824,7 +22953,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22846,7 +22975,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22868,7 +22997,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22889,7 +23018,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22911,7 +23040,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22933,7 +23062,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22958,14 +23087,16 @@
      "u_brewery": "Bayerische Staatsbrauerei Weihenstephan",
      "u_name": "Weihenstephaner Hefeweissbier",
      "u_overlay": {
+      "abv": 5.4,
       "logo": "https://labels.untappd.com/8745",
-      "rating": 3.77606
+      "rating": 3.77606,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/8745",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22990,14 +23121,16 @@
      "u_brewery": "Bayerische Staatsbrauerei Weihenstephan",
      "u_name": "Weihenstephaner Pils",
      "u_overlay": {
+      "abv": 5.1,
       "logo": "https://labels.untappd.com/16774",
-      "rating": 3.56585
+      "rating": 3.56585,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/16774",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23022,14 +23155,16 @@
      "u_brewery": "Brouwerij der Trappisten van Westmalle",
      "u_name": "Westmalle Trappist Dubbel",
      "u_overlay": {
+      "abv": 7.0,
       "logo": "https://labels.untappd.com/4168",
-      "rating": 3.68545
+      "rating": 3.68545,
+      "style": "Belgian Dubbel"
      },
      "url": "https://untappd.com/beer/4168",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23054,14 +23189,16 @@
      "u_brewery": "Brouwerij der Trappisten van Westmalle",
      "u_name": "Westmalle Trappist Tripel",
      "u_overlay": {
+      "abv": 9.5,
       "logo": "https://labels.untappd.com/487",
-      "rating": 3.8064
+      "rating": 3.8064,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/487",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23083,7 +23220,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23105,7 +23242,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23127,7 +23264,7 @@
      "volume_ml": 480
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23149,7 +23286,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23172,7 +23309,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23195,7 +23332,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23217,7 +23354,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23239,7 +23376,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23261,7 +23398,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -23350,7 +23487,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23376,14 +23513,16 @@
      "u_brewery": "379 Torch & Brew",
      "u_name": "Pilsner",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/4775549",
-      "rating": 3.36535
+      "rating": 3.36535,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/4775549",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23407,7 +23546,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23431,7 +23570,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23454,7 +23593,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23477,7 +23616,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23500,7 +23639,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23523,7 +23662,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23547,7 +23686,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23570,7 +23709,7 @@
      "volume_ml": 1500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23593,7 +23732,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23616,7 +23755,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23639,7 +23778,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23662,7 +23801,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23685,7 +23824,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23709,7 +23848,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23733,7 +23872,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23758,14 +23897,16 @@
      "style": "Pilsner - Other",
      "title": "Beer \"Baltika\" 3 (can) 0.45l",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-5580398_7a12b_sm.jpeg",
-      "rating": 3.17
+      "rating": 3.17,
+      "style": "Pilsner - Other"
      },
      "url": "https://untappd.com/b/baltika-breweries-baltika-baltika-3-classic-baltika-3-klassicheskoe/5580398",
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23789,7 +23930,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23814,14 +23955,16 @@
      "style": "Lager - Dortmunder / Export",
      "title": "Beer \"Baltika\" 7 (can) 0.45l",
      "u_overlay": {
+      "abv": 5.4,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-7097_3bd06_sm.jpeg",
-      "rating": 3.02
+      "rating": 3.02,
+      "style": "Lager - Dortmunder / Export"
      },
      "url": "https://untappd.com/b/baltika-breweries-baltika-baltika-7-export-baltika-7-eksportnoe/7097",
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23845,7 +23988,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23869,7 +24012,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23893,7 +24036,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23918,14 +24061,16 @@
      "style": "Lager - Strong",
      "title": "Beer \"Baltika\" 9 (can) 0.45l",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-5483_0f2b8_sm.jpeg",
-      "rating": 2.97
+      "rating": 2.97,
+      "style": "Lager - Strong"
      },
      "url": "https://untappd.com/b/baltika-breweries-baltika-baltika-9-legendarnoe-baltika-9-legendarnoe/5483",
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23949,7 +24094,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23973,7 +24118,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23997,7 +24142,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24021,7 +24166,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24044,7 +24189,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24067,7 +24212,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -24090,7 +24235,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24113,7 +24258,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -24136,7 +24281,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -24160,14 +24305,16 @@
      "style": "Pilsner - German",
      "title": "Beer \"Bitburger\" Premium Pils (can) 0.33l",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-17252_fc89f_sm.jpeg",
-      "rating": 3.2
+      "rating": 3.2,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/b/bitburger-brauerei-bitburger-premium-pils/17252",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24193,14 +24340,16 @@
      "u_brewery": "Bitburger Brauerei",
      "u_name": "Bitburger Premium Pils",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/17252",
-      "rating": 3.19987
+      "rating": 3.19987,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/17252",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24224,7 +24373,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24248,7 +24397,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24272,7 +24421,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24296,7 +24445,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24320,7 +24469,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24344,7 +24493,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24367,7 +24516,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24389,7 +24538,7 @@
      "volume_ml": 1200
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24412,7 +24561,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24436,7 +24585,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24460,7 +24609,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24483,7 +24632,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24506,7 +24655,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24532,14 +24681,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Apricot Ale (Prunus Armeniaca)",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/1674726",
-      "rating": 3.46134
+      "rating": 3.46134,
+      "style": "Fruit Beer"
      },
      "url": "https://untappd.com/beer/1674726",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24565,14 +24716,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Belgian Tripel (Seven Sins)",
      "u_overlay": {
+      "abv": 8.0,
       "logo": "https://labels.untappd.com/1775517",
-      "rating": 3.56892
+      "rating": 3.56892,
+      "style": "Belgian Tripel"
      },
      "url": "https://untappd.com/beer/1775517",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24594,7 +24747,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24620,14 +24773,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Pale Ale (Coney Island)",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/1518441",
-      "rating": 3.5824
+      "rating": 3.5824,
+      "style": "Pale Ale - American"
      },
      "url": "https://untappd.com/beer/1518441",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24651,14 +24806,16 @@
      "style": "Pilsner - German",
      "title": "Draft beer \"Dargett\" Pilsner 1l",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-1518439_867cb_sm.jpeg",
-      "rating": 3.31
+      "rating": 3.31,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/b/dargett-brewery-pilsner-la-rapsodia/1518439",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24684,14 +24841,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Pilsner (La Rapsodia)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1518439",
-      "rating": 3.30575
+      "rating": 3.30575,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/1518439",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24714,7 +24873,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24738,7 +24897,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24762,7 +24921,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24786,7 +24945,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24810,7 +24969,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24833,7 +24992,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24856,7 +25015,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24879,7 +25038,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24903,7 +25062,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24927,7 +25086,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24950,7 +25109,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24973,7 +25132,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24996,7 +25155,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25019,7 +25178,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25042,7 +25201,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25065,7 +25224,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25091,14 +25250,16 @@
      "u_brewery": "Guinness",
      "u_name": "Guinness Draught",
      "u_overlay": {
+      "abv": 4.2,
       "logo": "https://labels.untappd.com/4473",
-      "rating": 3.76856
+      "rating": 3.76856,
+      "style": "Stout - Irish Dry"
      },
      "url": "https://untappd.com/beer/4473",
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25122,7 +25283,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25146,7 +25307,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25170,7 +25331,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25194,7 +25355,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25218,7 +25379,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25241,7 +25402,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25264,7 +25425,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25288,7 +25449,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25312,7 +25473,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25336,7 +25497,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25359,7 +25520,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25382,7 +25543,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25405,7 +25566,7 @@
      "volume_ml": 310
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25428,7 +25589,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25451,7 +25612,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25474,7 +25635,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25497,7 +25658,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25520,7 +25681,7 @@
      "volume_ml": 2500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25544,7 +25705,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25568,7 +25729,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25592,7 +25753,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25616,7 +25777,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25640,7 +25801,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25663,7 +25824,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25687,7 +25848,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25711,7 +25872,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25735,7 +25896,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25759,7 +25920,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25783,7 +25944,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25807,7 +25968,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25831,7 +25992,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -25855,7 +26016,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25879,7 +26040,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -25903,7 +26064,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25926,7 +26087,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25949,7 +26110,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25973,7 +26134,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25996,7 +26157,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -26019,7 +26180,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26045,14 +26206,16 @@
      "u_brewery": "Abbaye de Leffe",
      "u_name": "Leffe Blonde / Blond",
      "u_overlay": {
+      "abv": 6.6,
       "logo": "https://labels.untappd.com/5940",
-      "rating": 3.58334
+      "rating": 3.58334,
+      "style": "Belgian Blonde"
      },
      "url": "https://untappd.com/beer/5940",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26075,7 +26238,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26098,7 +26261,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26122,7 +26285,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26148,14 +26311,16 @@
      "u_brewery": "Spaten-Franziskaner-Löwenbräu-Gruppe",
      "u_name": "Löwenbräu Original",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://labels.untappd.com/25914",
-      "rating": 3.19302
+      "rating": 3.19302,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/25914",
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26181,14 +26346,16 @@
      "u_brewery": "Spaten-Franziskaner-Löwenbräu-Gruppe",
      "u_name": "Löwenbräu Original",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://labels.untappd.com/25914",
-      "rating": 3.19302
+      "rating": 3.19302,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/25914",
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26212,7 +26379,7 @@
      "volume_ml": 480
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26236,7 +26403,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26260,7 +26427,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26284,7 +26451,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26307,7 +26474,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26331,7 +26498,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26354,7 +26521,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26377,7 +26544,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26400,7 +26567,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26424,14 +26591,16 @@
      "style": "Lager - Helles",
      "title": "Beer \"Paulaner\" Munchner hell (can) 0.5l",
      "u_overlay": {
+      "abv": 4.9,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-3235_c64ae_sm.jpeg",
-      "rating": 3.46
+      "rating": 3.46,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/b/paulaner-brauerei-munchner-hell-munchner-lager-original-munich-lager/3235",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26457,14 +26626,16 @@
      "u_brewery": "Paulaner Brauerei",
      "u_name": "Münchner Hell / Münchner Lager / Original Munich Lager",
      "u_overlay": {
+      "abv": 4.9,
       "logo": "https://labels.untappd.com/3235",
-      "rating": 3.46053
+      "rating": 3.46053,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/3235",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26488,14 +26659,16 @@
      "style": "Wheat Beer - Hefeweizen",
      "title": "Beer \"Paulaner\" Weissbier (can) 0.5l",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-15677_e4b29_sm.jpeg",
-      "rating": 3.67
+      "rating": 3.67,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/b/paulaner-brauerei-paulaner-hefe-weissbier-hefe-weizen-weissbier/15677",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26521,14 +26694,16 @@
      "u_brewery": "Paulaner Brauerei",
      "u_name": "Hefe-Weißbier / Hefe-Weizen / Weissbier",
      "u_overlay": {
+      "abv": 5.5,
       "logo": "https://labels.untappd.com/15677",
-      "rating": 3.67126
+      "rating": 3.67126,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/15677",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26551,7 +26726,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26574,7 +26749,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26597,7 +26772,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26620,7 +26795,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26643,7 +26818,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26666,7 +26841,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26689,7 +26864,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26713,7 +26888,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26739,14 +26914,16 @@
      "u_brewery": "Radeberger Gruppe",
      "u_name": "Schöfferhofer Hefeweizen",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/7489",
-      "rating": 3.47117
+      "rating": 3.47117,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/7489",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26770,7 +26947,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26794,7 +26971,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26818,7 +26995,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26842,7 +27019,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26866,7 +27043,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26889,7 +27066,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26913,7 +27090,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26939,14 +27116,16 @@
      "u_brewery": "Brauerei VELTINS",
      "u_name": "Pilsener",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/40173",
-      "rating": 3.18407
+      "rating": 3.18407,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/40173",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26972,14 +27151,16 @@
      "u_brewery": "Brauerei VELTINS",
      "u_name": "Pilsener",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://labels.untappd.com/40173",
-      "rating": 3.18407
+      "rating": 3.18407,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/beer/40173",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27003,7 +27184,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27029,14 +27210,16 @@
      "u_brewery": "Volfas Engelman",
      "u_name": "APA",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/2073098",
-      "rating": 3.37276
+      "rating": 3.37276,
+      "style": "Pale Ale - Australian"
      },
      "url": "https://untappd.com/beer/2073098",
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27059,7 +27242,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27083,14 +27266,16 @@
      "style": "Wheat Beer - Witbier / Blanche",
      "title": "Beer \"Volfas Engelman\" Blanc (can) 0.568l",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-3777934_48889_sm.jpeg",
-      "rating": 3.42
+      "rating": 3.42,
+      "style": "Wheat Beer - Witbier / Blanche"
      },
      "url": "https://untappd.com/b/volfas-engelman-blanc/3777934",
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27116,14 +27301,16 @@
      "u_brewery": "Volfas Engelman",
      "u_name": "IPA",
      "u_overlay": {
+      "abv": 6.0,
       "logo": "https://labels.untappd.com/1517697",
-      "rating": 3.34215
+      "rating": 3.34215,
+      "style": "IPA - Other"
      },
      "url": "https://untappd.com/beer/1517697",
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27147,14 +27334,16 @@
      "style": "Lager - Pale",
      "title": "Beer \"Volfas Engelman\" Rinktinis (can) 0.568l",
      "u_overlay": {
+      "abv": 5.2,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-87115_068d6_sm.jpeg",
-      "rating": 3.12
+      "rating": 3.12,
+      "style": "Lager - Pale"
      },
      "url": "https://untappd.com/b/volfas-engelman-rinktinis/87115",
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27177,7 +27366,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27200,7 +27389,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27224,7 +27413,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27248,14 +27437,16 @@
      "style": "Pilsner - German",
      "title": "Beer \"Warsteiner\" Premium (can) 0.33l",
      "u_overlay": {
+      "abv": 4.8,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-10703_c60bb_sm.jpeg",
-      "rating": 3.21
+      "rating": 3.21,
+      "style": "Pilsner - German"
      },
      "url": "https://untappd.com/b/warsteiner-premium-pilsener-german-pilsener/10703",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27278,7 +27469,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27301,7 +27492,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27324,7 +27515,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27350,14 +27541,16 @@
      "u_brewery": "Bayerische Staatsbrauerei Weihenstephan",
      "u_name": "Weihenstephaner Original",
      "u_overlay": {
+      "abv": 5.1,
       "logo": "https://labels.untappd.com/2716",
-      "rating": 3.61236
+      "rating": 3.61236,
+      "style": "Lager - Helles"
      },
      "url": "https://untappd.com/beer/2716",
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27380,7 +27573,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27403,7 +27596,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27429,14 +27622,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Weizen (Steppenwolf)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1554084",
-      "rating": 3.45846
+      "rating": 3.45846,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/1554084",
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27462,14 +27657,16 @@
      "u_brewery": "Dargett Brewery",
      "u_name": "Weizen (Steppenwolf)",
      "u_overlay": {
+      "abv": 5.0,
       "logo": "https://labels.untappd.com/1554084",
-      "rating": 3.45846
+      "rating": 3.45846,
+      "style": "Wheat Beer - Hefeweizen"
      },
      "url": "https://untappd.com/beer/1554084",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27493,7 +27690,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27517,7 +27714,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27541,7 +27738,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27589,7 +27786,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27612,7 +27809,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27635,7 +27832,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27658,7 +27855,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27680,7 +27877,7 @@
      "url": "https://yerevan-city.am/shop/product-details/94218"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27702,7 +27899,7 @@
      "url": "https://yerevan-city.am/shop/product-details/94217"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27724,7 +27921,7 @@
      "url": "https://yerevan-city.am/shop/product-details/96903"
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27747,7 +27944,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27769,7 +27966,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27792,7 +27989,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27815,7 +28012,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27838,7 +28035,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27861,7 +28058,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27883,7 +28080,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27906,7 +28103,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27929,7 +28126,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27952,7 +28149,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27975,7 +28172,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27998,7 +28195,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28021,7 +28218,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28044,7 +28241,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28067,7 +28264,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28090,7 +28287,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28113,7 +28310,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28136,7 +28333,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28159,7 +28356,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28182,7 +28379,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28205,7 +28402,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28228,7 +28425,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28251,7 +28448,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28274,7 +28471,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28297,7 +28494,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28320,7 +28517,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28343,7 +28540,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28366,7 +28563,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28389,7 +28586,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-09-25T15:03:56+00:00",
+    "last_seen": "2026-09-25T16:00:36+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -29466,17 +29663,17 @@
    "weak": false
   },
   "n:bronx": {
-   "abv": 6.3,
+   "abv": null,
    "brewery": null,
-   "checked_at": "2026-09-24T15:31:53+00:00",
-   "logo": "https://assets.untappd.com/site/beer_logos/beer-77455_d66a7_sm.jpeg",
-   "matched_at": "2026-09-24T15:31:53+00:00",
+   "checked_at": null,
+   "logo": null,
+   "matched_at": "2026-09-25T16:00:36+00:00",
    "name": null,
-   "rating": 3.49,
-   "style": "Pale Ale - American",
-   "untappd_beer_id": 77455,
-   "url": "https://untappd.com/b/the-bronx-brewery-bronx-american-pale-ale/77455",
-   "via": null,
+   "rating": null,
+   "style": null,
+   "untappd_beer_id": null,
+   "url": null,
+   "via": "manual",
    "weak": false
   },
   "n:bronx black cherry": {
@@ -29484,13 +29681,13 @@
    "brewery": null,
    "checked_at": null,
    "logo": null,
-   "matched_at": "2026-09-24T15:31:53+00:00",
+   "matched_at": "2026-09-25T16:00:36+00:00",
    "name": null,
    "rating": null,
    "style": null,
    "untappd_beer_id": null,
    "url": null,
-   "via": null,
+   "via": "manual",
    "weak": false
   },
   "n:carribay cuba libre": {
@@ -30873,7 +31070,7 @@
    "last_count": 219,
    "last_error": null,
    "last_full": "2026-09-24T21:07:58+00:00",
-   "last_ok": "2026-09-25T15:03:56+00:00",
+   "last_ok": "2026-09-25T16:00:36+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -30885,8 +31082,8 @@
    "fail_streak": 0,
    "last_count": 16,
    "last_error": null,
-   "last_full": "2026-09-25T15:03:56+00:00",
-   "last_ok": "2026-09-25T15:03:56+00:00",
+   "last_full": "2026-09-25T16:00:36+00:00",
+   "last_ok": "2026-09-25T16:00:36+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -30898,8 +31095,8 @@
    "fail_streak": 0,
    "last_count": 27,
    "last_error": null,
-   "last_full": "2026-09-25T15:03:56+00:00",
-   "last_ok": "2026-09-25T15:03:56+00:00",
+   "last_full": "2026-09-25T16:00:36+00:00",
+   "last_ok": "2026-09-25T16:00:36+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -30911,8 +31108,8 @@
    "fail_streak": 0,
    "last_count": 166,
    "last_error": null,
-   "last_full": "2026-09-25T15:03:56+00:00",
-   "last_ok": "2026-09-25T15:03:56+00:00",
+   "last_full": "2026-09-25T16:00:36+00:00",
+   "last_ok": "2026-09-25T16:00:36+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -31265,8 +31462,8 @@
    "fail_streak": 0,
    "last_count": 204,
    "last_error": null,
-   "last_full": "2026-09-25T15:03:56+00:00",
-   "last_ok": "2026-09-25T15:03:56+00:00",
+   "last_full": "2026-09-25T16:00:36+00:00",
+   "last_ok": "2026-09-25T16:00:36+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
