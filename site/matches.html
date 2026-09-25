@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проверка склеек</title>
+<meta name="description" content="Как магазинные названия пива сопоставлены с сортами на Untappd — проверка и исправление">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f6f5f2;
+    --border: #e7e3dc;
+    --text: #201d18;
+    --muted: #756f65;
+    --accent: #c8891c;
+    --on-accent: #ffffff;
+    --danger: #b42318;
+    --warn-bg: #fdf1cf;
+    --warn-text: #6b4a06;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171511;
+      --surface: #1e1b17;
+      --surface-2: #262220;
+      --border: #35302a;
+      --text: #f1ede6;
+      --muted: #a89e90;
+      --accent: #e3a548;
+      --on-accent: #1a1612;
+      --danger: #ff8f84;
+      --warn-bg: #4a3a08;
+      --warn-text: #ffe9a8;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .back { display: inline-block; margin-bottom: 12px; font-size: .9rem; }
+  h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0 0 8px; font-weight: 800; }
+  .intro { color: var(--muted); margin: 0 0 16px; max-width: 70ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 12px; }
+  #search {
+    flex: 1 1 240px; min-width: 0; font: inherit; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px;
+  }
+  .toggle { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+  .toggle input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  .count { color: var(--muted); font-size: .85rem; margin: 0 0 10px; }
+  .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .card.marked { border-color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger); }
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: start; }
+  .arrow { color: var(--muted); font-size: 1.3rem; line-height: 1.4; }
+  .side { display: flex; gap: 10px; min-width: 0; }
+  .thumb {
+    width: 56px; height: 56px; flex-shrink: 0; border-radius: 8px; object-fit: contain;
+    background: var(--surface-2);
+  }
+  .text { min-width: 0; }
+  .tag { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+  .name { font-weight: 700; }
+  .small { display: block; color: var(--muted); font-size: .85rem; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .badge {
+    font-size: .75rem; border: 1px solid var(--border); border-radius: 999px;
+    padding: 1px 9px; color: var(--muted); background: var(--surface-2);
+  }
+  .badge.weak { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; font-weight: 600; }
+  .verdict { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .verdict .toggle { color: var(--danger); font-weight: 600; }
+  .verdict input { accent-color: var(--danger); }
+  #bar {
+    position: sticky; bottom: 0; z-index: 5; margin: 16px -20px 0; padding: 10px 20px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+    background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0, 0, 0, .12);
+  }
+  #copy {
+    font: inherit; font-weight: 700; cursor: pointer; padding: 9px 16px;
+    border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent); color: var(--on-accent);
+  }
+  #copy:disabled { opacity: .5; cursor: default; }
+  #copy-status { color: var(--muted); font-size: .85rem; }
+  @media (max-width: 640px) {
+    .pair { grid-template-columns: 1fr; gap: 6px; }
+    .arrow { transform: rotate(90deg); width: 1.3em; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main>
+    <a class="back" href="index.html">← На главную</a>
+    <h1><span aria-hidden="true">🔗</span> Проверка склеек</h1>
+    <p class="intro">Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. Если это разные пивоварни или сорта — отметьте «не то пиво». Потом нажмите «Скопировать для Олега» и отправьте текст Олегу.</p>
+    <div class="controls">
+      <label for="search" class="sr-only">Поиск по названию, пивоварне или месту</label>
+      <input type="search" id="search" placeholder="Название, пивоварня или место" autocomplete="off">
+      <label class="toggle"><input type="checkbox" id="only-weak"><span>только слабые</span></label>
+    </div>
+    <p id="count" class="count" aria-live="polite">загружаем…</p>
+    <div id="list"></div>
+  </main>
+  <div id="bar">
+    <span>Отмечено: <b id="marked">0</b></span>
+    <button type="button" id="copy" disabled>Скопировать для Олега</button>
+    <span id="copy-status" role="status"></span>
+  </div>
+</div>
+<script>
+"use strict";
+const STORAGE_KEY = "matches-wrong";
+const VIA_RU = { local: "авто по названию", search: "поиск Untappd", manual: "вручную" };
+const ui = { matches: [], marked: new Set() };
+const $ = (id) => document.getElementById(id);
+
+// Every value from data.json goes into the DOM as text, never as HTML.
+function el(tag, attrs, ...kids) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) if (v != null) node.setAttribute(k, v);
+  for (const kid of kids) if (kid != null && kid !== "") node.append(kid);
+  return node;
+}
+const safeUrl = (u) => (typeof u === "string" && /^https?:\/\//i.test(u) ? u : null);
+const idOf = (m) => `${m.place_id}|${m.key}`;
+
+function loadMarked() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return new Set(Array.isArray(saved) ? saved : []);
+  } catch (err) {
+    return new Set();
+  }
+}
+function saveMarked() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ui.marked]));
+  } catch (err) { /* private mode or blocked storage: marks last until the page is closed */ }
+}
+
+function thumb(url) {
+  const safe = safeUrl(url);
+  if (!safe) return null;
+  const img = el("img", { src: safe, alt: "", class: "thumb", width: 56, height: 56, loading: "lazy", referrerpolicy: "no-referrer" });
+  img.addEventListener("error", () => img.remove(), { once: true });
+  return img;
+}
+function nameNode(text, url) {
+  const safe = safeUrl(url);
+  return safe
+    ? el("a", { class: "name", href: safe, target: "_blank", rel: "noopener noreferrer" }, text)
+    : el("span", { class: "name" }, text);
+}
+function shopSide(m) {
+  return el("div", { class: "side" }, thumb(m.shop_photo),
+    el("div", { class: "text" },
+      el("span", { class: "tag" }, `В магазине · ${m.place}`),
+      nameNode(m.shop_name, m.shop_url),
+      m.shop_brewery ? el("span", { class: "small" }, m.shop_brewery) : null));
+}
+function untappdSide(m) {
+  return el("div", { class: "side" }, thumb(m.untappd_logo),
+    el("div", { class: "text" },
+      el("span", { class: "tag" }, "На Untappd"),
+      nameNode(m.untappd_name || "сорт без названия", m.untappd_url),
+      m.untappd_brewery ? el("span", { class: "small" }, m.untappd_brewery) : null,
+      m.rating != null ? el("span", { class: "small" }, `рейтинг ${Number(m.rating).toFixed(2)}`) : null,
+      el("div", { class: "badges" },
+        el("span", { class: "badge" }, VIA_RU[m.via] || m.via || "неизвестно"),
+        m.weak ? el("span", { class: "badge weak" }, "⚠️ слабое совпадение") : null)));
+}
+function cardNode(m) {
+  const box = el("input", { type: "checkbox" });
+  box.checked = ui.marked.has(idOf(m));
+  const card = el("li", { class: "card" },
+    el("div", { class: "pair" }, shopSide(m), el("span", { class: "arrow", "aria-hidden": "true" }, "→"), untappdSide(m)),
+    el("div", { class: "verdict" }, el("label", { class: "toggle" }, box, el("span", null, "не то пиво"))));
+  card.classList.toggle("marked", box.checked);
+  box.addEventListener("change", () => {
+    if (box.checked) ui.marked.add(idOf(m)); else ui.marked.delete(idOf(m));
+    card.classList.toggle("marked", box.checked);
+    saveMarked();
+    renderBar();
+  });
+  return card;
+}
+
+function visibleMatches() {
+  const q = $("search").value.trim().toLowerCase();
+  const onlyWeak = $("only-weak").checked;
+  return ui.matches.filter((m) => (!onlyWeak || m.weak)
+    && (!q || [m.shop_name, m.shop_brewery, m.untappd_name, m.untappd_brewery, m.place]
+      .some((s) => s && String(s).toLowerCase().includes(q))));
+}
+function markedMatches() {   // only entries still on the site: a merge that vanished needs no review
+  return ui.matches.filter((m) => ui.marked.has(idOf(m)));
+}
+function copyText() {
+  return markedMatches()
+    .map((m) => `${m.place_id} | ${m.key} | ${m.shop_name} → ${m.untappd_name || "?"} (${m.untappd_url || ""})`)
+    .join("\n");
+}
+function renderBar() {
+  const n = markedMatches().length;
+  $("marked").textContent = String(n);
+  $("copy").disabled = n === 0;
+  $("copy-status").textContent = "";
+}
+function render() {
+  const shown = visibleMatches();
+  const total = ui.matches.length;
+  $("count").textContent = shown.length === total ? `Склеек: ${total}` : `Показано ${shown.length} из ${total}`;
+  $("list").replaceChildren(shown.length
+    ? el("ul", { class: "cards" }, ...shown.map(cardNode))
+    : el("p", { class: "empty" }, total ? "Ничего не нашлось — попробуйте другой запрос или фильтр." : "Склеек пока нет."));
+  renderBar();
+}
+
+function fallbackCopy(text) {   // older browsers and non-secure origins have no navigator.clipboard
+  const area = el("textarea", { readonly: "", "aria-hidden": "true", style: "position:fixed;top:0;left:0;opacity:0" });
+  area.value = text;
+  document.body.append(area);
+  area.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
+  area.remove();
+  return ok;
+}
+async function copyMarked() {
+  const text = copyText();
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    ok = true;
+  } catch (err) {
+    ok = fallbackCopy(text);
+  }
+  $("copy-status").textContent = ok ? "Скопировано — отправьте Олегу" : "Не удалось скопировать";
+}
+
+async function load() {
+  try {
+    const res = await fetch("./data.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data || !Array.isArray(data.matches)) throw new Error("bad data.json");
+    ui.matches = data.matches;
+  } catch (err) {
+    console.error(err);
+    $("count").textContent = "";
+    $("list").replaceChildren(el("p", { class: "empty" }, "Не удалось загрузить данные. Обновите страницу через минуту."));
+    return;
+  }
+  ui.marked = loadMarked();
+  render();
+}
+
+$("search").addEventListener("input", render);
+$("only-weak").addEventListener("change", render);
+$("copy").addEventListener("click", copyMarked);
+load();
+</script>
+</body>
+</html>
