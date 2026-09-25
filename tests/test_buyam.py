@@ -37,8 +37,13 @@ DRAUGHT = [
 ]
 
 
+# Every Dargett draught shares one picture; the API sends a path relative to https://buy.am/.
+IMAGES = {"large": "media/image/01/ce/96/Dargett_1l.webp", "small": "media/image/02/b8/1b/Dargett_1l_200x200@2x.webp"}
+PHOTO = "https://buy.am/media/image/02/b8/1b/Dargett_1l_200x200@2x.webp"
+
+
 def listing(rows=DRAUGHT) -> str:
-    items = [{"id": i, "name": n, "nameEn": n, "basePrice": p} for i, n, p in rows]
+    items = [{"id": i, "name": n, "nameEn": n, "basePrice": p, "imagesPaths": IMAGES} for i, n, p in rows]
     return json.dumps({"code": 200, "data": {"items": items, "totalCount": len(items)}})
 
 
@@ -103,12 +108,28 @@ def test_parse_page_matches_department_name_loosely():
 def test_parse_buyam_reads_real_listing():
     items = parse_buyam(listing())
     assert len(items) == 16
-    assert items[0] == BuyamItem("174894", "Draught beer Dargett Bohemian Pilsner 1l", 2000)
-    assert items[-1] == BuyamItem("174911", "Draught beer Dargett Imperial IPA 1l", 3000)
+    assert items[0] == BuyamItem("174894", "Draught beer Dargett Bohemian Pilsner 1l", 2000, PHOTO)
+    assert items[-1] == BuyamItem("174911", "Draught beer Dargett Imperial IPA 1l", 3000, PHOTO)
     prices = {i.name: i.price_amd for i in items}
     assert prices["Draught beer Dargett Apricot Ale 1l"] == 2500
     assert prices["Draught beer Dargett Apple Cider 1l"] == 3000
     assert sorted(set(prices.values())) == [2000, 2500, 3000]
+
+
+def test_parse_buyam_reads_the_small_photo_of_every_item():
+    assert {i.photo for i in parse_buyam(listing())} == {PHOTO}   # the resized variant, not "large" (77 KB)
+
+
+@pytest.mark.parametrize("paths", [
+    None, {}, {"large": IMAGES["large"]},                          # no small variant: the big original is not used
+    {"small": None}, {"small": ""}, {"small": 5}, "media/image/a.webp", ["small"],
+    {"small": "http://buy.am/media/image/a.webp"}, {"small": "https://evil.example/a.webp"},
+    {"small": "//evil.example/a.webp"},
+])
+def test_parse_buyam_item_without_a_usable_small_photo_keeps_no_photo_and_stays_valid(paths):
+    row = {"id": 1, "nameEn": "Draught beer Dargett Gose 1l", "basePrice": 2500, "imagesPaths": paths}
+    assert parse_buyam(json.dumps({"data": {"items": [row]}})) == \
+        [BuyamItem("1", "Draught beer Dargett Gose 1l", 2500, None)]
 
 
 def test_parse_buyam_prefers_english_name():
@@ -169,7 +190,7 @@ def test_fetch_buyam_builds_menu_sightings():
     assert result.sightings[0] == Sighting(
         place_id="dargett-brewpub", source="buyam", beer_key="n:dargett bohemian pilsner",
         title="Draught beer Dargett Bohemian Pilsner 1l", name="Bohemian Pilsner", seen_at=NOW,
-        brewery="Dargett", price_amd=2000, volume_ml=1000, container="draft", url=PAGE_URL,
+        brewery="Dargett", price_amd=2000, volume_ml=1000, container="draft", url=PAGE_URL, logo=PHOTO,
     )
     assert result.sightings[0].kind == "menu"
     by_name = {s.name: s for s in result.sightings}

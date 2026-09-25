@@ -13,11 +13,13 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 from taps.config import Place
-from taps.fetch import FetchError, Http
+from taps.fetch import FetchError, Http, shop_photo
 from taps.model import Sighting, SourceResult, untappd_n_key
 
 DEPARTMENT = "draught beer"
 LISTING_URL = "https://api.buy.am/products/listing?skip=0&s={supplier}&f={department}&take=100"
+MEDIA_BASE = "https://buy.am/"    # items carry imagesPaths.small as a path relative to this
+PHOTO_HOSTS = ("buy.am",)
 LISTING_HEADERS = {"Accept": "application/json", "Content-Language": "en"}
 _DRAUGHT_RE = re.compile(r"^\s*draught\s+beer\b", re.I)
 _VOLUME_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|l)\b", re.I)
@@ -35,6 +37,7 @@ class BuyamItem:
     item_id: str
     name: str               # as on buy.am: "Draught beer Dargett Bohemian Pilsner 1l"
     price_amd: int | None
+    photo: str | None = None
 
 
 def _is_int(v: Any) -> bool:
@@ -75,7 +78,9 @@ def parse_buyam(text: str) -> list[BuyamItem]:
         item_id, name, price = _get(row, "id"), _get(row, "nameEn") or _get(row, "name"), _get(row, "basePrice")
         if not _is_int(item_id) or not isinstance(name, str) or not name.strip():
             raise ValueError(f"bad item {item_id!r}")
-        items.append(BuyamItem(str(item_id), name, price if _is_int(price) and price > 0 else None))
+        small = _get(row, "imagesPaths", "small")   # the resized variant; "large" is 4x the size
+        items.append(BuyamItem(str(item_id), name, price if _is_int(price) and price > 0 else None,
+                               shop_photo(small if isinstance(small, str) else None, MEDIA_BASE, PHOTO_HOSTS)))
     return items
 
 
@@ -122,6 +127,6 @@ def fetch_buyam(http: Http, place: Place, now: datetime, brewery_aliases: Mappin
         sightings.append(Sighting(
             place_id=place.id, source="buyam", beer_key=beer_key, title=item.name, name=name, seen_at=now,
             brewery=place.brewery_name, price_amd=item.price_amd, volume_ml=_volume_ml(item.name),
-            container="draft", url=url,
+            container="draft", url=url, logo=item.photo,
         ))
     return SourceResult(key=key, source="buyam", ok=True, sightings=sightings, place_id=place.id)
