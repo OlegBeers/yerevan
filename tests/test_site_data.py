@@ -212,6 +212,15 @@ def test_a_blocked_match_is_no_match_so_the_guess_applies():
     assert build(st)["rows"][0]["style"] == "Pilsner"
 
 
+def test_a_real_untappd_menu_beer_with_no_style_gets_no_guess_either():
+    """kind == "menu" also covers a bar's own Untappd menu (untappd_menu), not only buy.am: the guard is the
+    beer's own untappd.com url, not its kind."""
+    info = {"name": "Guinness Draught Stout", "url": "https://untappd.com/b/guinness/4473"}
+    st = state({"gargoyle": {"u:4473": pair("untappd_menu", last_in_result=True, info=info)}})
+    row = build(st)["rows"][0]
+    assert (row["style"], "style_inferred" in row) == (None, False)
+
+
 def test_untappd_check_in_and_hand_entered_beers_get_no_guess():
     untappd = "https://untappd.com/b/pilsner-urquell/1"
     st = state({"gargoyle": {"u:1": pair("untappd_menu", last_in_result=True, info={"name": "Pilsner Urquell", "url": untappd}),
