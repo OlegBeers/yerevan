@@ -90,7 +90,7 @@ EXPECTED = """🍺 <b>Новое в Ереване</b> · чт, 24 сен
 🏭 <b>Новые сорта пивоварен</b>
 • ⭐ Dargett — DDH NEIPA · 6.5% (новый сорт в Untappd, где наливают — пока неизвестно)
 👀 <b>Похоже, появилось</b>
-• Dors — Smoked Porter · в Dors Craft Beer &amp; Kitchen, разлив, видели 2 дня назад
+• Dors — Smoked Porter · в Dors Craft Beer &amp; Kitchen, розлив, видели 2 дня назад
 ✍️ <b>Со слов</b>
 • 379 — Hazy Pale · в Tap Station (от Аня)
 
@@ -189,7 +189,7 @@ def test_bar_and_shop_checkins_dont_interleave_blocks():
     ("Bottle", "бутылка"), ("Can", "банка"), ("Taster", "дегустационный"), ("Cask", "из бочки"),
 ])
 def test_serving_ru_translates_container_types(serving, ru):
-    """M-2: a shop's own check-ins (e.g. Houl) report a container, not "разлив"."""
+    """M-2: a shop's own check-ins (e.g. Houl) report a container, not "розлив"."""
     s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving=serving,
                                               checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)

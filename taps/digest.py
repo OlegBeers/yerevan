@@ -13,8 +13,8 @@ WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
 MONTHS = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
 DAY_START, DAY_END = time(9, 0), time(23, 0)
 MIN_GAP_HOURS = 20
-CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег", "draft": "разлив"}
-SERVING_RU = {"Draft": "разлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
+CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег", "draft": "розлив"}
+SERVING_RU = {"Draft": "розлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
              "Cask": "из бочки", None: "подача неизвестна"}
 BREWERY_NEW_NOTE = "новый сорт в Untappd, где наливают — пока неизвестно"
 
