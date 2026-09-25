@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup, Tag
 
 from taps.config import Place
 from taps.fetch import FetchError, UntappdClient
-from taps.model import Sighting, SourceResult, u_key
+from taps.model import Serving, Sighting, SourceResult, u_key, with_servings
 from taps.sources.untappd_checkins import parse_venue_meta
 from taps.timeutil import parse_iso
 
@@ -173,20 +173,21 @@ def fetch_menu(client: UntappdClient, place: Place, now: datetime,
 
     meta = parse_venue_meta(first_html)
     venue_meta = {"venue_id": params["venue_id"], "name": place.name, "url": url, **meta} if meta else None
-    sightings, seen = [], set()
+    rows: dict[int, list[tuple[str | None, MenuItem]]] = {}
     for menu_id, page in pages:
         for it in page.items:
-            if it.beer_id in seen:
-                continue   # listed twice (on tap and in bottles, or in two sections): first row wins
-            seen.add(it.beer_id)
-            sightings.append(Sighting(
-                place_id=place.id, source="untappd_menu", beer_key=u_key(it.beer_id),
-                title=f"{it.brewery} {it.name}".strip(), name=it.name, seen_at=now,
-                brewery=it.brewery or None, brewery_id=it.brewery_id, untappd_beer_id=it.beer_id,
-                style=it.style, abv=it.abv, ibu=it.ibu, rating=it.rating, price_amd=it.price_amd,
-                volume_ml=it.volume_ml, container=it.container, menu_id=menu_id,
-                url=it.url, logo=it.logo,
-            ))
+            rows.setdefault(it.beer_id, []).append((menu_id, it))
+    sightings = []
+    for beer_rows in rows.values():
+        # listed twice (on tap and in bottles, or in two sections): the first row gives the beer, every row a serving
+        menu_id, it = beer_rows[0]
+        sightings.append(with_servings(Sighting(
+            place_id=place.id, source="untappd_menu", beer_key=u_key(it.beer_id),
+            title=f"{it.brewery} {it.name}".strip(), name=it.name, seen_at=now,
+            brewery=it.brewery or None, brewery_id=it.brewery_id, untappd_beer_id=it.beer_id,
+            style=it.style, abv=it.abv, ibu=it.ibu, rating=it.rating, menu_id=menu_id,
+            url=it.url, logo=it.logo,
+        ), (Serving(row.container, row.price_amd, row.volume_ml) for _, row in beer_rows)))
     return SourceResult(
         key=key, source="untappd_menu", ok=bool(sightings), sightings=sightings,
         error=None if sightings else "empty", place_id=place.id,

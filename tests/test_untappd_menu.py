@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from taps.config import Place
 from taps.fetch import FetchError
-from taps.model import Sighting
+from taps.model import Serving, Sighting
 from taps.sources.untappd_menu import SKIP_TAB_RE, MenuItem, fetch_menu, parse_menu_page
 from tests.helpers import fixture_text
 
@@ -43,11 +43,19 @@ def first_by_id(items):
     return out
 
 
-def with_price_rows(rows_html):
-    """Gargoyle's first beer with a price block added (no captured beer row has prices)."""
+def with_prices(rows_html):
+    """The Gargoyle page with a price block added to its first beer (no captured beer row has prices)."""
     soup = BeautifulSoup(TAP_LIST, "html.parser")
     soup.select_one("li.menu-item").append(BeautifulSoup(rows_html, "html.parser"))
-    return parse_menu_page(str(soup)).items[0]
+    return str(soup)
+
+
+def with_price_rows(rows_html):
+    return parse_menu_page(with_prices(rows_html)).items[0]
+
+
+def price_row(size, price):
+    return f'<div class="beer-prices"><p><span class="size">{size}</span><span class="price">{price}</span></p></div>'
 
 
 def test_gargoyle_default_page_tabs_and_updated_time():
@@ -272,3 +280,42 @@ def test_fetch_error_fails_whole_menu(pages, kind):
     result = fetch_menu(FakeClient(pages), GARGOYLE, NOW, {})
     assert (result.ok, result.error, result.sightings, result.place_id, result.key) == \
         (False, kind, [], "gargoyle", "untappd_menu:gargoyle")
+
+
+def test_fetch_beer_on_tap_and_in_bottles_is_one_sighting_with_both_servings():
+    client = FakeClient({
+        GARGOYLE_URL: with_prices(price_row("0.5L Draft", "1,800.00 AMD")),
+        GARGOYLE_URL + "?menu_id=203568": with_prices(price_row("0.33L Bottle", "1,200.00 AMD")),
+    })
+    result = fetch_menu(client, GARGOYLE, NOW, {})
+    assert [s.beer_key for s in result.sightings] == ["u:5817007", "u:5817002", "u:4775604"]
+    hell = result.sightings[0]
+    assert hell.menu_id == "203569"   # the first row gives the beer, both give servings
+    assert (hell.container, hell.price_amd, hell.volume_ml) == ("draft", 1800, 500)   # what single-serving readers see
+    assert hell.servings == (Serving("draft", 1800, 500), Serving("bottle", 1200, 330))
+    assert [s.servings for s in result.sightings[1:]] == [(), ()]
+
+
+def test_fetch_beer_in_two_sections_without_serving_details_stays_one_plain_serving():
+    # Beatles lists 8 beers twice ("On Tap" plus a country or style section); no row has a price or a size
+    items = parse_menu_page(BEATLES_MENU).items
+    twice = {beer_id for beer_id, n in Counter(it.beer_id for it in items).items() if n > 1}
+    assert len(twice) == 8
+    result = fetch_menu(FakeClient({BEATLES_URL: BEATLES_MENU}), BEATLES, NOW, {})
+    assert {s.untappd_beer_id for s in result.sightings} >= twice
+    assert all(s.servings == () and (s.container, s.price_amd, s.volume_ml) == (None, None, None)
+               for s in result.sightings)
+
+
+def test_fetch_beer_in_two_sections_with_the_same_serving_stays_single():
+    row = price_row("0.5L Draft", "1,800.00 AMD")
+    client = FakeClient({GARGOYLE_URL: with_prices(row), GARGOYLE_URL + "?menu_id=203568": with_prices(row)})
+    hell = fetch_menu(client, GARGOYLE, NOW, {}).sightings[0]
+    assert (hell.container, hell.price_amd, hell.volume_ml, hell.servings) == ("draft", 1800, 500, ())
+
+
+def test_fetch_second_row_gives_the_serving_the_first_row_lacks():
+    client = FakeClient({GARGOYLE_URL: TAP_LIST,
+                         GARGOYLE_URL + "?menu_id=203568": with_prices(price_row("0.33L Bottle", "1,200.00 AMD"))})
+    hell = fetch_menu(client, GARGOYLE, NOW, {}).sightings[0]
+    assert (hell.container, hell.price_amd, hell.volume_ml, hell.servings) == ("bottle", 1200, 330, ())
