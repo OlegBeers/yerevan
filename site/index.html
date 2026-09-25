@@ -82,9 +82,9 @@
   }
   .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   @media (max-width: 560px) {
-    .tabs { overflow-x: auto; gap: 6px; }
-    .tab { white-space: nowrap; font-size: .8rem; padding: 9px 8px; }
-    .tab .ico { margin-right: .25em; }
+    .tabs { gap: 4px; }
+    .tab { flex: 1 1 auto; min-width: 0; white-space: nowrap; font-size: .78rem; padding: 9px 4px; }
+    .tab .ico { display: none; }   /* four tabs must fit 375px in both languages without scrolling */
     .head { flex-direction: column-reverse; align-items: flex-end; }   /* the switch above the title, wherever the title breaks */
     h1 { align-self: flex-start; }
   }
