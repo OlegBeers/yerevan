@@ -12,7 +12,8 @@ from taps.model import untappd_n_key
 
 LIST_SECTIONS = ("sightings", "hide", "not_craft")
 MAP_SECTIONS = ("aliases", "brewery_aliases")
-SIGHTING_FIELDS = ("place", "brewery", "beer", "untappd", "by", "date")
+SIGHTING_FIELDS = ("place", "brewery", "beer", "untappd", "by", "date", "container", "style", "abv", "ibu", "price")
+CONTAINERS = {"розлив": "draft", "банка": "can", "бутылка": "bottle"}
 HIDE_FIELDS = ("place", "beer")
 BEER_KEY_RE = re.compile(r"u:[1-9]\d*|n:\S.*")
 
@@ -26,6 +27,11 @@ class ManualEntry:
     untappd_id: int | None
     by: str
     date: date
+    container: str | None = None   # "draft" | "can" | "bottle", as menu sources write it
+    style: str | None = None
+    abv: float | None = None
+    ibu: int | None = None
+    price_amd: int | None = None
 
 
 @dataclass(frozen=True)
@@ -127,7 +133,18 @@ def _sighting(entry: Any, place_ids: Collection[str], brewery_aliases: Mapping[s
             raise _Skip("нужно beer (название) или untappd (число из адреса пива на Untappd)")
         if untappd_n_key(brewery, beer, brewery_aliases) == "n:":
             raise _Skip(f"по названию {beer!r} не получается ключ пива, допишите название")
-    return ManualEntry(f"{place}|{day.isoformat()}|{by}", place, brewery, beer, untappd, by, day)
+    container = _text(entry.get("container"), "container")
+    if container is not None and container not in CONTAINERS:
+        raise _Skip(f"container {container!r}: нужно одно из: {', '.join(CONTAINERS)}")
+    abv, ibu, price = entry.get("abv"), entry.get("ibu"), entry.get("price")
+    if abv is not None and (type(abv) not in (int, float) or not 0 <= abv < 100):
+        raise _Skip(f"abv {abv!r}: нужна крепость числом, например 5.5")
+    for name, value in (("ibu", ibu), ("price", price)):
+        if value is not None and (type(value) is not int or value <= 0):
+            raise _Skip(f"{name} {value!r}: нужно целое число")
+    return ManualEntry(f"{place}|{day.isoformat()}|{by}", place, brewery, beer, untappd, by, day,
+                       container=CONTAINERS.get(container), style=_text(entry.get("style"), "style"),
+                       abv=None if abv is None else float(abv), ibu=ibu, price_amd=price)
 
 
 def _hide(entry: Any, place_ids: Collection[str]) -> tuple[str, str]:

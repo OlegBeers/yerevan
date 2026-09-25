@@ -26,5 +26,6 @@ def manual_result(corrections: Corrections, config: Config, now: datetime) -> So
             title=" ".join(filter(None, (e.brewery, name))), name=name, seen_at=now,
             brewery=e.brewery, untappd_beer_id=e.untappd_id, url=url,
             manual_id=e.id, manual_by=e.by, manual_date=e.date.isoformat(),
+            container=e.container, style=e.style, abv=e.abv, ibu=e.ibu, price_amd=e.price_amd,
         ))
     return SourceResult(key="manual", source="manual", ok=True, sightings=sightings)

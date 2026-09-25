@@ -91,3 +91,11 @@ def test_all_entries_outside_window_is_still_ok():
 def test_place_not_in_config_is_skipped():
     result = run(entry(place="tuf"), entry(place="dors"))
     assert [s.place_id for s in result.sightings] == ["dors"]
+
+
+def test_entry_details_reach_the_sighting():
+    e = ManualEntry(id="tap-station|2026-09-24|Аня", place="tap-station", brewery="379", beer="Weizen",
+                    untappd_id=None, by="Аня", date=date(2026, 9, 24),
+                    container="draft", style="Wheat Beer", abv=5.0, ibu=11, price_amd=1500)
+    [s] = run(e).sightings
+    assert (s.container, s.style, s.abv, s.ibu, s.price_amd) == ("draft", "Wheat Beer", 5.0, 11, 1500)
