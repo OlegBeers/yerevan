@@ -1,6 +1,7 @@
 """The «Объединить пиво» mode of site/matches.html, run for real: Chrome driven by Playwright, the page and its data.json
 served from memory (no network). Skipped where neither the installed Chrome nor Playwright's Chromium can be launched."""
 import base64
+import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -234,6 +235,23 @@ def test_a_chip_in_the_sheet_keeps_to_one_line_of_name_however_long_it_is(open_p
     remove = page.locator("#picked-list .chip-x").bounding_box()
     assert remove["x"] + remove["width"] <= 375 and remove["width"] >= 44    # a long name does not push the remove button out of sight
     assert page.eval_on_selector("#picked-list", "(e) => e.scrollWidth <= e.clientWidth")
+    assert problems == []
+
+
+def luminance(css_rgb):
+    r, g, b = (float(n) for n in re.findall(r"[\d.]+", css_rgb)[:3])
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+
+
+def test_the_dark_theme_reaches_every_part_of_the_merge_panel(open_page):
+    page, problems = open_page(mode="merge", dark=True)
+    ready(page)
+    for selector in ("body", "#sheet", "#pick-search", "#untappd-link", ".pick", ".chip", ".out", "#reset-merge"):
+        background = page.eval_on_selector(selector, "(e) => getComputedStyle(e).backgroundColor")
+        assert luminance(background) < 0.25, (selector, background)
+    for selector in ("#pick-list .name", "#picked-list .name", "#yaml-out", "#link-status", "#untappd-link"):
+        color = page.eval_on_selector(selector, "(e) => getComputedStyle(e).color")
+        assert luminance(color) > 0.5, (selector, color)
     assert problems == []
 
 
