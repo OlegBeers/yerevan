@@ -15,7 +15,7 @@ MAP_SECTIONS = ("aliases", "brewery_aliases")
 SIGHTING_FIELDS = ("place", "brewery", "beer", "untappd", "by", "date", "container", "style", "abv", "ibu", "price")
 CONTAINERS = {"розлив": "draft", "банка": "can", "бутылка": "bottle"}
 HIDE_FIELDS = ("place", "beer")
-SAME_AS_FIELDS = ("place", "beer", "untappd_id")
+SAME_AS_FIELDS = ("place", "beer", "untappd_id", "name", "brewery")
 BEER_KEY_RE = re.compile(r"u:[1-9]\d*|n:\S.*")
 
 
@@ -40,6 +40,8 @@ class Corrections:
     sightings: tuple[ManualEntry, ...] = ()
     hide: frozenset[tuple[str, str]] = frozenset()                   # (place_id, beer_key)
     same_as: Mapping[tuple[str, str], int | None] = field(default_factory=dict)   # (place_id, beer_key) -> untappd_id
+    # optional display name/brewery of the Untappd beer, for one no bar has shown (otherwise unknown)
+    same_as_names: Mapping[tuple[str, str], tuple[str | None, str | None]] = field(default_factory=dict)
     aliases: Mapping[str, str] = field(default_factory=dict)          # beer_key -> beer_key
     brewery_aliases: Mapping[str, str] = field(default_factory=dict)  # text -> text
     not_craft: tuple[str, ...] = ()
@@ -157,7 +159,7 @@ def _hide(entry: Any, place_ids: Collection[str]) -> tuple[str, str]:
     return place, _beer_key(entry["beer"])
 
 
-def _same_as(entry: Any, place_ids: Collection[str]) -> tuple[tuple[str, str], int | None]:
+def _same_as(entry: Any, place_ids: Collection[str]) -> tuple[tuple[str, str], int | None, tuple[str | None, str | None]]:
     entry = _fields(entry, SAME_AS_FIELDS)
     place = _place(entry, place_ids)
     if entry.get("beer") is None:
@@ -166,11 +168,12 @@ def _same_as(entry: Any, place_ids: Collection[str]) -> tuple[tuple[str, str], i
     if key.startswith("u:"):
         raise _Skip(f"beer {key!r}: same_as принимает только n:-ключ (магазинное название), не u:")
     if "untappd_id" in entry and entry["untappd_id"] is None:
-        return (place, key), None   # "не то же": blocks local/search matching without claiming an id
+        return (place, key), None, (None, None)   # "не то же": blocks local/search matching without claiming an id
     untappd_id = entry.get("untappd_id")
     if type(untappd_id) is not int or untappd_id <= 0:
         raise _Skip(f"untappd_id {untappd_id!r}: нужно число из адреса пива на Untappd")
-    return (place, key), untappd_id
+    names = tuple(str(entry[f]).strip() or None if entry.get(f) is not None else None for f in ("name", "brewery"))
+    return (place, key), untappd_id, names
 
 
 def _alias(item: tuple[str, Any]) -> tuple[str, str]:
@@ -216,10 +219,13 @@ def parse_corrections(raw: dict, place_ids: Collection[str]) -> tuple[Correction
             raise ValueError(f"раздел {name} должен быть {'списком' if typ is list else 'словарём'}")
     errors: list[str] = []
     brewery_aliases = dict(_parse_all("brewery_aliases", s["brewery_aliases"].items(), _brewery_alias, errors))
+    same_as_entries = _parse_all("same_as", s["same_as"], lambda e: _same_as(e, place_ids), errors)
+    same_as = {key: untappd_id for key, untappd_id, _ in same_as_entries}
+    same_as_names = {key: names for key, _, names in same_as_entries if names != (None, None)}
     corrections = Corrections(
         sightings=tuple(_parse_all("sightings", s["sightings"], lambda e: _sighting(e, place_ids, brewery_aliases), errors)),
         hide=frozenset(_parse_all("hide", s["hide"], lambda e: _hide(e, place_ids), errors)),
-        same_as=dict(_parse_all("same_as", s["same_as"], lambda e: _same_as(e, place_ids), errors)),
+        same_as=same_as, same_as_names=same_as_names,
         aliases=dict(_parse_all("aliases", s["aliases"].items(), _alias, errors)),
         brewery_aliases=brewery_aliases,
         not_craft=tuple(_parse_all("not_craft", s["not_craft"], _brand, errors)),

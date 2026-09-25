@@ -303,10 +303,12 @@ def apply_same_as(state: State, corrections: Corrections, now: datetime) -> None
         if key not in state.pairs.get(place_id, {}):
             continue
         known = catalog.get(untappd_id) if untappd_id is not None else None
+        own_name, own_brewery = corrections.same_as_names.get((place_id, key), (None, None))
         state.shop_matches[key] = ShopMatchRec(
             untappd_beer_id=untappd_id,
             url=f"https://untappd.com/beer/{untappd_id}" if untappd_id is not None else None,
-            name=known.name if known else None, brewery=known.brewery if known else None,
+            name=own_name or (known.name if known else None),
+            brewery=own_brewery or (known.brewery if known else None),
             matched_at=iso(now), via="manual")
 
 
