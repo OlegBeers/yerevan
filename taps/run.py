@@ -25,7 +25,7 @@ from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
-from taps.sources.local_match import KnownBeer, clean_query, local_match_with_confidence
+from taps.sources.local_match import KnownBeer, clean_query, has_russian_name, local_match_with_confidence
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
 from taps.sources.untappd_beer import parse_beer_page
@@ -34,7 +34,7 @@ from taps.sources.untappd_checkins import (
     fetch_venue_checkins, is_armenia_location, is_yerevan_city, parse_venue_location, parse_venue_meta,
 )
 from taps.sources.untappd_menu import fetch_menu
-from taps.sources.untappd_search import matches, parse_search_results, search_url
+from taps.sources.untappd_search import matches, matches_russian_name, parse_search_results, search_url
 from taps.sources.yerevan_city import fetch_yerevan_city
 from taps.state import (
     VENUE_KEEP_DAYS, BeerRec, ShopMatchRec, State, apply_aliases, load_state, merge_places, prune, record_venues,
@@ -405,7 +405,9 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
             results = []
         if not results:
             dump_debug_html(f"untappd_search_{key}", client)
-        found = next((r for r in results if matches(brand, name, r)), None)
+        russian = has_russian_name(brand, name)
+        found = next((r for r in results if (matches_russian_name(name, r) if russian else matches(brand, name, r))),
+                     None)
         if found is None:
             state.shop_matches[key] = ShopMatchRec(matched_at=iso(now))
         else:

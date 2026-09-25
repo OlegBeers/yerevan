@@ -42,6 +42,16 @@ def test_clean_query_without_brand_uses_name_alone():
     assert clean_query(None, "Dunkel dark") == "Dunkel"
 
 
+def test_clean_query_drops_latin_brewery_for_a_russian_name():
+    """A transliteration like "Jigulyovskoye" only hurts the Untappd search of a Cyrillic beer."""
+    assert clean_query("Jigulyovskoye", "Жигулевское светлое") == "Жигулевское светлое"
+
+
+def test_clean_query_keeps_brewery_unless_it_is_latin_only_and_the_name_cyrillic():
+    assert clean_query("Очаково", "Жигулевское") == "Очаково Жигулевское"
+    assert clean_query("Kilikia", "Dunkel dark") == "Kilikia Dunkel"   # a Latin name: as before
+
+
 # --- local_match(): the three worked examples from the beer-identity task ----------------
 
 APRICOT = KnownBeer(untappd_id=1674726, name="Apricot Ale (Prunus Armeniaca)", brewery="Dargett Brewery")
@@ -327,3 +337,18 @@ def test_local_match_with_confidence_still_rejects_when_abv_disagrees_a_lot():
         [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery", abv=6.5)],
         shop_abv=4.0)
     assert (found, weak) == (None, False)
+
+
+RU_ATHANASIUS = KnownBeer(untappd_id=5, name="Афанасий Тверское", brewery="Афанасий")
+
+
+def test_local_match_finds_cyrillic_untappd_beer_for_a_russian_shop_name():
+    """The shop's Latin transliteration of the brand ("Athanasius") must not block the match: the
+    Russian name's own first word stands in for the brewery."""
+    assert local_match("Athanasius", "Афанасий Тверское", [RU_ATHANASIUS]) is RU_ATHANASIUS
+
+
+def test_local_match_russian_name_needs_its_first_word_in_the_candidates_brewery():
+    other = KnownBeer(untappd_id=6, name="Жигулёвское", brewery="Ochakovo")
+    assert local_match("Jigulyovskoye", "Жигулевское светлое", [other]) is None   # no crash, no guess
+    assert local_match("Ochakovo", "Жигулевское", [other]) is None   # the Latin shop brewery is not evidence
