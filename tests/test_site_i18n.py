@@ -97,7 +97,7 @@ def test_russian_dictionary_keeps_the_wording_the_page_has_always_had():
         "legend.star.since": "⭐ — возможно, впервые в Ереване (с тех пор, как следим, с {dm})",
         "place.ok": "проверено {when} в {hm}", "updated.hours": "обновлено {hours} ч назад",
         "shop.name": "в магазине: {name}", "shop.in": "в магазине", "unit.ml": "мл", "style.inferred": "определено по названию",
-        "map.open": "Открыть на Яндекс Картах: {where}", "map.link": "на карте", "menu.on": "есть в меню",
+        "map.open": "Открыть на Яндекс Картах: {where}", "map.link": "на карте",
         "verified": "Верифицирован в Untappd", "appeared": "Появилось {date}", "venue.checkins": "{count} за 60 дней",
         "container.draft": "розлив", "container.keg": "кег", "serving.Taster": "дегустационный", "serving.Cask": "из бочки",
         "badge.manual.by": "со слов ({by})", "badge.seen.ago": "видели {ago}", "time.ago": "{days} назад",
@@ -108,6 +108,14 @@ def test_russian_dictionary_keeps_the_wording_the_page_has_always_had():
         assert ru[key] == text, key
     assert ru["unit.day"] == {"one": "день", "few": "дня", "many": "дней"}
     assert ru["unit.checkin"] == {"one": "чекин", "few": "чекина", "many": "чекинов"}
+
+
+def test_a_checkin_has_a_source_badge_of_its_own_in_both_languages():
+    """The seen-when note (👀 ..., видели вчера) is a second thing: this is the word for where the row comes from."""
+    dictionaries = _dictionaries()
+    assert dictionaries["ru"]["badge.checkin"] == "чекин"
+    assert dictionaries["en"]["badge.checkin"] == "check-in"
+    assert "menu.on" not in dictionaries["ru"] and "menu.on" not in dictionaries["en"]   # the icon-only status is gone
 
 
 def test_static_markup_holds_the_russian_text_the_dictionary_has_under_its_key():

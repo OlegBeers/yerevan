@@ -272,27 +272,112 @@ def test_group_since_is_earliest_and_rating_abv_use_best_value():
     assert re.search(r"group\.some\(.*\.star\)", group_fn)
 
 
-def test_multi_place_beers_list_every_place_with_its_own_price_and_link():
+def test_every_beer_lists_a_block_per_place_with_its_own_source_price_and_address():
     js = _js(_soup())
-    assert re.search(r"function placeLines\(rows, name\)", js)
-    place_lines_fn = re.search(r"function placeLines\(rows, name\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert "badgeNodes" in place_lines_fn
-    assert "priceText" in place_lines_fn and "volumeText" in place_lines_fn
-    assert "shopLinkNode" in place_lines_fn
-    # a beer with more than one place uses placeLines; a single-place beer keeps the old layout
-    assert re.search(r"g\.rows\.length === 1", js) or re.search(r"g\.rows\.length !== 1", js)
+    assert "function placeBlock(r, name, withServings = true)" in js
+    block_fn = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for part in ("sourceBadge(r)", "servingChips(r)", "seenNote(r)", "mapLinkNode(place)", "shopNameLine(r, name)"):
+        assert part in block_fn, part
+    assert block_fn.index("sourceBadge(r)") < block_fn.index("servingChips(r)") < block_fn.index("mapLinkNode(place)") \
+        < block_fn.index("shopNameLine(r, name)")                    # the four lines of a block, in this order
+    assert re.search(r"g\.rows\.map\(\(r\) => placeBlock\(r, g\.name\)\)", js)
 
 
-def test_single_place_beers_keep_todays_layout():
-    """Beers found at only one place still render through the pre-grouping helpers unchanged."""
+def test_single_and_multi_place_beers_share_one_anatomy():
+    """No branch on the number of places: a beer at one place is a beer at several places with one block."""
     js = _js(_soup())
-    assert "function placeCell(r, name)" in js
-    assert "function cardWhere(r, name)" in js
+    card_fn = re.search(r"function cardNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "g.rows.length" not in card_fn and "singleServing" not in js
+    for old in ("placeCell", "placeLines", "cardWhere", "badgeNodes", "shopLinkNode", "beerLogoNode", "servingsText"):
+        assert old not in js, old
+    parts = [card_fn.index(part) for part in ('"card-head"', "metaNode(", '"place-blocks"', '"card-foot"')]
+    assert parts == sorted(parts)                                    # header, meta, places, footer
 
 
-def test_wherelist_css_stacks_multiple_place_lines():
+def test_place_blocks_are_stacked_and_each_has_a_thin_left_border():
     css = _css(_soup())
-    assert re.search(r"\.wherelist\s*\{[^}]*flex-direction:\s*column", css)
+    assert re.search(r"\.place-blocks\s*\{[^}]*display:\s*grid", css)
+    block = re.search(r"\.place-block\s*\{([^}]*)\}", css).group(1)
+    assert re.search(r"border-left:\s*2px solid var\(--border\)", block) and "padding-left: var(--s3)" in block
+    assert re.search(r"\.chips\s*\{[^}]*flex-wrap:\s*wrap", css)
+
+
+def test_the_card_header_is_a_grid_of_photo_name_and_a_rating_slot():
+    css = _css(_soup())
+    root = re.search(r":root\s*\{([^}]*)\}", css).group(1)
+    assert re.search(r"--thumb:\s*(4[4-8])px", root)                  # a photo of a fixed size, 44 to 48px
+    head = re.search(r"\.card-head\s*\{([^}]*)\}", css).group(1)
+    assert "display: grid" in head and "grid-template-columns: auto 1fr auto" in head
+    assert re.search(r"\.thumb\s*\{[^}]*width:\s*var\(--thumb\)[^}]*height:\s*var\(--thumb\)", css)
+    assert re.search(r"\.card-name\s*\{[^}]*min-width:\s*0", css)     # a long name wraps in its column, it pushes nothing
+    slot = re.search(r"\.rate-slot\s*\{([^}]*)\}", css).group(1)
+    assert "display: flex" in slot and "margin-left: var(--s3)" in slot   # the gap belongs to the slot: none when it is left out
+
+
+def test_the_rating_is_a_chip_of_one_size_with_the_fire_inside_it_when_hot():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    rating_fn = re.search(r"function ratingNode\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "chip chip-rating hot" in rating_fn and "chip chip-rating" in rating_fn
+    assert 'iconSpan(hot ? "🔥" : "★")' in rating_fn and "toFixed(2)" in rating_fn
+    assert re.search(r"\.chip-rating\s*\{[^}]*min-width:[^}]*justify-content:\s*center", css)   # hot and plain chips alike
+    assert re.search(r"\.hot\s*\{[^}]*color:\s*var\(--hot\)", css)
+    slot_fn = re.search(r"function cardNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r'flags\.length \|\| rating \? el\("div", \{ class: "rate-slot" \}, \.\.\.flags, rating\) : null', slot_fn)
+
+
+def test_the_new_and_first_time_flags_are_small_chips_that_travel_with_the_rating():
+    js = _js(_soup())
+    flags_fn = re.search(r"function flagNodes\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'class: "chip chip-flag"' in flags_fn and 'role: "img"' in flags_fn and "aria-label" in flags_fn
+    assert flags_fn.index("g.star") < flags_fn.index("g.new")
+
+
+def test_the_photo_is_always_there_a_tile_takes_its_place_and_a_broken_picture_becomes_the_tile():
+    js = _js(_soup())
+    thumb_fn = re.search(r"function thumbNode\(url\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'class: "thumb thumb-empty"' in thumb_fn and 'class: "thumb"' in thumb_fn
+    assert "safeUrl(url)" in thumb_fn and 'referrerpolicy: "no-referrer"' in thumb_fn
+    assert re.search(r'addEventListener\("error", \(\) => img\.replaceWith\(tile\(\)\)', thumb_fn)
+
+
+def test_a_place_block_names_its_source_and_a_checkin_says_when_it_was_seen_in_a_muted_pill():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    source_fn = re.search(r"function sourceBadge\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert '"chip chip-source"' in source_fn and "safeUrl(r.shop_url)" in source_fn and "shop !== r.url" in source_fn
+    assert 'target: "_blank"' in source_fn and 'rel: "noopener noreferrer"' in source_fn
+    label_fn = re.search(r"function sourceLabel\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for key in ('"badge.menu"', '"badge.checkin"', '"badge.manual.by"', '"badge.manual"', '"shop.in"'):
+        assert key in label_fn, key
+    seen_fn = re.search(r"function seenNote\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert '"chip chip-note"' in seen_fn and 'iconSpan("👀")' in seen_fn      # the eyes live inside the pill
+    assert 't("badge.seen.ago", { ago: ago(r.seen_days_ago) })' in seen_fn and "servingLabel(r.serving)" in seen_fn
+    assert re.search(r"\.chip-source,\s*\.chip-note\s*\{[^}]*color:\s*var\(--muted\)", css)     # both read as muted text
+
+
+def test_the_card_ends_with_when_the_beer_appeared_in_muted_small_text():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    assert 'el("div", { class: "card-foot" }, t("appeared", { date: since }))' in js
+    assert re.search(r"\.card-foot\s*\{[^}]*color:\s*var\(--muted\)[^}]*font-size:\s*\.78rem", css)
+
+
+def test_every_link_in_a_card_gets_a_44px_hit_area_without_growing():
+    css = _css(_soup())
+    assert re.search(r"\.card a\s*\{[^}]*position:\s*relative", css)
+    hit = re.search(r"\.card a::after\s*\{([^}]*)\}", css).group(1)
+    assert "position: absolute" in hit and "height: max(var(--hit), 100%)" in hit
+
+
+def test_card_and_chip_spacing_comes_from_the_scale():
+    css = _css(_soup())
+    for selector in (r"\.card", r"\.card-head", r"\.card-name", r"\.rate-slot", r"\.place-blocks", r"\.place-block",
+                     r"\.pb-head", r"\.chips", r"\.chip"):
+        rule = re.search(rf"(?<![\w-]){selector}\s*\{{([^}}]*)\}}", css).group(1)
+        for prop, value in re.findall(r"\b((?:padding|margin|gap)[\w-]*):\s*([^;]+);", rule):
+            for length in re.findall(r"-?\d+(?:\.\d+)?px", value):
+                assert False, f"{selector} {prop}: {value} is not on the scale"
 
 
 def test_footer_sources_legend_and_credits():
@@ -334,17 +419,14 @@ def test_back_to_top_button():
 
 
 def test_shop_name_line_shows_only_when_it_differs_from_the_displayed_name():
-    """v1.2 review aid: `в магазине: <shop_name>` under the place, for every layout that draws a place line."""
+    """v1.2 review aid: `в магазине: <shop_name>` under the place, in every layout that draws a place."""
     js = _js(_soup())
     line_fn = re.search(r"function shopNameLine\(r, name\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "r.shop_name" in line_fn and 't("shop.name", { name: r.shop_name })' in line_fn   # «в магазине: {name}», see test_site_i18n
     assert re.search(r"toLowerCase\(\)", line_fn) and r"\s" in line_fn   # case/space-insensitive comparison
-    for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)"):
-        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
-        assert "shopNameLine(r, name)" in body, fn
-    assert re.search(r"placeLines\(g\.rows,\s*g\.name\)", js)
-    assert len(re.findall(r"placeCell\(g\.rows\[0\],\s*g\.name\)", js)) == 1
-    assert len(re.findall(r"cardWhere\(g\.rows\[0\],\s*g\.name\)", js)) == 1
+    body = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "shopNameLine(r, name)" in body
+    assert len(re.findall(r"placeBlock\(r, g\.name", js)) == 2       # the cards and the table's place column
     assert re.search(r"\.shop-name\s*\{[^}]*color:\s*var\(--muted\)", _css(_soup()))
 
 
@@ -354,28 +436,31 @@ def test_footer_links_to_the_match_review_page():
     assert link["href"] == "matches.html"
 
 
-def test_several_servings_read_as_container_price_and_volume_joined_by_dots():
-    """v1.3: «розлив 2800 ֏ · бутылка 1500 ֏ 330 мл» -- container, price, then volume; dots between servings."""
+def test_a_serving_reads_as_container_and_volume_then_a_dot_and_the_price():
+    """v1.4: «розлив · 2900 ֏», «банка 450 мл · 2900 ֏» -- one pill per serving, the same for a row and for its `servings`."""
     js = _js(_soup())
+    volume_fn = re.search(r"const volumeText = .*", js).group(0)
+    assert "s.volume_ml" in volume_fn and 't("unit.ml")' in volume_fn
     serving_fn = re.search(r"const servingText = .*", js).group(0)
-    assert "containerText(s.container)" in serving_fn and "priceText(s)" in serving_fn
-    assert "s.volume_ml" in serving_fn and 't("unit.ml")' in serving_fn
-    assert re.search(r'const servingsText = \(r\) => .*\.map\(servingText\)\.join\(" · "\)', js)
+    assert re.search(r"dot\(\[\[containerText\(s\.container\), volumeText\(s\)\]\.filter\(Boolean\)\.join\(\" \"\), priceText\(s\)\]\)", serving_fn)
+    chips_fn = re.search(r"const servingChips = .*?;\n", js, re.S).group(0)
+    assert "(r.servings || [r])" in chips_fn and "servingText" in chips_fn and '"chip chip-serving"' in chips_fn
 
 
-def test_servings_go_in_the_place_line_of_every_layout():
+def test_servings_are_pills_in_their_place_block_and_nowhere_else_on_a_card():
     js = _js(_soup())
-    for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)"):
-        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
-        assert "servingsText(r)" in body, fn
+    body = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "withServings ? servingChips(r) : []" in body
+    card_fn = re.search(r"function cardNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for part in ("servingChips", "servingText", "priceText", "volumeText"):
+        assert part not in card_fn, part                             # never next to the beer's own meta line
 
 
-def test_a_beer_with_servings_does_not_repeat_its_first_one_next_to_the_name():
+def test_a_table_row_of_one_place_shows_its_servings_in_the_price_column_and_several_places_in_their_blocks():
     js = _js(_soup())
-    assert re.search(r"const singleServing = \(g\) => g\.rows\.length === 1 && !g\.rows\[0\]\.servings", js)
-    for fn in ("table(groups)", "cards(groups)"):
-        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
-        assert "singleServing(g)" in body, fn
+    table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r'el\("td", \{ class: "num" \}, g\.rows\.length === 1 \? chipsNode\(servingChips\(g\.rows\[0\]\)\) : null\)', table_fn)
+    assert "placeBlock(r, g.name, g.rows.length > 1)" in table_fn
 
 
 def test_since_shows_the_time_and_sorts_by_it():
@@ -402,7 +487,7 @@ def test_country_reads_in_russian_for_the_countries_seen_and_as_the_shop_wrote_i
 
 def test_country_follows_style_and_abv_in_a_card_and_the_brewery_in_a_table_row():
     js = _js(_soup())
-    cards_fn = re.search(r"function cards\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    cards_fn = re.search(r"function cardNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
     meta = re.search(r"metaNode\(\[(.*?)\]\)", cards_fn).group(1)
     assert [part.strip() for part in meta.split(",")] == [
         "g.brewery", "styleNode(g)", "abvText(g)", "ibuText(g)", "countryText(g)"]
@@ -427,10 +512,10 @@ def test_a_style_guessed_from_the_name_is_set_apart_and_says_so():
     assert 'el("td", null, styleNode(g))' in table_fn
 
 
-def test_the_map_link_is_shown_in_the_row_the_card_lines_and_the_venues_tab():
-    """The pin + address link: the row's place cell, a card's place line, every line of a multi-place beer, the venues tab."""
+def test_the_map_link_is_shown_in_every_place_block_and_the_venues_tab():
+    """The pin + address link: the third line of a place block (cards and table alike) and the venues tab."""
     js = _js(_soup())
-    for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)", "venueNode(v)"):
+    for fn in ("placeBlock(r, name, withServings = true)", "venueNode(v)"):
         body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
         assert "mapLinkNode(place)" in body, fn
 

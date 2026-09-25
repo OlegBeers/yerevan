@@ -1,5 +1,6 @@
 """The RU | EN interface of site/index.html, run for real: Chrome driven by Playwright, the page and its data.json served
 from memory (no network). Skipped where neither the installed Chrome nor Playwright's Chromium can be launched."""
+import base64
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -14,6 +15,7 @@ ORIGIN = "https://taps.test"
 CYRILLIC = re.compile(r"[\u0400-\u04FF]")
 TABS = ("tab-all", "tab-bars", "tab-shops", "tab-venues")
 SHOP_IDS = ("beercity", "parma")
+PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
 
 
 def make_data(*, generated_ago=timedelta(hours=5), rows=None):
@@ -128,6 +130,8 @@ def open_page(browser):
                 route.fulfill(status=status, json=data if data is not None else make_data())
             elif url.netloc.startswith("fonts."):
                 route.fulfill(body="", content_type="text/css")
+            elif url.netloc == "logo.test" and url.path == "/ok.png":
+                route.fulfill(body=PNG, content_type="image/png")
             else:
                 route.abort()
 
@@ -276,11 +280,11 @@ def test_russian_wording_on_screen_is_what_the_page_has_always_said(open_page):
     assert [text(page, f"thead th:nth-child({i})") for i in range(1, 9)] == [
         "Пиво", "Стиль", "Крепость", "IBU", "Рейтинг", "Цена", "Где", "Появилось"]
     rows = text(page, "#rows")
-    for wanted in ("✅меню", "розлив, видели сегодня", "дегустационный, видели вчера", "из бочки, видели 5 дней назад",
-                   "со слов (Ivan)", "🛒в магазине", "в магазине: Multi Beer 0.33l", "Чехия", "Freedonia", "Армения",
-                   "розлив 2800 ֏ · бутылка 1500 ֏ 330 мл", "500 мл банка", "900 ֏"):
+    for wanted in ("✅меню", "чекин", "👀розлив, видели сегодня", "👀дегустационный, видели вчера", "👀из бочки, видели 5 дней назад",
+                   "✍️со слов (Ivan)", "🛒в магазине", "в магазине: Multi Beer 0.33l", "Чехия", "Freedonia", "Армения",
+                   "розлив · 2800 ֏", "бутылка 330 мл · 1500 ֏", "банка 500 мл · 900 ֏", "400 мл · 2800 ֏"):
         assert wanted in rows, wanted
-    assert titles(page, "#rows .flag") == ["возможно, впервые в Ереване", "новинка за 7 дней", "есть в меню"]
+    assert titles(page, "#rows .chip-flag") == ["возможно, впервые в Ереване", "новинка за 7 дней"]
     assert "Верифицирован в Untappd" in titles(page, "#rows .verified")
     assert titles(page, "#rows .hot") == ["рейтинг Untappd"] and titles(page, "#rows .inferred") == ["определено по названию"]
     assert page.get_attribute("#rows .map-link", "aria-label") == "Открыть на Яндекс Картах: 1 Test St"
@@ -314,11 +318,11 @@ def test_english_wording_on_screen(open_page):
     assert [text(page, f"thead th:nth-child({i})") for i in range(1, 9)] == [
         "Beer", "Style", "ABV", "IBU", "Rating", "Price", "Where", "Appeared"]
     rows = text(page, "#rows")
-    for wanted in ("✅menu", "draft, seen today", "taster, seen yesterday", "cask, seen 5 days ago", "reported by Ivan",
-                   "🛒in the shop", "shop name: Multi Beer 0.33l", "Czech Republic", "Freedonia", "Armenia",
-                   "draft 2800 ֏ · bottle 1500 ֏ 330 ml", "500 ml can", "900 ֏"):
+    for wanted in ("✅menu", "check-in", "👀draft, seen today", "👀taster, seen yesterday", "👀cask, seen 5 days ago",
+                   "✍️reported by Ivan", "🛒in the shop", "shop name: Multi Beer 0.33l", "Czech Republic", "Freedonia", "Armenia",
+                   "draft · 2800 ֏", "bottle 330 ml · 1500 ֏", "can 500 ml · 900 ֏", "400 ml · 2800 ֏"):
         assert wanted in rows, wanted
-    assert titles(page, "#rows .flag") == ["possibly the first time in Yerevan", "new in the last 7 days", "on the menu"]
+    assert titles(page, "#rows .chip-flag") == ["possibly the first time in Yerevan", "new in the last 7 days"]
     assert "Verified on Untappd" in titles(page, "#rows .verified")
     assert titles(page, "#rows .hot") == ["Untappd rating"] and titles(page, "#rows .inferred") == ["guessed from the name"]
     assert page.get_attribute("#rows .map-link", "aria-label") == "Open in Yandex Maps: 1 Test St"
@@ -413,6 +417,47 @@ def test_a_shared_language_link_follows_the_switch_and_a_plain_link_stays_plain(
     assert problems == []
 
 
+def layout_data(*, broken_picture=False):
+    """make_data() plus the beers a card has to cope with: a name that wraps to four lines beside a rating, a picture that
+    loads (and, on request, one that does not: the browser logs that as an error), and a beer with a flag but no rating."""
+    data = make_data()
+    base = data["rows"][0]                                     # Test IPA: a hot rating and both flags
+    when = lambda hours: (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat(timespec="seconds")
+    data["rows"] += [
+        {**base, "name": "Carried Away (Apricot, Pear, Quince, Cardamom) Imperial Pastry Sour Ale", "beer_key": "n:long",
+         "rating": 3.55, "new": False, "star": False, "since_at": when(4), "beer_logo": "https://logo.test/ok.png"},
+        {**base, "name": "Fresh Unrated", "beer_key": "n:fresh", "rating": None, "star": False, "since_at": when(5)},
+    ]
+    if broken_picture:
+        data["rows"].append({**base, "name": "Broken Picture", "beer_key": "n:broken", "rating": 3.2, "new": False, "star": False,
+                             "since_at": when(6), "beer_logo": "https://logo.test/missing.png"})
+    return data
+
+
+CARDS_JS = """() => [...document.querySelectorAll('#rows .card')].map((card) => {
+  const rect = (selector, root = card) => {
+    const e = root.querySelector(selector);
+    if (!e) return null;
+    const r = e.getBoundingClientRect();
+    return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height};
+  };
+  const kinds = (parent) => [...parent.children].map((c) => c.classList[0]);
+  return {
+    title: card.querySelector('.card-name').textContent.trim(),
+    parts: kinds(card), head: kinds(card.querySelector('.card-head')),
+    blocks: [...card.querySelectorAll('.place-block')].map(kinds),
+    box: rect('.card-head'), name: rect('.card-name'), thumb: rect('.thumb'), slot: rect('.rate-slot'),
+    chip: rect('.chip-rating'), hot: !!card.querySelector('.chip-rating.hot'),
+    flags: [...card.querySelectorAll('.rate-slot .chip-flag')].map((f) => { const r = f.getBoundingClientRect(); return {left: r.left, right: r.right}; }),
+    scroll: [card.scrollWidth, card.clientWidth],
+  };
+})"""
+
+
+def cards(page):
+    return {card["title"]: card for card in page.evaluate(CARDS_JS)}
+
+
 BOX_JS = "e => { const r = e.getBoundingClientRect(); return {top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height}; }"
 
 
@@ -467,6 +512,157 @@ def test_the_place_chips_fade_out_at_the_right_edge_and_the_last_chip_clears_the
     last, row = box(page, "#places .place:last-child"), box(page, "#places")
     assert row["right"] - last["right"] >= 23.5                           # scrolled to the end, the last chip is past the fade
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_every_card_has_the_same_anatomy(open_page, lang):
+    page, problems = open_page(layout_data(broken_picture=True), width=375, query=f"?lang={lang}")
+    page.wait_for_function("!document.querySelector('#rows img.thumb[src*=\"missing\"]')")   # the broken picture was swapped out
+    shapes = page.evaluate(CARDS_JS)
+    assert len(shapes) == 13
+    order = ["chips", "map-link", "shop-name"]
+    for shape in shapes:
+        assert shape["parts"] in (["card-head", "meta", "place-blocks", "card-foot"], ["card-head", "place-blocks", "card-foot"]), shape["title"]
+        assert shape["head"][:2] == ["thumb", "card-name"] and shape["head"][2:] in ([], ["rate-slot"]), shape["title"]
+        assert shape["blocks"], shape["title"]
+        for block in shape["blocks"]:
+            assert block[0] == "pb-head" and block[1:] == [part for part in order if part in block[1:]], (shape["title"], block)
+    assert [len(shape["blocks"]) for shape in shapes if shape["title"] == "Multi Beer"] == [2]   # one block per place
+    assert all(abs(shape["thumb"]["width"] - 44) < 0.5 and abs(shape["thumb"]["height"] - 44) < 0.5 for shape in shapes)   # a photo, a tile or a broken picture: 44px
+    assert problems == ["Failed to load resource: net::ERR_FAILED"]                               # the broken picture, and nothing else
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_the_rating_chip_is_pinned_to_the_top_right_and_is_the_same_size_on_every_card(open_page, lang):
+    page, problems = open_page(layout_data(), width=375, query=f"?lang={lang}")
+    rated = [card for card in cards(page).values() if card["chip"]]
+    assert len(rated) >= 3 and {card["hot"] for card in rated} == {True, False}   # hot and plain chips both
+    assert len({(round(card["chip"]["width"], 1), round(card["chip"]["height"], 1)) for card in rated}) == 1
+    for card in rated:
+        assert abs(card["chip"]["right"] - card["box"]["right"]) <= 0.5, card["title"]           # the right edge of the card, always
+        assert card["chip"]["top"] - card["box"]["top"] <= 12, card["title"]                     # in the top band, never under the name
+        assert card["name"]["right"] <= card["slot"]["left"] - 11, card["title"]                  # the name stops before the chip
+    hot = page.evaluate("[...document.querySelectorAll('#rows .chip-rating')].map((c) => [c.classList.contains('hot'), c.firstChild.textContent])")
+    assert sorted(set(map(tuple, hot))) == [(False, "★"), (True, "🔥")]
+    assert problems == []
+
+
+def test_a_beer_without_a_rating_or_a_flag_gives_its_name_the_full_width(open_page):
+    page, problems = open_page(layout_data(), width=375)
+    everything = cards(page)
+    bare = [card for card in everything.values() if not card["slot"]]
+    assert len(bare) >= 5
+    for card in bare:
+        assert abs(card["name"]["right"] - card["box"]["right"]) <= 0.5, card["title"]           # no chip, no gap
+    assert all(card["name"]["right"] < card["box"]["right"] - 40 for card in everything.values() if card["chip"])
+    assert problems == []
+
+
+def test_a_name_starts_at_the_same_place_on_every_card_and_a_long_one_wraps_in_its_column(open_page):
+    page, problems = open_page(layout_data(), width=375)
+    everything = cards(page)
+    assert {round(card["name"]["left"] - card["box"]["left"], 1) for card in everything.values()} == {56.0}   # photo 44 + gap 12
+    long = everything["Carried Away (Apricot, Pear, Quince, Cardamom) Imperial Pastry Sour Ale"]
+    short = everything["Dark Stout"]
+    assert long["name"]["height"] > 3 * 20                                                       # four lines or so
+    assert abs((long["chip"]["top"] - long["box"]["top"]) - (short["chip"]["top"] - short["box"]["top"])) <= 1   # the chip did not move
+    assert long["scroll"][0] <= long["scroll"][1]
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_the_new_and_first_time_flags_sit_left_of_the_rating_chip_and_do_not_shift_the_name(open_page, lang):
+    page, problems = open_page(layout_data(), width=375, query=f"?lang={lang}")
+    everything = cards(page)
+    ipa = everything["Test IPA"]
+    assert len(ipa["flags"]) == 2
+    assert all(flag["right"] <= ipa["chip"]["left"] + 0.5 for flag in ipa["flags"])
+    assert ipa["flags"][0]["right"] <= ipa["flags"][1]["left"] + 0.5
+    assert abs(ipa["name"]["left"] - everything["Dark Stout"]["name"]["left"]) < 0.5           # the name starts where it always does
+    fresh = everything["Fresh Unrated"]                                                          # a flag, no rating
+    assert fresh["slot"] and not fresh["chip"] and len(fresh["flags"]) == 1
+    assert abs(fresh["slot"]["right"] - fresh["box"]["right"]) <= 0.5
+    titles_ = page.eval_on_selector_all("#rows .card:first-child .chip-flag", "els => els.map((e) => e.title)")
+    assert titles_ == (["возможно, впервые в Ереване", "новинка за 7 дней"] if lang == "ru"
+                       else ["possibly the first time in Yerevan", "new in the last 7 days"])
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang, seen, sources", [
+    ("ru", "розлив, видели сегодня", {"menu": "✅меню", "checkin": "чекин", "manual": "✍️со слов (Ivan)", "shop": "🛒в магазине"}),
+    ("en", "draft, seen today", {"menu": "✅menu", "checkin": "check-in", "manual": "✍️reported by Ivan", "shop": "🛒in the shop"}),
+])
+def test_price_and_serving_pills_and_the_seen_note_belong_to_their_place_block(open_page, lang, seen, sources):
+    page, problems = open_page(layout_data(), width=375, query=f"?lang={lang}")
+    assert page.evaluate("[...document.querySelectorAll('#rows .chip-serving, #rows .chip-note')].every((c) => c.closest('.place-block'))")
+    assert page.evaluate("[...document.querySelectorAll('#rows .card > *:not(.place-blocks)')].every((c) => !c.querySelector('.chip-serving, .chip-note'))")
+    blocks = page.evaluate("""() => [...document.querySelectorAll('#rows .card')].map((card) => ({
+      title: card.querySelector('.card-name').textContent.trim(),
+      blocks: [...card.querySelectorAll('.place-block')].map((b) => ({
+        place: b.querySelector('.pb-head').children[1].textContent,
+        source: (b.querySelector('.chip-source') || {}).textContent || null,
+        serving: [...b.querySelectorAll('.chip-serving')].map((c) => c.textContent),
+        note: [...b.querySelectorAll('.chip-note')].map((c) => [c.textContent, c.firstChild.textContent]),
+        order: [...b.children].map((c) => c.getBoundingClientRect().top),
+        map: !!b.querySelector('.map-link'), shopName: (b.querySelector('.shop-name') || {}).textContent || null,
+      }))}))""")
+    by_title = {card["title"]: card["blocks"] for card in blocks}
+    multi = by_title["Multi Beer"]
+    bar, shop = multi
+    assert bar["place"].startswith("Gargoyle Bar") and shop["place"] == "Beer City"
+    unit = "мл" if lang == "ru" else "ml"
+    bottle, draft = ("бутылка", "розлив") if lang == "ru" else ("bottle", "draft")
+    assert bar["serving"] == [f"{draft} · 2800 ֏", f"{bottle} 330 {unit} · 1500 ֏"]               # each pill is this place's own
+    assert shop["serving"] == [f"{bottle} 330 {unit} · 1500 ֏"] and shop["source"] == sources["shop"]
+    assert shop["shopName"] == ("в магазине: Multi Beer 0.33l" if lang == "ru" else "shop name: Multi Beer 0.33l")
+    assert bar["source"] == sources["menu"] and bar["shopName"] is None
+    stout = by_title["Dark Stout"][0]                                                             # a check-in: a note, no price
+    assert stout["serving"] == [] and stout["source"] == sources["checkin"]
+    assert stout["note"] == [["👀" + seen, "👀"]]                                                 # the eyes are inside the pill
+    assert by_title["Friend Sour"][0]["source"] == sources["manual"]
+    for card_blocks in by_title.values():
+        for block in card_blocks:
+            assert block["order"] == sorted(block["order"])                                       # top to bottom: head, pills, address, shop name
+    assert problems == []
+
+
+def test_a_shop_source_chip_links_to_the_shops_own_page_only_when_it_differs_from_the_beers(open_page):
+    page, problems = open_page(layout_data(), width=375)
+    links = page.eval_on_selector_all("#rows a.chip-source", "els => els.map((e) => [e.textContent, e.href, e.target, e.rel])")
+    hrefs = sorted(link[1] for link in links)
+    assert hrefs == ["https://shop.test/multi", "https://shop.test/pils"]
+    assert all(link[2] == "_blank" and "noopener" in link[3] for link in links)
+    assert page.eval_on_selector_all("#rows .chip-source:not(a)", "els => els.length") >= 6      # menu, check-in, manual: plain chips
+    assert problems == []
+
+
+def test_a_card_ends_with_when_the_beer_appeared_below_its_places(open_page):
+    page, problems = open_page(layout_data(), width=375)
+    feet = page.evaluate("""() => [...document.querySelectorAll('#rows .card')].map((card) => {
+      const foot = card.querySelector('.card-foot'), blocks = card.querySelector('.place-blocks');
+      return [foot.textContent, foot === card.lastElementChild, foot.getBoundingClientRect().top >= blocks.getBoundingClientRect().bottom - 0.5];
+    })""")
+    assert len(feet) == 12 and all(last and below for _, last, below in feet)
+    assert all(re.fullmatch(r"Appeared \d\d\.\d\d, \d\d:\d\d", text) for text, _, _ in feet)
+    assert problems == []
+
+
+def test_every_link_in_a_card_has_a_44px_hit_area(open_page):
+    page, problems = open_page(layout_data(), width=375)
+    heights = page.eval_on_selector_all("#rows .card a", "els => els.map((e) => [e.className || e.parentElement.className, "
+                                                         "parseFloat(getComputedStyle(e, '::after').height)])")
+    assert len(heights) >= 15 and min(height for _, height in heights) >= 44, sorted(heights, key=lambda h: h[1])[:3]
+    assert problems == []
+
+
+@pytest.mark.parametrize("width", [320, 375])
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_no_card_overflows_on_a_phone_however_long_the_name_or_the_english(open_page, lang, width):
+    page, problems = open_page(layout_data(), width=width, query=f"?lang={lang}")
+    assert all(card["scroll"][0] <= card["scroll"][1] for card in cards(page).values())
+    if width == 375:
+        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert problems == []
 
 

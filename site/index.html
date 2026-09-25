@@ -26,6 +26,7 @@
     --radius: 14px;
     --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;   /* the spacing scale: every gap and padding is one of these */
     --hit: 44px;   /* the smallest touch target */
+    --thumb: 44px;   /* a beer's picture, or the tile that stands in for it */
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -123,9 +124,8 @@
   .place b { font-size: .85rem; color: var(--text); font-weight: 600; white-space: nowrap; }
   .place .warn { color: var(--danger); }
   .place[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
-  .place-head, .where-head, .beer-head { display: inline-flex; align-items: center; gap: 6px; }
+  .place-head, .where-head, .beer-head { display: inline-flex; align-items: center; gap: var(--s2); }
   .logo { border-radius: 50%; object-fit: cover; vertical-align: middle; flex-shrink: 0; background: var(--surface-2); }
-  .beer-logo { border-radius: 6px; object-fit: contain; vertical-align: middle; flex-shrink: 0; background: var(--surface-2); }
   .avatar {
     display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
     background: var(--surface-2); color: var(--muted); font-weight: 700; font-size: .7rem;
@@ -135,12 +135,11 @@
   .map-link { display: flex; align-items: flex-start; gap: 4px; width: fit-content; max-width: 100%; color: var(--muted); font-size: .78rem; line-height: 1.3; text-decoration: none; }
   .map-link svg { flex-shrink: 0; margin-top: 1px; color: var(--accent); }
   .map-link:hover { color: var(--text); text-decoration: none; }
-  .where .map-link { flex: 0 0 100%; }
   .tracked-badge { margin-left: var(--s2); border-color: var(--accent); background: transparent; }
   .intro { color: var(--muted); margin: 0 0 16px; max-width: 60ch; }
   .count { color: var(--muted); font-size: .85rem; margin: 0 0 10px; }
   .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  .table-wrap { --thumb: 32px; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
   table { width: 100%; border-collapse: collapse; font-size: .92rem; }
   th {
     text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
@@ -152,20 +151,32 @@
   .beer { font-weight: 700; }
   .small { display: block; color: var(--muted); font-size: .82rem; }
   .inferred { font-style: italic; }
-  .flag { margin-right: .4em; }
   .ico { margin-right: .4em; }
-  .hot { color: var(--hot); font-weight: 700; white-space: nowrap; }
-  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
-  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .card .meta { color: var(--muted); font-size: .85rem; margin-top: 2px; }
-  .where { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .85rem; margin-top: 6px; }
-  .where .meta-inline { color: var(--muted); }
+  .chip .ico { margin: 0; }
+  .chip-rating { min-width: 4.5rem; justify-content: center; font-size: .85rem; font-weight: 700; }   /* the same size hot or not */
+  .chip-rating .ico { color: var(--accent); }
+  .hot { color: var(--hot); border-color: var(--hot); background: transparent; }
+  .chip-flag { padding: 0; border: 0; background: transparent; font-size: 1.05rem; line-height: 1; }
+  .chip-source, .chip-note { background: transparent; color: var(--muted); font-weight: 500; white-space: normal; }
+  a.chip-source { color: var(--text); border-color: var(--accent); }
+  a.chip-source:hover { text-decoration: none; }
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); }
+  .card { display: grid; gap: var(--s2); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--s3); }
+  /* header: photo | name | rating slot. The slot is left out, gap and all, when a beer has neither a rating nor a flag. */
+  .card-head { display: grid; grid-template-columns: auto 1fr auto; align-items: start; }
+  .thumb { width: var(--thumb); height: var(--thumb); border-radius: 8px; object-fit: contain; background: var(--surface-2); }
+  .thumb-empty { display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; opacity: .55; }
+  .card-name { min-width: 0; min-height: var(--thumb); margin-left: var(--s3); display: flex; align-items: center; font-size: 1rem; font-weight: 700; line-height: 1.3; }
+  .rate-slot { display: flex; align-items: center; gap: var(--s1); min-height: var(--thumb); margin-left: var(--s3); }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .place-blocks { display: grid; gap: var(--s3); }
+  .place-block { display: grid; gap: var(--s2); border-left: 2px solid var(--border); padding-left: var(--s3); }
+  .pb-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); font-size: .9rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); }
   .shop-name { color: var(--muted); font-size: .78rem; }
-  .where .shop-name { flex: 0 0 100%; }
-  .wherelist { display: flex; flex-direction: column; gap: 5px; }
-  .wherelist .where { margin-top: 0; gap: 2px 6px; }
-  .wherelist .where + .where { padding-top: 5px; border-top: 1px dashed var(--border); }
+  .card-foot { color: var(--muted); font-size: .78rem; }
+  .card a { position: relative; }
+  .card a::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: max(var(--hit), 100%); transform: translateY(-50%); }   /* a 44px hit area that takes no room */
   #to-top {
     position: fixed; right: 16px; bottom: 16px; width: 44px; height: 44px; border-radius: 50%;
     border: 1px solid var(--border); background: var(--surface); color: var(--accent);
@@ -327,11 +338,11 @@ const I18N = {
     "badge.menu": "меню",
     "badge.seen": "видели",
     "badge.seen.ago": "видели {ago}",
+    "badge.checkin": "чекин",
     "badge.manual": "со слов",
     "badge.manual.by": "со слов ({by})",
     "shop.in": "в магазине",
     "shop.name": "в магазине: {name}",
-    "menu.on": "есть в меню",
     "verified": "Верифицирован в Untappd",
     "map.open": "Открыть на Яндекс Картах: {where}",
     "map.link": "на карте",
@@ -432,11 +443,11 @@ const I18N = {
     "badge.menu": "menu",
     "badge.seen": "seen",
     "badge.seen.ago": "seen {ago}",
+    "badge.checkin": "check-in",
     "badge.manual": "reported",
     "badge.manual.by": "reported by {by}",
     "shop.in": "in the shop",
     "shop.name": "shop name: {name}",
-    "menu.on": "on the menu",
     "verified": "Verified on Untappd",
     "map.open": "Open in Yandex Maps: {where}",
     "map.link": "on the map",
@@ -565,14 +576,12 @@ function logoNode(name, url, size) {
   img.addEventListener("error", () => img.replaceWith(avatarNode(name, size)), { once: true });
   return img;
 }
-function beerLogoNode(url) {
+function thumbNode(url) {   // the beer's picture, or a tile where it would be, so a name starts in the same place on every card
+  const tile = () => el("span", { class: "thumb thumb-empty", "aria-hidden": "true" }, "🍺");
   const safe = safeUrl(url);
-  if (!safe) return null;
-  const img = el("img", {
-    src: safe, alt: "", class: "beer-logo", width: 30, height: 30,
-    loading: "lazy", referrerpolicy: "no-referrer",
-  });
-  img.addEventListener("error", () => img.remove(), { once: true });
+  if (!safe) return tile();
+  const img = el("img", { src: safe, alt: "", class: "thumb", loading: "lazy", referrerpolicy: "no-referrer" });
+  img.addEventListener("error", () => img.replaceWith(tile()), { once: true });
   return img;
 }
 function verifiedBadge() {
@@ -616,11 +625,9 @@ const priceText = (r) => (r.price_amd != null ? `${r.price_amd} ֏` : "");
 // a container or serving the dictionary has no word for shows nothing, as it always has
 const containerText = (c) => I18N[ui.lang][`container.${c}`] || "";
 const servingLabel = (s) => I18N[ui.lang][`serving.${s}`] || "";
-const volumeText = (r) => [r.volume_ml != null ? `${r.volume_ml} ${t("unit.ml")}` : "", containerText(r.container)].filter(Boolean).join(" ");
-// several servings of one beer at one place, compactly: "draft 2800 ֏ · bottle 1500 ֏ 330 ml"
-const servingText = (s) => [containerText(s.container), priceText(s), s.volume_ml != null ? `${s.volume_ml} ${t("unit.ml")}` : ""].filter(Boolean).join(" ");
-const servingsText = (r) => (r.servings || []).map(servingText).join(" · ");
-const singleServing = (g) => g.rows.length === 1 && !g.rows[0].servings;   // only then price and size go next to the name
+// one serving, the same for a row and for an entry of its `servings`: "draft · 2900 ֏", "can 450 ml · 2900 ֏"
+const volumeText = (s) => (s.volume_ml != null ? `${s.volume_ml} ${t("unit.ml")}` : "");
+const servingText = (s) => dot([[containerText(s.container), volumeText(s)].filter(Boolean).join(" "), priceText(s)]);
 function sinceText(s) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
   if (m) return `${m[3]}.${m[2]}`;
@@ -632,34 +639,15 @@ function sinceText(s) {
 function iconSpan(icon) {
   return el("span", { class: "ico", "aria-hidden": "true" }, icon);
 }
-function badgeNodes(r) {
-  switch (r.badge) {
-    case "menu": return [iconSpan("✅"), t("badge.menu")];
-    case "checkin": {
-      const seen = r.seen_days_ago == null ? t("badge.seen") : t("badge.seen.ago", { ago: ago(r.seen_days_ago) });
-      const serving = servingLabel(r.serving);
-      return [iconSpan("👀"), serving ? `${serving}, ${seen}` : seen];
-    }
-    case "manual": return [iconSpan("✍️"), r.by ? t("badge.manual.by", { by: r.by }) : t("badge.manual")];
-    case "shop": return [iconSpan("🛒"), t("shop.in")];
-    default: return [];
-  }
-}
-function flagNodes(r) {
-  const flag = (label, sign) => [el("span", { class: "flag", role: "img", "aria-label": label, title: label }, sign), " "];
-  return [...(r.star ? flag(t("flag.star"), "⭐") : []), ...(r.new ? flag(t("flag.new"), "🆕") : [])];
+function flagNodes(g) {   // 🆕 and ⭐ as small chips
+  const flag = (label, sign) => el("span", { class: "chip chip-flag", role: "img", "aria-label": label, title: label }, sign);
+  return [...(g.star ? [flag(t("flag.star"), "⭐")] : []), ...(g.new ? [flag(t("flag.new"), "🆕")] : [])];
 }
 function nameNode(r) {
   const url = safeUrl(r.url);
   return url
     ? el("a", { class: "beer", href: url, target: "_blank", rel: "noopener noreferrer" }, r.name)
     : el("span", { class: "beer" }, r.name);
-}
-function shopLinkNode(r) {
-  const safe = safeUrl(r.shop_url);
-  if (!safe || safe === r.url) return null;   // matched to Untappd: url already points elsewhere
-  return el("a", { class: "small", href: safe, target: "_blank", rel: "noopener noreferrer" },
-    iconSpan("🛒"), t("shop.in"));
 }
 function styleNode(g) {   // a style guessed from the beer's name (not from Untappd) is set apart and says so
   return g.style && g.style_inferred ? el("span", { class: "inferred", title: t("style.inferred") }, g.style) : g.style;
@@ -669,12 +657,11 @@ function metaNode(parts) {   // "a · b · c" out of text and nodes, skipping th
   const kept = parts.filter(Boolean);
   return kept.length ? el("div", { class: "meta" }, ...kept.flatMap((p, i) => (i ? [" · ", p] : [p]))) : null;
 }
-function ratingNode(r) {
+function ratingNode(r) {   // a chip of one size: ★ and the number, or 🔥 and the number from the hot rating up
   if (r.rating == null) return null;
-  const value = Number(r.rating).toFixed(2);
-  return r.rating >= ui.data.hot_rating
-    ? el("span", { class: "hot", title: t("rating.title") }, iconSpan("🔥"), value)
-    : el("span", { title: t("rating.title") }, value);
+  const hot = r.rating >= ui.data.hot_rating;
+  return el("span", { class: hot ? "chip chip-rating hot" : "chip chip-rating", title: t("rating.title") },
+    iconSpan(hot ? "🔥" : "★"), Number(r.rating).toFixed(2));
 }
 
 function cmpDesc(a, b) {  // descending, empty values last
@@ -732,33 +719,41 @@ function shopNameLine(r, name) {   // v1.2: what the shop calls a matched beer, 
   const same = (a, b) => String(a).toLowerCase().replace(/\s+/g, "") === String(b).toLowerCase().replace(/\s+/g, "");
   return r.shop_name && !same(r.shop_name, name) ? el("div", { class: "shop-name" }, t("shop.name", { name: r.shop_name })) : null;
 }
-function placeCell(r, name) {
-  const place = placeObj(r.place_id);
-  return [
-    el("span", { class: "where-head" }, logoNode(place.name, place.logo, 22), placeNameNode(place)),
-    mapLinkNode(place),
-    el("span", { class: "small" }, ...badgeNodes(r)),
-    r.servings ? el("span", { class: "small" }, servingsText(r)) : null,
-    shopNameLine(r, name),
-  ];
+const SOURCE_ICON = { menu: "✅", manual: "✍️", shop: "🛒" };   // a check-in's 👀 goes with its "seen" note instead
+function sourceLabel(r) {
+  switch (r.badge) {
+    case "menu": return t("badge.menu");
+    case "checkin": return t("badge.checkin");
+    case "manual": return r.by ? t("badge.manual.by", { by: r.by }) : t("badge.manual");
+    case "shop": return t("shop.in");
+    default: return "";
+  }
 }
-function placeLines(rows, name) {   // one line per place a grouped beer is available at
-  return rows.map((r) => {
-    const place = placeObj(r.place_id);
-    const extra = r.servings ? servingsText(r) : dot([priceText(r), volumeText(r)]);
-    // the plain "on the menu" status is the common case: a tooltip icon saves a line, other statuses keep their text
-    const status = r.badge === "menu"
-      ? el("span", { class: "flag", role: "img", "aria-label": t("menu.on"), title: t("menu.on") }, "✅")
-      : el("span", { class: "meta-inline" }, ...badgeNodes(r));
-    return el("div", { class: "where" },
-      logoNode(place.name, place.logo, 20),
-      placeNameNode(place),
-      status,
-      extra ? el("span", { class: "meta-inline" }, extra) : null,
-      shopLinkNode(r),
-      mapLinkNode(place),
-      shopNameLine(r, name));
-  });
+function sourceBadge(r) {   // where the sighting comes from; a shop row matched to Untappd links to the shop's own page
+  const label = sourceLabel(r);
+  if (!label) return null;
+  const kids = [SOURCE_ICON[r.badge] ? iconSpan(SOURCE_ICON[r.badge]) : null, label];
+  const shop = safeUrl(r.shop_url);
+  return r.badge === "shop" && shop && shop !== r.url
+    ? el("a", { class: "chip chip-source", href: shop, target: "_blank", rel: "noopener noreferrer" }, ...kids)
+    : el("span", { class: "chip chip-source" }, ...kids);
+}
+function seenNote(r) {   // a check-in has no price: what it says instead is when it was seen, and how it was poured
+  if (r.badge !== "checkin") return null;
+  const seen = r.seen_days_ago == null ? t("badge.seen") : t("badge.seen.ago", { ago: ago(r.seen_days_ago) });
+  const serving = servingLabel(r.serving);
+  return el("span", { class: "chip chip-note" }, iconSpan("👀"), serving ? `${serving}, ${seen}` : seen);
+}
+const servingChips = (r) => (r.servings || [r]).map(servingText).filter(Boolean)
+  .map((text) => el("span", { class: "chip chip-serving" }, text));
+const chipsNode = (chips) => (chips.length ? el("div", { class: "chips" }, ...chips) : null);
+function placeBlock(r, name, withServings = true) {   // one place a beer is at: who and from where, what it costs and how it is served, where it is
+  const place = placeObj(r.place_id);
+  return el("div", { class: "place-block" },
+    el("div", { class: "pb-head" }, logoNode(place.name, place.logo, 20), placeNameNode(place), sourceBadge(r)),
+    chipsNode([...(withServings ? servingChips(r) : []), seenNote(r)].filter(Boolean)),
+    mapLinkNode(place),
+    shopNameLine(r, name));
 }
 function table(groups) {
   const heads = ["th.beer", "th.style", "th.abv", "th.ibu", "th.rating", "th.price", "th.where", "th.since"];
@@ -766,40 +761,29 @@ function table(groups) {
   const head = el("tr", null, ...heads.map((h) => el("th", { scope: "col", class: numeric.has(h) ? "num" : null }, t(h))));
   const body = groups.map((g) => el("tr", null,
     el("td", null,
-      el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)),
-      smallNode(dot([g.brewery, countryText(g)])),
-      g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null),
+      el("span", { class: "beer-head" }, thumbNode(g.beer_logo), nameNode(g)),
+      smallNode(dot([g.brewery, countryText(g)]))),
     el("td", null, styleNode(g)),
     el("td", { class: "num" }, abvText(g)),
     el("td", { class: "num" }, g.ibu ?? ""),
     el("td", { class: "num" }, ratingNode(g)),
-    el("td", { class: "num" }, ...(singleServing(g) ? [priceText(g.rows[0]),
-      volumeText(g.rows[0]) ? el("span", { class: "small" }, volumeText(g.rows[0])) : null] : [])),
-    el("td", null, ...(g.rows.length === 1 ? placeCell(g.rows[0], g.name) : [el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name))])),
-    el("td", { class: "nowrap" }, sinceText(g.since_at))));
+    el("td", { class: "num" }, g.rows.length === 1 ? chipsNode(servingChips(g.rows[0])) : null),
+    el("td", null, el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name, g.rows.length > 1)))),
+    el("td", { class: "nowrap" }, ...flagNodes(g), sinceText(g.since_at))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
 }
-function cardWhere(r, name) {
-  const place = placeObj(r.place_id);
-  return el("div", { class: "where" },
-    logoNode(place.name, place.logo, 20),
-    placeNameNode(place),
-    el("span", { class: "meta-inline" }, ...badgeNodes(r)),
-    r.servings ? el("span", { class: "meta-inline" }, servingsText(r)) : null,
-    mapLinkNode(place),
-    shopNameLine(r, name));
-}
-function cards(groups) {
-  const line = (cls, text) => (text ? el("div", { class: cls }, text) : null);
-  return el("ul", { class: "cards" }, ...groups.map((g) => el("li", { class: "card" },
-    el("div", { class: "top" },
-      el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)), ratingNode(g)),
+function cardNode(g) {   // the same anatomy for every beer: header, meta line, a block per place, footer
+  const flags = flagNodes(g), rating = ratingNode(g), since = sinceText(g.since_at);
+  return el("li", { class: "card" },
+    el("div", { class: "card-head" },
+      thumbNode(g.beer_logo),
+      el("div", { class: "card-name" }, nameNode(g)),
+      flags.length || rating ? el("div", { class: "rate-slot" }, ...flags, rating) : null),
     metaNode([g.brewery, styleNode(g), abvText(g), ibuText(g), countryText(g)]),
-    singleServing(g) ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
-    g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
-    g.rows.length === 1 ? cardWhere(g.rows[0], g.name) : el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name)),
-    sinceText(g.since_at) ? el("div", { class: "meta" }, t("appeared", { date: sinceText(g.since_at) })) : null)));
+    el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name))),
+    since ? el("div", { class: "card-foot" }, t("appeared", { date: since })) : null);
 }
+const cards = (groups) => el("ul", { class: "cards" }, ...groups.map(cardNode));
 function render() {
   if (!ui.data) return;
   const groups = visibleGroups();
