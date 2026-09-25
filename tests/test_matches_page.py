@@ -164,3 +164,21 @@ def test_marks_can_be_moved_to_another_device_through_a_link():
     assert "atob(" in js
     assert "history.replaceState" in js                       # the marks leave the address bar after loading
     assert "importFromHash();" in js.split("async function load()")[1]
+
+
+def test_a_mode_switch_opens_the_merge_panel_and_puts_the_review_flow_in_a_panel_of_its_own():
+    soup = _soup()
+    review_tab, merge_tab = soup.find(id="mode-review"), soup.find(id="mode-merge")
+    for tab in (review_tab, merge_tab):
+        assert tab.name == "button" and tab["type"] == "button", tab["id"]
+    assert (review_tab["aria-pressed"], merge_tab["aria-pressed"]) == ("true", "false")
+    assert review_tab.get_text(strip=True) == "Проверка" and merge_tab.get_text(strip=True) == "Объединить пиво"
+    review, merge = soup.find(id="review"), soup.find(id="merge")
+    assert merge.has_attr("hidden") and not review.has_attr("hidden")
+    for element_id in ("search", "only-weak", "show-ok", "count", "list"):
+        assert review.find(id=element_id) is not None and merge.find(id=element_id) is None, element_id
+    js = _js(soup)
+    fn = re.search(r"function setMode\(mode\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for element_id in ("review", "merge", "bar"):   # the bar of marks belongs to the review list, so it goes with it
+        assert f'$("{element_id}").hidden' in fn, element_id
+    assert '$("mode-merge").addEventListener("click"' in js

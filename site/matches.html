@@ -60,6 +60,13 @@
   .back { display: inline-block; margin-bottom: 12px; font-size: .9rem; }
   h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0 0 8px; font-weight: 800; }
   .intro { color: var(--muted); margin: 0 0 16px; max-width: 70ch; }
+  .modes { display: flex; gap: 8px; margin: 0 0 16px; }
+  .mode {
+    flex: 1 1 0; min-width: 0; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer;
+    padding: 9px 8px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+  }
+  .mode[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 12px; }
   #search {
     flex: 1 1 240px; min-width: 0; font: inherit; color: var(--text); background: var(--surface);
@@ -120,17 +127,26 @@
   <main>
     <a class="back" href="index.html">← На главную</a>
     <h1><span aria-hidden="true">🔗</span> Проверка склеек</h1>
-    <p class="intro">Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. Если склейка правильная — отметьте «верно», она уйдёт из списка. Если это разные пивоварни или сорта — отметьте «не то пиво», потом нажмите «Скопировать для Олега» и отправьте текст Олегу.</p>
-    <div class="controls">
-      <label for="search" class="sr-only">Поиск по названию, пивоварне или месту</label>
-      <input type="search" id="search" placeholder="Название, пивоварня или место" autocomplete="off">
-      <label class="toggle"><input type="checkbox" id="only-weak"><span>только слабые</span></label>
-      <label class="toggle"><input type="checkbox" id="show-ok"><span>показать проверенные</span></label>
-      <button type="button" id="confirm-visible">Всё показанное — верно</button>
-      <button type="button" id="transfer">Перенести отметки на другое устройство</button>
+    <div class="modes" role="group" aria-label="Режим страницы">
+      <button type="button" class="mode" id="mode-review" aria-pressed="true">Проверка</button>
+      <button type="button" class="mode" id="mode-merge" aria-pressed="false">Объединить пиво</button>
     </div>
-    <p id="count" class="count" aria-live="polite">загружаем…</p>
-    <div id="list"></div>
+    <div id="review">
+      <p class="intro">Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. Если склейка правильная — отметьте «верно», она уйдёт из списка. Если это разные пивоварни или сорта — отметьте «не то пиво», потом нажмите «Скопировать для Олега» и отправьте текст Олегу.</p>
+      <div class="controls">
+        <label for="search" class="sr-only">Поиск по названию, пивоварне или месту</label>
+        <input type="search" id="search" placeholder="Название, пивоварня или место" autocomplete="off">
+        <label class="toggle"><input type="checkbox" id="only-weak"><span>только слабые</span></label>
+        <label class="toggle"><input type="checkbox" id="show-ok"><span>показать проверенные</span></label>
+        <button type="button" id="confirm-visible">Всё показанное — верно</button>
+        <button type="button" id="transfer">Перенести отметки на другое устройство</button>
+      </div>
+      <p id="count" class="count" aria-live="polite">загружаем…</p>
+      <div id="list"></div>
+    </div>
+    <section id="merge" hidden>
+      <p class="intro">Несколько магазинных позиций — на самом деле одно и то же пиво? Отметьте их, вставьте ссылку на это пиво в Untappd — и получите готовый текст для corrections.yaml.</p>
+    </section>
   </main>
   <div id="bar">
     <span>Отмечено: <b id="marked">0</b></span>
@@ -379,6 +395,17 @@ async function load() {
   if (ui.note) $("copy-status").textContent = ui.note;   // render() clears the status line, so set it after
 }
 
+function setMode(mode) {
+  const merge = mode === "merge";
+  $("review").hidden = merge;
+  $("merge").hidden = !merge;
+  $("bar").hidden = merge;   // the bar of marks belongs to the review list
+  $("mode-review").setAttribute("aria-pressed", String(!merge));
+  $("mode-merge").setAttribute("aria-pressed", String(merge));
+}
+
+$("mode-review").addEventListener("click", () => setMode("review"));
+$("mode-merge").addEventListener("click", () => setMode("merge"));
 $("search").addEventListener("input", render);
 $("only-weak").addEventListener("change", render);
 $("show-ok").addEventListener("change", render);
