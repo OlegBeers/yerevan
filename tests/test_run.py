@@ -1242,6 +1242,26 @@ def test_apply_shop_matches_clears_stale_identity_when_the_match_is_removed():
     assert "rating" not in info and "logo" not in info
 
 
+def test_apply_shop_matches_switching_match_drops_the_previous_beers_identity():
+    """Code review round 3, finding D: a same_as correction to a beer no bar has shown carries no
+    name/brewery/logo, so the previous match's u_name/u_brewery/logo must not survive the switch."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "X", "brewery": "Y", "shop_url": "https://beer-city.am/p/1"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(
+        untappd_beer_id=2, url="https://untappd.com/beer/2", rating=3.9, logo="LOGO_A",
+        name="Double IPA", brewery="Dargett Brewery", matched_at=iso(NOW), via="local", weak=True)
+    run_mod.apply_shop_matches(state)
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=777, url="https://untappd.com/beer/777",
+                                             matched_at=iso(NOW), via="manual")
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:x"].info
+    assert info["url"] == "https://untappd.com/beer/777"
+    assert not {"u_name", "u_brewery", "logo", "rating"} & info.keys()
+    assert not info["match_weak"]
+
+
 # --- apply_shop_matches: precise overlay-field tracking (3rd review round, finding B2) --------
 
 def test_apply_shop_matches_clears_rating_even_when_a_full_run_already_reset_the_url():

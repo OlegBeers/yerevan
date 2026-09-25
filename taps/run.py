@@ -447,6 +447,18 @@ _OVERLAY_FIELDS = ("logo", "rating")   # tracked in info["u_overlay"] and cleare
                                         # never cleared -- a shop can genuinely scrape its own
 
 
+def _drop_overlay(info: dict) -> None:
+    """Remove what the previous match wrote: canonical identity and the tracked rating/logo. Also runs
+    before a new match is written, so a switch to a beer without a name or logo keeps nothing of the
+    old one (round 3, finding D)."""
+    info.pop("u_name", None)
+    info.pop("u_brewery", None)
+    info.pop("match_weak", None)
+    for field, value in info.pop("u_overlay", {}).items():
+        if info.get(field) == value:
+            info.pop(field, None)
+
+
 def _clear_shop_match(info: dict) -> None:
     """Drop a shop/menu/manual n: pair's stale identity overlay once its match is gone (code review
     round 2, finding B) -- a removed corrections.yaml same_as entry, or an untappd_id: null block,
@@ -463,17 +475,12 @@ def _clear_shop_match(info: dict) -> None:
     still holds the value the overlay itself wrote -- e.g. Yerevan City re-sends its own shop photo
     into info["logo"] every run it finds the item, via that same _update_info, BEFORE this runs, so
     a fresher, already-refreshed value must not be clobbered."""
-    info.pop("u_name", None)
-    info.pop("u_brewery", None)
-    info.pop("match_weak", None)
+    _drop_overlay(info)
     if UNTAPPD_BEER_RE.search(info.get("url") or ""):
         if info.get("shop_url"):
             info["url"] = info["shop_url"]
         else:
             info.pop("url", None)
-    for field, value in info.pop("u_overlay", {}).items():
-        if info.get(field) == value:
-            info.pop(field, None)
 
 
 def apply_shop_matches(state: State) -> None:
@@ -498,6 +505,7 @@ def apply_shop_matches(state: State) -> None:
                 if key.startswith("n:"):
                     _clear_shop_match(rec.info)
                 continue
+            _drop_overlay(rec.info)
             rec.info["url"] = match.url
             overlay = {}
             for field in ("logo", "rating", "style", "abv"):
