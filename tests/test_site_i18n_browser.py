@@ -16,10 +16,10 @@ TABS = ("tab-all", "tab-bars", "tab-shops", "tab-venues")
 SHOP_IDS = ("beercity", "parma")
 
 
-def make_data(now=None, *, generated_ago=timedelta(hours=5), rows=None):
+def make_data(*, generated_ago=timedelta(hours=5), rows=None):
     """A data.json with every kind of row, place and venue the page draws. All names are Latin, so any Cyrillic that shows
     up on the English page is interface text nobody translated."""
-    now = now or datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
 
     def ago(**delta):
         return (now - timedelta(**delta)).isoformat(timespec="seconds")
