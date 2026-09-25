@@ -5,8 +5,9 @@ import pytest
 
 from taps.config import Place
 from taps.fetch import FetchError
+from taps.model import n_key
 from taps.sources.yerevan_city import (
-    HY_BRANDS, YCItem, YCName, brand_from, fetch_yerevan_city, parse_by_category, parse_search,
+    HY_BRANDS, YCItem, YCName, _russian_name, brand_from, fetch_yerevan_city, parse_by_category, parse_search,
 )
 from tests.helpers import fixture_json
 
@@ -279,6 +280,52 @@ def test_fetch_name_keeps_brand_when_title_has_only_a_colour():
     product["nameEn"] = 'Beer "Cernovar" dark (can) 0.5l'
     s = sightings(search=search)["112509"]
     assert (s.brewery, s.name) == ("Cernovar", "Cernovar dark")
+
+
+@pytest.mark.parametrize("item_id,name_ru", [
+    ("7725", "Жигулевское светлое"),                 # the shop's own name instead of "Jigulyovskoye light"
+    ("128691", "Белый Медведь светлое"),
+    ("114828", "Афанасий Porter темное"),
+    ("96487", "Волк.пивоварня IPA"),
+    ("174368", "Горьк.пив. IPA нефил.св."),          # container mark glued to the previous word
+    ("12787", "Балтика 7 мягкое"),
+    ("9502", "Балтика грейпфрут"),
+])
+def test_fetch_cyrillic_brand_shows_russian_name_keeping_keys(item_id, name_ru):
+    s = sightings()[item_id]
+    assert s.name == name_ru
+    ref = {p["id"]: p for p in SEARCH["data"]["products"]}[int(item_id)]
+    assert s.title == ref["nameEn"]                   # beer_key, title and brewery still come from nameEn
+    assert s.beer_key == n_key(ref["nameEn"], {})
+    assert s.brewery == brand_from(ref["nameEn"], "")
+
+
+def test_russian_name_drops_multipack_and_needs_a_cyrillic_brand():
+    assert _russian_name("Пиво Балтика 7 ж/б 0.45л 4шт") == "Балтика 7"
+    assert _russian_name("Пиво разливное Kilikia 1л") is None
+    assert _russian_name("Beer") is None and _russian_name(None) is None
+
+
+def test_fetch_cyrillic_brand_keeps_latin_brewery_for_the_stop_list():
+    s = sightings()["7725"]
+    assert (s.brewery, s.beer_key) == ("Jigulyovskoye", "n:jigulyovskoye light")
+
+
+@pytest.mark.parametrize("item_id,name", [
+    ("9186", "Kilikia"),                # 'Пиво разливное Kilikia 1л': a Latin brand behind a descriptor word
+    ("11172", "Dargett Weizen"),
+    ("180397", '379 American, unfiltered citrus'),
+    ("112509", "Primator IPA, light"),
+])
+def test_fetch_latin_brand_keeps_latin_name(item_id, name):
+    assert sightings()[item_id].name == name
+
+
+def test_fetch_without_name_ru_keeps_latin_name():
+    search = copy.deepcopy(SEARCH)
+    for p in search["data"]["products"]:
+        p.pop("nameRu", None)
+    assert sightings(search=search)["7725"].name == "Jigulyovskoye light"
 
 
 def test_fetch_takes_shop_photo_as_small_label_image():

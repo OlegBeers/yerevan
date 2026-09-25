@@ -8,7 +8,7 @@ from typing import Any
 
 from taps.config import Place
 from taps.fetch import FetchError, Http
-from taps.model import Sighting, SourceResult, n_key
+from taps.model import Sighting, SourceResult, has_cyrillic, n_key
 
 API = "https://apishopv2.yerevan-city.am/api/Product"
 BY_CATEGORY_URL = f"{API}/GetByCategory"
@@ -47,6 +47,10 @@ _QUOTED_RE = re.compile(r'"([^"]+)"|\'\'(.+?)\'\'|«([^»]+)»')     # "Kilikia"
 _AFTER_BEER_RE = re.compile(r"\bbeer\s+([^\s,]+)", re.I)
 _VOLUME_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|մլ|l|լ)(?!\w)", re.I)
 _MARKS_RE = re.compile(r"\b\d+\s*x\b|\(can\)|\bg/b\b|[աթ]/տ", re.I)   # multipack, can, glass bottle
+# nameRu 'Пиво Жигулевское светлое ж/б 0.45л 4шт': volume, multipack and container marks (ж/б can, с/б glass,
+# п/б plastic; sometimes glued to the previous word as in 'нефил.св.ж/б')
+_RU_NOISE_RE = re.compile(r"\d+(?:[.,]\d+)?\s*(?:мл|л)(?![а-яёa-z])|\d+\s*шт\b|(?<![а-яё])[жсп]/б(?![а-яё])", re.I)
+_RU_DESCRIPTORS = {"разливное", "пшен."}   # kind words that may stand between 'Пиво' and the brand
 
 
 @dataclass(frozen=True)
@@ -68,6 +72,7 @@ class YCName:
     name_en: str
     brand_id: int | None
     photo: str | None = None
+    name_ru: str | None = None
 
 
 def _is_int(v: Any) -> bool:
@@ -114,12 +119,14 @@ def parse_search(data: dict) -> dict[str, YCName]:
         if not isinstance(p, dict):
             raise ValueError("product is not an object")
         item_id, name_en, brand_id = p.get("id"), p.get("nameEn"), p.get("brandId")
+        name_ru = p.get("nameRu")
         if not _is_int(item_id) or not (name_en is None or isinstance(name_en, str)):
             raise ValueError(f"bad product {item_id!r}")
         if name_en and name_en.strip():
             photo = p.get("photo")
             photo = photo + PHOTO_SIZE if isinstance(photo, str) and photo.startswith(PHOTO_PREFIX) else None
-            names[str(item_id)] = YCName(name_en.strip(), brand_id if _is_int(brand_id) else None, photo)
+            names[str(item_id)] = YCName(name_en.strip(), brand_id if _is_int(brand_id) else None, photo,
+                                   name_ru.strip() if isinstance(name_ru, str) and name_ru.strip() else None)
     return names
 
 
@@ -153,6 +160,21 @@ def _clean_name(title: str, brand: str | None) -> str:
     if brand and rest and not rest.lower().startswith(brand.lower()):
         return f"{brand} {rest}"
     return rest or brand or title
+
+
+def _russian_name(name_ru: str | None) -> str | None:
+    """The shop's Russian name without 'Пиво', volume and container marks -- only when the brand (first
+    word after 'Пиво' and the kind words) is Cyrillic, since Untappd spells such beers in Cyrillic too."""
+    if not name_ru:
+        return None
+    words = name_ru.split()
+    if words and words[0].lower() == "пиво":
+        words = words[1:]
+    while words and words[0].lower() in _RU_DESCRIPTORS:
+        words = words[1:]
+    if not words or not has_cyrillic(words[0]):
+        return None
+    return " ".join(_RU_NOISE_RE.sub(" ", " ".join(words)).split()) or None
 
 
 def _volume_ml(title: str) -> int | None:
@@ -206,7 +228,7 @@ def fetch_yerevan_city(http: Http, place: Place, now: datetime, brewery_aliases:
         brand = brand_from(name_en, item.name_hy)
         sightings.append(Sighting(
             place_id=place.id, source="yerevan_city", beer_key=beer_key, title=title,
-            name=_clean_name(title, brand), seen_at=now, brewery=brand, shop_item_id=item.item_id,
+            name=_russian_name(found.name_ru if found else None) or _clean_name(title, brand), seen_at=now, brewery=brand, shop_item_id=item.item_id,
             price_amd=item.price_amd, volume_ml=_volume_ml(title), container=_container(name_en, item.name_hy),
             in_stock=True,   # no stock flag: a sold-out item just leaves the list
             category=item.category, url=PRODUCT_URL.format(item.item_id),
