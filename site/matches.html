@@ -105,17 +105,49 @@
   .verdict .bad input { accent-color: var(--danger); }
   .card.confirmed { opacity: .6; }
   #confirm-visible, #transfer { font: inherit; font-size: .85rem; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; }
-  #bar {
+  #sheet, #bar {
     position: sticky; bottom: 0; z-index: 5; margin: 16px -20px 0; padding: 10px 20px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
     background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0, 0, 0, .12);
   }
+  #bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
   #copy {
     font: inherit; font-weight: 700; cursor: pointer; padding: 9px 16px;
     border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent); color: var(--on-accent);
   }
   #copy:disabled { opacity: .5; cursor: default; }
   #copy-status { color: var(--muted); font-size: .85rem; }
+  /* «Объединить пиво»: big tap targets, everything at least 44px */
+  .step { display: flex; gap: 10px; align-items: center; font-size: 1.05rem; line-height: 1.3; margin: 24px 0 10px; }
+  .num {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: .9rem; font-weight: 800;
+  }
+  .field {
+    display: block; width: 100%; min-height: 48px; font: inherit; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px;
+  }
+  .picks {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  }
+  .pick {
+    display: flex; gap: 12px; align-items: center; min-height: 72px; padding: 10px 12px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  }
+  .pick.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
+  .pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pick input { width: 26px; height: 26px; margin: 0; flex-shrink: 0; accent-color: var(--accent); }
+  .chips { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto; }
+  .chips:empty { display: none; }
+  .chip {
+    display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 2px 2px 2px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
+  }
+  .chip .text { flex: 1 1 auto; }
+  .chip-x {
+    flex-shrink: 0; width: 44px; height: 44px; font: inherit; font-size: 1.1rem; cursor: pointer;
+    border: 0; border-radius: var(--radius); background: transparent; color: var(--danger);
+  }
   @media (max-width: 640px) {
     .pair { grid-template-columns: 1fr; gap: 6px; }
     .arrow { transform: rotate(90deg); width: 1.3em; text-align: center; }
@@ -146,6 +178,15 @@
     </div>
     <section id="merge" hidden>
       <p class="intro">Несколько магазинных позиций — на самом деле одно и то же пиво? Отметьте их, вставьте ссылку на это пиво в Untappd — и получите готовый текст для corrections.yaml.</p>
+      <h2 class="step"><span class="num" aria-hidden="true">1</span>Какие позиции — это одно пиво</h2>
+      <label for="pick-search" class="sr-only">Поиск по названию, пивоварне или магазину</label>
+      <input type="search" id="pick-search" class="field" placeholder="Название, пивоварня или магазин" autocomplete="off">
+      <p id="pick-count" class="count" aria-live="polite"></p>
+      <div id="pick-list"></div>
+      <div id="sheet" tabindex="-1">
+        <span>Выбрано: <b id="picked-count">0</b></span>
+        <ul id="picked-list" class="chips"></ul>
+      </div>
     </section>
   </main>
   <div id="bar">
@@ -159,7 +200,7 @@
 const STORAGE_KEY = "matches-wrong";
 const OK_KEY = "matches-ok";   // {entry id: the Untappd link it was confirmed against}
 const VIA_RU = { local: "авто по названию", search: "поиск Untappd", manual: "вручную" };
-const ui = { matches: [], marked: new Set(), ok: {}, note: "" };
+const ui = { matches: [], marked: new Set(), ok: {}, note: "", items: [], picked: new Map() };
 const $ = (id) => document.getElementById(id);
 
 // Every value from data.json goes into the DOM as text, never as HTML.
@@ -375,6 +416,78 @@ async function copyMarked() {
   $("copy-status").textContent = ok ? "Скопировано — отправьте Олегу" : "Не удалось скопировать";
 }
 
+// «Объединить пиво»: the shop items the owner says are one Untappd beer, collected here into a block for corrections.yaml
+const PICK_LIMIT = 30;   // cards drawn at once: the rest is found by typing
+
+// every row keyed by a shop's own name (n:), linked to Untappd already or not: same_as takes n: keys only
+function shopItems(data) {
+  const places = Object.fromEntries((data.places || []).map((p) => [p.id, p.name]));
+  return (data.rows || []).filter((r) => String(r.beer_key).startsWith("n:")).map((r) => {
+    const place = places[r.place_id] || String(r.place_id);
+    const linked = Boolean(r.match_via);
+    return {
+      place_id: r.place_id, key: r.beer_key, place, linked,
+      name: r.shop_name || r.name || r.beer_key,   // once linked, r.name is the Untappd beer's; the shop's own text is shop_name
+      brewery: linked ? r.shop_brewery : r.brewery, abv: r.abv, price_amd: r.price_amd, photo: r.beer_logo,
+      hay: [r.shop_name, r.name, r.shop_brewery, r.brewery, place, r.beer_key.slice(2)].filter(Boolean).join(" ").toLowerCase(),
+    };
+  }).sort((a, b) => a.linked - b.linked || a.place.localeCompare(b.place, "ru") || a.name.localeCompare(b.name, "ru"));
+}
+function foundItems() {   // every word typed must be found somewhere in the item
+  const words = $("pick-search").value.toLowerCase().split(/\s+/).filter(Boolean);
+  return ui.items.filter((it) => words.every((w) => it.hay.includes(w)));
+}
+function pickCard(it) {
+  const box = el("input", { type: "checkbox" });
+  box.checked = ui.picked.has(idOf(it));
+  const meta = [it.place, it.abv != null ? `${it.abv}%` : null, it.price_amd ? `${it.price_amd} ֏` : null].filter(Boolean).join(" · ");
+  const card = el("label", { class: "pick" }, box, thumb(it.photo),
+    el("span", { class: "text" },
+      el("span", { class: "name" }, it.name),
+      it.brewery ? el("span", { class: "small" }, it.brewery) : null,
+      el("span", { class: "small" }, meta),
+      it.linked ? el("span", { class: "badges" }, el("span", { class: "badge" }, "уже склеено с Untappd")) : null));
+  card.classList.toggle("on", box.checked);
+  box.addEventListener("change", () => {
+    card.classList.toggle("on", box.checked);
+    pick(it, box.checked);
+  });
+  return card;
+}
+function chipNode(it) {
+  const remove = el("button", { type: "button", class: "chip-x", "aria-label": `Убрать: ${it.name}` }, "✕");
+  remove.addEventListener("click", () => {
+    pick(it, false);
+    renderResults();   // its card, if on screen, is ticked no more
+    ($("picked-list").querySelector("button") || $("sheet")).focus();   // the removed button took the focus with it
+  });
+  return el("li", { class: "chip" },
+    el("span", { class: "text" }, el("span", { class: "name" }, it.name), el("span", { class: "small" }, it.place)), remove);
+}
+function pick(it, on) {
+  if (on) ui.picked.set(idOf(it), it); else ui.picked.delete(idOf(it));
+  renderPicked();
+}
+function renderResults() {
+  const found = foundItems();
+  const shown = found.slice(0, PICK_LIMIT);
+  $("pick-count").textContent = `Позиций: ${found.length}`
+    + (found.length > shown.length ? `, показаны первые ${shown.length} — введите название, чтобы найти нужную` : "");
+  $("pick-list").replaceChildren(shown.length
+    ? el("ul", { class: "picks" }, ...shown.map((it) => el("li", null, pickCard(it))))
+    : el("p", { class: "empty" }, "Ничего не нашлось — попробуйте другой запрос."));
+}
+function renderPicked() {
+  const items = [...ui.picked.values()];
+  $("picked-count").textContent = String(items.length);
+  $("picked-list").replaceChildren(...items.map(chipNode));
+}
+function renderMerge() {
+  renderResults();
+  renderPicked();
+}
+
+const LOAD_FAILED = "Не удалось загрузить данные. Обновите страницу через минуту.";
 async function load() {
   try {
     const res = await fetch("./data.json", { cache: "no-store" });
@@ -382,16 +495,18 @@ async function load() {
     const data = await res.json();
     if (!data || !Array.isArray(data.matches)) throw new Error("bad data.json");
     ui.matches = data.matches;
+    ui.items = shopItems(data);
   } catch (err) {
     console.error(err);
     $("count").textContent = "";
-    $("list").replaceChildren(el("p", { class: "empty" }, "Не удалось загрузить данные. Обновите страницу через минуту."));
+    for (const id of ["list", "pick-list"]) $(id).replaceChildren(el("p", { class: "empty" }, LOAD_FAILED));
     return;
   }
   ui.marked = loadMarked();
   ui.ok = loadOk();
   importFromHash();
   render();
+  renderMerge();
   if (ui.note) $("copy-status").textContent = ui.note;   // render() clears the status line, so set it after
 }
 
@@ -406,6 +521,7 @@ function setMode(mode) {
 
 $("mode-review").addEventListener("click", () => setMode("review"));
 $("mode-merge").addEventListener("click", () => setMode("merge"));
+$("pick-search").addEventListener("input", renderResults);
 $("search").addEventListener("input", render);
 $("only-weak").addEventListener("change", render);
 $("show-ok").addEventListener("change", render);

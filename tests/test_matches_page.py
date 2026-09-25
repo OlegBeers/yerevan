@@ -182,3 +182,23 @@ def test_a_mode_switch_opens_the_merge_panel_and_puts_the_review_flow_in_a_panel
     for element_id in ("review", "merge", "bar"):   # the bar of marks belongs to the review list, so it goes with it
         assert f'$("{element_id}").hidden' in fn, element_id
     assert '$("mode-merge").addEventListener("click"' in js
+
+
+def test_merge_panel_searches_shop_items_and_keeps_the_chosen_ones_in_a_sticky_sheet():
+    soup = _soup()
+    merge = soup.find(id="merge")
+    search = merge.find(id="pick-search")
+    assert search["type"] == "search" and search["autocomplete"] == "off"
+    label = soup.find("label", attrs={"for": "pick-search"})
+    assert label is not None and label.get_text(strip=True)
+    for element_id in ("pick-count", "pick-list", "sheet", "picked-count", "picked-list"):
+        assert merge.find(id=element_id) is not None, element_id
+    assert "Выбрано:" in merge.find(id="sheet").get_text()
+    js = _js(soup)
+    items_fn = re.search(r"function shopItems\(data\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'startsWith("n:")' in items_fn          # same_as takes shop names (n:) only
+    assert "data.rows" in items_fn and "data.places" in items_fn
+    assert "PICK_LIMIT" in js
+    css = _css(soup)
+    assert re.search(r"#bar\s*\{[^}]*position:\s*sticky[^}]*bottom:\s*0", css, re.S)
+    assert re.search(r"#sheet[^{]*\{[^}]*position:\s*sticky[^}]*bottom:\s*0", css, re.S)
