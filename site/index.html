@@ -129,6 +129,7 @@
   .nowrap { white-space: nowrap; }
   .beer { font-weight: 700; }
   .small { display: block; color: var(--muted); font-size: .82rem; }
+  .inferred { font-style: italic; }
   .flag { margin-right: .4em; }
   .ico { margin-right: .4em; }
   .hot { color: var(--hot); font-weight: 700; white-space: nowrap; }
@@ -222,6 +223,14 @@ const TZ = "Asia/Yerevan";
 const STALE_HOURS = 36;
 const CONTAINER_RU = { can: "банка", bottle: "бутылка", keg: "кег", draft: "розлив" };
 const SERVING_RU = { Draft: "розлив", Bottle: "бутылка", Can: "банка", Taster: "дегустационный", Cask: "из бочки" };
+// the shops write the country of production in English; a country not listed here is shown as written
+const COUNTRY_RU = new Map(Object.entries({
+  Armenia: "Армения", Georgia: "Грузия", Russia: "Россия", Ukraine: "Украина", Belarus: "Беларусь",
+  "Czech Republic": "Чехия", Czechia: "Чехия", Germany: "Германия", Belgium: "Бельгия", Netherlands: "Нидерланды",
+  Poland: "Польша", Lithuania: "Литва", Latvia: "Латвия", Ireland: "Ирландия", "United Kingdom": "Великобритания",
+  Spain: "Испания", Italy: "Италия", France: "Франция", Denmark: "Дания", Austria: "Австрия", Greece: "Греция",
+  Mexico: "Мексика", USA: "США", "United States": "США",
+}));
 const wide = window.matchMedia("(min-width: 700px)");
 const ui = { data: null, places: new Map(), section: "all", place: null };
 const $ = (id) => document.getElementById(id);
@@ -303,6 +312,7 @@ function placeObj(id) {
 
 const abvText = (r) => (r.abv != null ? `${r.abv}%` : "");
 const ibuText = (r) => (r.ibu != null ? `IBU ${r.ibu}` : "");
+const countryText = (r) => COUNTRY_RU.get(r.country) || r.country || "";
 const priceText = (r) => (r.price_amd != null ? `${r.price_amd} ֏` : "");
 const volumeText = (r) => [r.volume_ml != null ? `${r.volume_ml} мл` : "", CONTAINER_RU[r.container] || ""].filter(Boolean).join(" ");
 // several servings of one beer at one place, compactly: "розлив 2800 ֏ · бутылка 1500 ֏ 330 мл"
@@ -349,6 +359,14 @@ function shopLinkNode(r) {
   return el("a", { class: "small", href: safe, target: "_blank", rel: "noopener noreferrer" },
     iconSpan("🛒"), "в магазине");
 }
+function styleNode(g) {   // a style guessed from the beer's name (not from Untappd) is set apart and says so
+  return g.style && g.style_inferred ? el("span", { class: "inferred", title: "определено по названию" }, g.style) : g.style;
+}
+const smallNode = (text) => (text ? el("span", { class: "small" }, text) : null);
+function metaNode(parts) {   // "a · b · c" out of text and nodes, skipping the empty ones
+  const kept = parts.filter(Boolean);
+  return kept.length ? el("div", { class: "meta" }, ...kept.flatMap((p, i) => (i ? [" · ", p] : [p]))) : null;
+}
 function ratingNode(r) {
   if (r.rating == null) return null;
   const value = Number(r.rating).toFixed(2);
@@ -389,8 +407,9 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     const r0 = group.find((r) => r.beer_key && r.beer_key.startsWith("u:")) || group[0];
     return {
       rows: group,
-      name: r0.name, brewery: r0.brewery, style: r0.style, ibu: r0.ibu, url: r0.url,
+      name: r0.name, brewery: r0.brewery, style: r0.style, style_inferred: r0.style_inferred, ibu: r0.ibu, url: r0.url,
       beer_logo: group.map((r) => r.beer_logo).find(Boolean),
+      country: group.map((r) => r.country).find(Boolean),
       abv: bestOf(group, "abv"), rating: bestOf(group, "rating"),
       since: group.map((r) => r.since).sort()[0],
       since_at: group.map((r) => r.since_at).filter(Boolean).sort()[0] || group.map((r) => r.since).sort()[0],
@@ -442,9 +461,9 @@ function table(groups) {
   const body = groups.map((g) => el("tr", null,
     el("td", null,
       el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)),
-      g.brewery ? el("span", { class: "small" }, g.brewery) : null,
+      smallNode(dot([g.brewery, countryText(g)])),
       g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null),
-    el("td", null, g.style || ""),
+    el("td", null, styleNode(g)),
     el("td", { class: "num" }, abvText(g)),
     el("td", { class: "num" }, g.ibu ?? ""),
     el("td", { class: "num" }, ratingNode(g)),
@@ -468,7 +487,7 @@ function cards(groups) {
   return el("ul", { class: "cards" }, ...groups.map((g) => el("li", { class: "card" },
     el("div", { class: "top" },
       el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)), ratingNode(g)),
-    line("meta", dot([g.brewery, g.style, abvText(g), ibuText(g)])),
+    metaNode([g.brewery, styleNode(g), abvText(g), ibuText(g), countryText(g)]),
     singleServing(g) ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
     g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
     g.rows.length === 1 ? cardWhere(g.rows[0], g.name) : el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name)),

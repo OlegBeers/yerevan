@@ -7,7 +7,7 @@ PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
-              "beer_logo", "shop_url", "beer_key", "shop_name", "servings")
+              "beer_logo", "shop_url", "beer_key", "shop_name", "servings", "country", "style_inferred")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url", "addresses")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
@@ -351,3 +351,40 @@ def test_since_shows_the_time_and_sorts_by_it():
     assert "since_at" in group_fn                 # earliest full timestamp of the group
     visible_fn = re.search(r"function visibleGroups\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "since_at" in visible_fn               # 'по новизне' orders by the timestamp, not the day
+
+
+def test_country_reads_in_russian_for_the_countries_seen_and_as_the_shop_wrote_it_otherwise():
+    js = _js(_soup())
+    table = re.search(r"const COUNTRY_RU = new Map\(Object\.entries\(\{(.*?)\}\)\);", js, re.S).group(1)
+    for english, russian in (("Ukraine", "Украина"), ("Czech Republic", "Чехия"), ("Germany", "Германия"),
+                             ("Belgium", "Бельгия"), ("Russia", "Россия"), ("Armenia", "Армения")):
+        assert re.search(rf'"?{english}"?:\s*"{russian}"', table), english
+    # a Map, so a country called "constructor" cannot pick up an Object property; unknown ones stay as written
+    assert re.search(r'const countryText = \(r\) => COUNTRY_RU\.get\(r\.country\) \|\| r\.country \|\| ""', js)
+
+
+def test_country_follows_style_and_abv_in_a_card_and_the_brewery_in_a_table_row():
+    js = _js(_soup())
+    cards_fn = re.search(r"function cards\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    meta = re.search(r"metaNode\(\[(.*?)\]\)", cards_fn).group(1)
+    assert [part.strip() for part in meta.split(",")] == [
+        "g.brewery", "styleNode(g)", "abvText(g)", "ibuText(g)", "countryText(g)"]
+    table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "smallNode(dot([g.brewery, countryText(g)]))" in table_fn
+
+
+def test_a_group_shows_the_first_country_any_of_its_rows_states():
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", _js(_soup()), re.S).group(1)
+    assert re.search(r"country:\s*group\.map\(\(?r\)?\s*=>\s*r\.country\)\.find\(Boolean\)", group_fn)
+
+
+def test_a_style_guessed_from_the_name_is_set_apart_and_says_so():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    style_fn = re.search(r"function styleNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "g.style_inferred" in style_fn and '"inferred"' in style_fn and "определено по названию" in style_fn
+    assert re.search(r"\.inferred\s*\{[^}]*font-style:\s*italic", css)
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "style_inferred: r0.style_inferred" in group_fn          # travels with the style it belongs to
+    table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'el("td", null, styleNode(g))' in table_fn
