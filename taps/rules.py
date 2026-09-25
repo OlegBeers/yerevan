@@ -1,6 +1,6 @@
 """Merge source results into state: pairs, events and silent baselines (spec §6)."""
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
 
 from taps.breaker import evaluate, result_keys
@@ -195,6 +195,10 @@ class _Merger:
         old_checkin = rec.info.get("checkin_at")
         rec.info.update({f: getattr(s, f) for f in INFO_FIELDS if getattr(s, f) is not None})
         rec.info.update(source=s.source, kind=s.kind)
+        if s.servings:
+            rec.info["servings"] = [asdict(serving) for serving in s.servings]
+        else:
+            rec.info.pop("servings", None)   # the list is the source's whole answer: a serving that left is gone
         if s.kind == "checkin":
             rec.info["checkin_at"] = iso(max(s.seen_at, parse_iso(old_checkin)) if old_checkin else s.seen_at)
             self._backfill_checkin(rec, key)

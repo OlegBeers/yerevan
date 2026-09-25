@@ -5,7 +5,7 @@ import pytest
 
 from taps.config import Brewery, Config, Place, Settings
 from taps.corrections import Corrections, ManualEntry
-from taps.model import BreweryBeer, Sighting, SourceResult
+from taps.model import BreweryBeer, Serving, Sighting, SourceResult
 from taps.rules import CHECKIN_EVENT_DAYS, CHECKIN_KEEP_DAYS, MANUAL_EVENT_DAYS, MergeOutcome, merge_results
 from taps.sources.manual import manual_result
 from taps.state import BeerRec, BreweryNewRec, PairRec, SourceRec, apply_aliases, empty_state
@@ -675,3 +675,69 @@ def test_brewery_list_baseline_then_new_ids_above_the_maximum():
     assert state.brewery_new["u:302"].star is False
     assert "u:250" in state.beers and "u:250" not in state.brewery_new    # a lower unknown id is silent
     assert rec.max_beer_id == 302 and state.pairs == {}
+
+
+# --- servings: several ways one beer is poured at one place ---------------------------------------------
+
+TAP, BOTTLE = Serving("draft", 1800, 500), Serving("bottle", 1200, 330)
+TAP_INFO = {"container": "draft", "price_amd": 1800, "volume_ml": 500}
+BOTTLE_INFO = {"container": "bottle", "price_amd": 1200, "volume_ml": 330}
+
+
+def two_servings(beer_id=1, **kw):
+    return beer(beer_id, container="draft", price_amd=1800, volume_ml=500, servings=(TAP, BOTTLE), **kw)
+
+
+def test_servings_are_stored_as_a_list_next_to_the_first_serving_and_give_one_event():
+    state = ready("untappd_menu:gargoyle")
+    out = merge(state, menu(two_servings()))
+    info = state.pairs["gargoyle"]["u:1"].info
+    assert out.events == [("gargoyle", "u:1")]
+    assert info.get("servings") == [TAP_INFO, BOTTLE_INFO]
+    assert (info["container"], info["price_amd"], info["volume_ml"]) == ("draft", 1800, 500)
+
+
+def test_a_new_serving_of_an_announced_beer_is_not_an_event():
+    state = ready("untappd_menu:gargoyle")
+    merge(state, menu(beer(1, container="draft", price_amd=1800, volume_ml=500)), now=NOW - 12 * H)
+    rec = state.pairs["gargoyle"]["u:1"]
+    rec.notified_at = iso(NOW - 6 * H)   # the digest already announced the beer
+    before = (rec.first_seen, rec.event_at, rec.notified_at, rec.star)
+    out = merge(state, menu(two_servings()))     # the bar now also sells it in bottles
+    assert out == MergeOutcome(ok=["untappd_menu:gargoyle"])
+    assert (rec.first_seen, rec.event_at, rec.notified_at, rec.star) == before
+    assert rec.info["servings"] == [TAP_INFO, BOTTLE_INFO]
+
+
+def test_a_serving_that_left_the_menu_is_removed_from_the_pair():
+    state = ready("untappd_menu:gargoyle")
+    merge(state, menu(two_servings()), now=NOW - 12 * H)
+    merge(state, menu(beer(1, container="draft", price_amd=1800, volume_ml=500)))   # the bottle is gone
+    info = state.pairs["gargoyle"]["u:1"].info
+    assert "servings" not in info
+    assert (info["container"], info["price_amd"], info["volume_ml"]) == ("draft", 1800, 500)
+
+
+def test_two_manual_entries_for_one_beer_are_one_event_with_both_servings():
+    state = empty_state(NOW - 10 * DAY)
+    tap = replace(entry("tap-station", "Hazy Pale", 1), container="draft", price_amd=2800)
+    bottle = replace(tap, container="bottle", price_amd=None)
+    out = merge(state, manual(tap, bottle))
+    assert out.events == [("tap-station", "n:379 hazy pale")]
+    info = state.pairs["tap-station"]["n:379 hazy pale"].info
+    assert info["servings"] == [{"container": "draft", "price_amd": 2800, "volume_ml": None},
+                                {"container": "bottle", "price_amd": None, "volume_ml": None}]
+    assert (info["container"], info["price_amd"], info["manual_id"]) == ("draft", 2800, tap.id)
+
+
+def test_a_manual_entry_added_to_an_announced_beer_adds_a_serving_without_a_new_event():
+    state = empty_state(NOW - 10 * DAY)
+    tap = replace(entry("tap-station", "Hazy Pale", 1), container="draft", price_amd=2800)
+    merge(state, manual(tap), now=NOW - 12 * H)
+    rec = state.pairs["tap-station"]["n:379 hazy pale"]
+    rec.notified_at, state.announced_manual = iso(NOW - 6 * H), [tap.id]   # announced in the digest
+    out = merge(state, manual(tap, replace(tap, container="bottle", price_amd=None)))
+    assert out.events == []
+    assert (rec.notified_at, state.announced_manual) == (iso(NOW - 6 * H), [tap.id])
+    assert [s["container"] for s in rec.info["servings"]] == ["draft", "bottle"]
+    assert merge(state, manual(tap)).events == [] and "servings" not in rec.info   # and back when withdrawn
