@@ -930,6 +930,29 @@ def test_match_shop_beers_locally_rejects_a_parenthetical_match_when_abv_differs
     assert state.shop_matches == {}
 
 
+def test_match_shop_beers_locally_marks_an_uncorroborated_parenthetical_match_weak():
+    """Code review round 3, finding C2 (decision: do not tighten the rule further): a loose match
+    that only works via an unnamed parenthesised aside, with no ABV on either side to corroborate
+    it, is still recorded -- but flagged weak=True so a review page can list it first."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1": _u_pair("Sour (Raspberry)", "Dargett Brewery")},
+        "beer-city": {"n:dargett sour": _shop_pair("Dargett", "Dargett Sour")},
+    }
+    run_mod.match_shop_beers_locally(state, NOW)
+    assert state.shop_matches["n:dargett sour"].weak is True
+
+
+def test_match_shop_beers_locally_does_not_mark_an_ordinary_match_weak():
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1": _u_pair("Oatmeal Stout", "Dargett Brewery")},
+        "beer-city": {"n:dargett oatmeal stout": _shop_pair("Dargett", "Dargett Oatmeal Stout")},
+    }
+    run_mod.match_shop_beers_locally(state, NOW)
+    assert state.shop_matches["n:dargett oatmeal stout"].weak is False
+
+
 def test_match_shop_beers_locally_leaves_no_match_when_nothing_qualifies():
     """No caching of a local miss (unlike search's no_match): it's free to retry every run."""
     state = empty_state(NOW)
@@ -1288,6 +1311,63 @@ def test_apply_shop_matches_still_clears_a_stale_logo_when_nothing_refreshed_it(
     run_mod.apply_shop_matches(state)
     info = state.pairs["beer-city"]["n:x"].info
     assert "logo" not in info and "rating" not in info
+
+
+# --- apply_shop_matches: the weak-match flag (3rd review round, finding C2) ---------------------
+
+def test_apply_shop_matches_carries_the_weak_flag_into_info_for_the_site_row():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "X"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=1, matched_at=iso(NOW), via="local", weak=True)
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["beer-city"]["n:x"].info["match_weak"] is True
+
+
+def test_apply_shop_matches_drops_a_stale_weak_flag_when_a_stronger_match_takes_over():
+    """A weak local match later overridden by a manual same_as (weak=False) must not leave a stale
+    match_weak behind."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "X"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=1, matched_at=iso(NOW), via="local", weak=True)
+    run_mod.apply_shop_matches(state)
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=2, matched_at=iso(NOW), via="manual")
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["beer-city"]["n:x"].info["match_weak"] is False
+
+
+def test_apply_shop_matches_clears_the_weak_flag_when_the_match_is_removed():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "shop", "name": "X"})}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=1, matched_at=iso(NOW), via="local", weak=True)
+    run_mod.apply_shop_matches(state)
+    del state.shop_matches["n:x"]
+    run_mod.apply_shop_matches(state)
+    assert "match_weak" not in state.pairs["beer-city"]["n:x"].info
+
+
+def test_weak_local_match_reaches_the_site_row_as_match_weak():
+    """End to end (round 3, finding C2): match_shop_beers_locally records weak=True, apply_shop_matches
+    carries it into the pair's info, and build_site_data exposes it as the row's match_weak so a
+    review page can list weak matches first -- while an ordinary match's row says False."""
+    from taps.site_data import build_site_data
+
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1": _u_pair("Sour (Raspberry)", "Dargett Brewery"),
+                    "u:2": _u_pair("Oatmeal Stout", "Dargett Brewery")},
+        "beer-city": {"n:dargett sour": _shop_pair("Dargett", "Dargett Sour"),
+                      "n:dargett oatmeal stout": _shop_pair("Dargett", "Dargett Oatmeal Stout")},
+    }
+    run_mod.match_shop_beers_locally(state, NOW)
+    run_mod.apply_shop_matches(state)
+    config = Config(places={"beer-city": Place(id="beer-city", name="Beer City", kind="shop",
+                                               sources={"beercity": {}})},
+                    breweries=(), settings=Settings())
+    rows = {r["beer_key"]: r for r in build_site_data(state, config, NOW)["rows"]}
+    assert (rows["n:dargett sour"]["match_weak"], rows["n:dargett oatmeal stout"]["match_weak"]) == (True, False)
 
 
 def test_apply_shop_matches_clears_untappd_url_entirely_when_no_shop_url_is_on_file():

@@ -25,7 +25,7 @@ from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
-from taps.sources.local_match import KnownBeer, clean_query, local_match
+from taps.sources.local_match import KnownBeer, clean_query, local_match_with_confidence
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
 from taps.sources.untappd_beer import parse_beer_page
@@ -329,15 +329,18 @@ def match_shop_beers_locally(state: State, now: datetime) -> None:
     it costs nothing to retry every run, and a bar might reveal the match later. A hit is recorded
     exactly like a search match (state.shop_matches), marked via="local", so search skips it too.
     The matched beer's rating/style/abv/logo are already known too, copied straight in with
-    checked_at stamped now, so refresh_shop_matches doesn't spend a page re-fetching them."""
+    checked_at stamped now, so refresh_shop_matches doesn't spend a page re-fetching them. A match
+    that relied on an unnamed parenthesised aside with no ABV corroboration is still recorded, but
+    flagged weak=True (code review round 3, finding C2) so a review page can list it first."""
     candidates = known_untappd_beers(state)
     for key, brand, name, abv in _shop_match_candidates(state, now, limit=None):
-        found = local_match(brand, name, candidates, shop_abv=abv)
+        found, weak = local_match_with_confidence(brand, name, candidates, shop_abv=abv)
         if found is not None:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.untappd_id, url=f"https://untappd.com/beer/{found.untappd_id}",
                 rating=found.rating, style=found.style, abv=found.abv, logo=found.logo,
-                name=found.name, brewery=found.brewery, matched_at=iso(now), checked_at=iso(now), via="local")
+                name=found.name, brewery=found.brewery, matched_at=iso(now), checked_at=iso(now), via="local",
+                weak=weak)
 
 
 # --- v1.1 §3: match shop beers to Untappd via search --------------------------
@@ -462,6 +465,7 @@ def _clear_shop_match(info: dict) -> None:
     a fresher, already-refreshed value must not be clobbered."""
     info.pop("u_name", None)
     info.pop("u_brewery", None)
+    info.pop("match_weak", None)
     if UNTAPPD_BEER_RE.search(info.get("url") or ""):
         if info.get("shop_url"):
             info["url"] = info["shop_url"]
@@ -483,7 +487,8 @@ def apply_shop_matches(state: State) -> None:
     manual "n:" pair with no active match has any previous match's identity cleared (_clear_shop_
     match) -- a bar's own "u:"-keyed pair never goes through shop_matches at all, so it is untouched.
     info["u_overlay"] records exactly which of _OVERLAY_FIELDS this overlay wrote (and their
-    values), so _clear_shop_match can later pop precisely those, regardless of the current url."""
+    values), so _clear_shop_match can later pop precisely those, regardless of the current url.
+    info["match_weak"] carries the match's weak flag (round 3, finding C2) for site_data's row."""
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if rec.info.get("kind") not in ("shop", "menu", "manual"):
@@ -502,6 +507,7 @@ def apply_shop_matches(state: State) -> None:
                     if field in _OVERLAY_FIELDS:
                         overlay[field] = value
             rec.info["u_overlay"] = overlay
+            rec.info["match_weak"] = match.weak
             if match.name is not None:
                 rec.info["u_name"] = match.name
             if match.brewery is not None:

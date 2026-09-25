@@ -119,9 +119,12 @@ _ABV_TOLERANCE = 0.3   # a "loose" match that only works via a parenthesised asi
 
 
 def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candidate: KnownBeer,
-             shop_abv: float | None = None) -> str | None:
-    """"exact", "loose", "variant" (never chosen, but makes the name ambiguous) or None for how well `candidate` fits -- used to break ties when several
-    candidates pass (local_match prefers an exact token-set match).
+             shop_abv: float | None = None) -> tuple[str, bool] | None:
+    """(grade, weak) for how well `candidate` fits, or None to reject it outright. grade is "exact",
+    "loose", or "variant" (never chosen, but makes the name ambiguous) -- used to break ties when
+    several candidates pass (local_match prefers an exact token-set match). weak is True only for a
+    "loose" match that relied on an unnamed parenthesised aside with no ABV on either side to
+    corroborate it (code review round 3, finding C2): still accepted, but flagged.
 
     Brewery compatibility: EVERY non-generic token of the shop brewery (ignoring generic words like
     "st"/"pivovar"/"brewery" -- too common across unrelated breweries to serve as evidence on their
@@ -154,25 +157,36 @@ def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candida
     allowed_no_parens = consumed | candidate_brewery_tokens
     paren_tokens = _paren_tokens(candidate.name)
     if (extra & _VARIANT_TOKENS) or (extra - (allowed_no_parens | paren_tokens)):
-        return "variant"   # an edition/flavour the title doesn't name: another beer, yet a rival
+        return "variant", False   # an edition/flavour the title doesn't name: another beer, yet a rival
     relies_on_parens = bool(extra) and not extra <= allowed_no_parens
-    if (relies_on_parens and shop_abv is not None and candidate.abv is not None
-            and abs(shop_abv - candidate.abv) > _ABV_TOLERANCE):
-        return "variant"   # the parenthesised aside papers over a real difference in strength
-    return "exact" if not extra else "loose"
+    abv_known = shop_abv is not None and candidate.abv is not None
+    if relies_on_parens and abv_known and abs(shop_abv - candidate.abv) > _ABV_TOLERANCE:
+        return "variant", False   # the parenthesised aside papers over a real difference in strength
+    weak = relies_on_parens and not abv_known
+    return ("exact" if not extra else "loose"), weak
+
+
+def local_match_with_confidence(shop_brewery: str | None, shop_name: str, candidates: Sequence[KnownBeer],
+                                shop_abv: float | None = None) -> tuple[KnownBeer | None, bool]:
+    """(found, weak): the one KnownBeer that (conservatively) matches (shop_brewery, shop_name),
+    preferring an exact token-set match when several pass -- (None, False) when that still leaves
+    zero or more than one candidate, since ambiguous or no evidence means no match. shop_abv (when
+    known) guards a "loose" match that only works via a parenthesised aside in the candidate's name
+    against papering over a real difference in strength (code review round 2, finding C); when such
+    a match has no ABV on either side to corroborate it, it is still returned but weak is True (code
+    review round 3, finding C2 -- flag it for review rather than reject a possibly-correct match)."""
+    shop_name_tokens = _shop_tokens(shop_name)
+    passing = [(c, r) for c in candidates if (r := _evaluate(shop_brewery, shop_name_tokens, c, shop_abv))]
+    if len(passing) == 1:
+        c, (grade, weak) = passing[0]
+        return (c, weak) if grade != "variant" else (None, False)
+    exact = [(c, weak) for c, (grade, weak) in passing if grade == "exact"]
+    return exact[0] if len(exact) == 1 else (None, False)
 
 
 def local_match(shop_brewery: str | None, shop_name: str, candidates: Sequence[KnownBeer],
                 shop_abv: float | None = None) -> KnownBeer | None:
-    """The one KnownBeer that (conservatively) matches (shop_brewery, shop_name), preferring an exact
-    token-set match when several pass; None when that still leaves zero or more than one candidate --
-    ambiguous or no evidence means no match. shop_abv (when known) guards a "loose" match that only
-    works via a parenthesised aside in the candidate's name against papering over a real difference
-    in strength (code review round 2, finding C)."""
-    shop_name_tokens = _shop_tokens(shop_name)
-    passing = [(c, _evaluate(shop_brewery, shop_name_tokens, c, shop_abv)) for c in candidates]
-    passing = [(c, grade) for c, grade in passing if grade is not None]
-    if len(passing) == 1:
-        return passing[0][0] if passing[0][1] != "variant" else None
-    exact = [c for c, grade in passing if grade == "exact"]
-    return exact[0] if len(exact) == 1 else None
+    """The one KnownBeer that (conservatively) matches (shop_brewery, shop_name); None when that
+    still leaves zero or more than one candidate -- ambiguous or no evidence means no match. See
+    local_match_with_confidence for the "weak" (uncorroborated parenthetical match) signal."""
+    return local_match_with_confidence(shop_brewery, shop_name, candidates, shop_abv)[0]

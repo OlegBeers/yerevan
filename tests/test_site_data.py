@@ -158,8 +158,19 @@ def test_row_carries_display_fields():
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
         "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
         "badge": "menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
-        "seen_days_ago": None, "new": False, "star": False, "by": None,
+        "seen_days_ago": None, "new": False, "star": False, "by": None, "match_weak": False,
     }]
+
+
+def test_row_carries_match_weak_only_when_the_pair_is_flagged():
+    """Code review round 3, finding C2: apply_shop_matches (run.py) copies a weak local match's flag
+    into the pair's info["match_weak"]; the site row exposes it (False otherwise) so a review page
+    can list uncorroborated parenthetical matches first."""
+    st = state({"beer-city": {"n:a": pair("beercity", in_stock=True, info={"match_weak": True}),
+                              "n:b": pair("beercity", in_stock=True, info={"match_weak": False}),
+                              "n:c": pair("beercity", in_stock=True)}})
+    weak = {r["beer_key"]: r["match_weak"] for r in build(st)["rows"]}
+    assert weak == {"n:a": True, "n:b": False, "n:c": False}
 
 
 def test_row_prefers_canonical_untappd_name_and_brewery_when_matched():

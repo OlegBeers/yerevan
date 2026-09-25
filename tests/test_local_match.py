@@ -1,4 +1,4 @@
-from taps.sources.local_match import KnownBeer, clean_query, clean_text, local_match
+from taps.sources.local_match import KnownBeer, clean_query, clean_text, local_match, local_match_with_confidence
 
 
 def test_clean_text_strips_colour_suffix_case_preserved():
@@ -286,3 +286,44 @@ def test_local_match_still_finds_westmalle_when_brewery_says_abbey():
                         [KnownBeer(untappd_id=1, name="Westmalle Trappist Dubbel",
                                   brewery="Brouwerij der Trappisten van Westmalle")])
     assert found is not None
+
+
+# --- local_match_with_confidence(): flag, don't reject, an uncorroborated parens match (round 3) --
+
+def test_local_match_with_confidence_flags_unnamed_parens_with_unknown_abv_as_weak():
+    """Code review round 3, finding C2 (decision: do NOT tighten the rule further): a loose match
+    that only works via an unnamed parenthesised aside, with no ABV on either side to corroborate
+    it, is still accepted (a miss is worse) but flagged "weak" for a review page to list first."""
+    found, weak = local_match_with_confidence(
+        "Dargett", "Dargett Sour",
+        [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery")])
+    assert found is not None and weak is True
+
+
+def test_local_match_with_confidence_is_not_weak_when_abv_corroborates():
+    found, weak = local_match_with_confidence(
+        "Dargett", "Dargett Sour",
+        [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery", abv=4.2)],
+        shop_abv=4.0)
+    assert found is not None and weak is False
+
+
+def test_local_match_with_confidence_is_not_weak_for_an_exact_match():
+    found, weak = local_match_with_confidence(
+        "Dargett", "Dargett Oatmeal Stout",
+        [KnownBeer(untappd_id=1, name="Oatmeal Stout", brewery="Dargett Brewery")])
+    assert found is not None and weak is False
+
+
+def test_local_match_with_confidence_is_none_and_not_weak_when_nothing_matches():
+    assert local_match_with_confidence("Dargett", "Apricot Ale", []) == (None, False)
+
+
+def test_local_match_with_confidence_still_rejects_when_abv_disagrees_a_lot():
+    """The round-2 ABV guard (finding C) still rejects outright when both sides ARE known and
+    disagree -- round 3 only adds a "weak" flag for the unknown-ABV case, it does not loosen this."""
+    found, weak = local_match_with_confidence(
+        "Dargett", "Dargett Sour",
+        [KnownBeer(untappd_id=1, name="Sour (Raspberry)", brewery="Dargett Brewery", abv=6.5)],
+        shop_abv=4.0)
+    assert (found, weak) == (None, False)

@@ -130,6 +130,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime) -> dict
     row.update({f: info.get(f) for f in INFO_FIELDS})
     row["brewery"] = info.get("u_brewery") or info.get("brewery")
     row["beer_logo"] = info.get("logo")
+    row["match_weak"] = bool(info.get("match_weak"))   # a local match that rests on an unnamed parenthetical
     row.update({
         "badge": kind,
         "since": yerevan_date(parse_iso(rec.first_seen)),

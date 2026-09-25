@@ -121,6 +121,23 @@ def test_shop_match_rec_has_identity_fields_defaulting_to_none():
     assert (rec.via, rec.name, rec.brewery) == (None, None, None)
 
 
+def test_shop_match_rec_weak_defaults_to_false_and_survives_a_json_round_trip():
+    """Code review round 3, finding C2: a local match that relied on an unnamed parenthesised aside
+    with no ABV corroboration is flagged weak, and the flag persists in state.json."""
+    assert ShopMatchRec(untappd_beer_id=1).weak is False
+    s = full_state()
+    s.shop_matches["n:kilikia"].weak = True
+    back = State.from_dict(json.loads(json.dumps(s.to_dict())))
+    assert back.shop_matches["n:kilikia"].weak is True
+
+
+def test_from_dict_loads_an_older_state_whose_shop_matches_lack_weak():
+    """state.json files written before the weak flag existed must still load (weak=False)."""
+    d = full_state().to_dict()
+    del d["shop_matches"]["n:kilikia"]["weak"]
+    assert State.from_dict(d).shop_matches["n:kilikia"].weak is False
+
+
 def test_from_dict_fills_missing_sections_and_fields_with_defaults():
     s = State.from_dict({"started_at": ago(0), "sources": {"parma:parma": {"last_ok": ago(1)}}})
     assert s.sources["parma:parma"] == SourceRec(last_ok=ago(1))

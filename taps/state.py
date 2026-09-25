@@ -55,6 +55,8 @@ class ShopMatchRec:
     via: str | None = None          # "local" | "search" | "manual" (corrections.yaml same_as); how it was found
     name: str | None = None         # Untappd's own canonical name/brewery (v1.2 beer identity), for display
     brewery: str | None = None
+    weak: bool = False              # a local match that relied on an unnamed parenthesised aside with no ABV
+                                    # corroboration: still accepted, but flagged for review (round 3, C2)
 
 
 @dataclass
