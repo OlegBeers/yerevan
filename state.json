@@ -1,5 +1,7 @@
 {
- "alerts": {},
+ "alerts": {
+  "fatal": "355bef9f6581"
+ },
  "announced_manual": [
   "ferment|2026-09-24|Instagram бара"
  ],
