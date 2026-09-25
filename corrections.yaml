@@ -10,6 +10,8 @@
 #   Несколько сортов из одного похода — несколько записей с одинаковыми place, date и by.
 #   Исправить название в уже объявленной записи можно, повторно она не объявится.
 #   Необязательно: container (розлив, банка или бутылка), style, abv (крепость), ibu, price (драм).
+#   Одно пиво в разной подаче (розлив и бутылка, две цены) — по записи на каждую подачу, с одинаковыми place и пивом:
+#   на сайте подачи покажутся вместе, а в сводку пиво идёт одной строкой (по первой записи) и повторно не объявляется.
 #   - place: tap-station
 #     brewery: "379"
 #     beer: "Hazy Pale"
@@ -267,6 +269,13 @@ sightings:
     brewery: "Rochefort"
     beer: "Trappistes Rochefort 10"
     untappd: 6766
+    container: бутылка
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Rodenbach"
+    beer: "Fruitage"
+    untappd: 1715344
     container: бутылка
     by: Instagram бара
     date: 2026-09-24
