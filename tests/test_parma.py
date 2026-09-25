@@ -20,6 +20,8 @@ PRODUCT_1645 = fixture_text("parma/product_1645.html")
 PRODUCT_28051 = fixture_text("parma/product_28051.html")
 URL_28051 = "https://parma.am/en/product/product?slug=beer-dahook-ipa-light-330ml_28051"
 URL_28637 = "https://parma.am/en/product/product?slug=beer-dargett-imperial-stout-dark-330ml_28637"
+THUMBS = "https://static.parma.am/cache/product/"
+THUMB_28051 = THUMBS + "28051/thumb_28051.jpg?v=11790128223"
 GZIP = {"Accept-Encoding": "gzip"}
 
 
@@ -79,7 +81,8 @@ def test_parse_listing_first_page():
     assert len({c.item_id for c in cards}) == 60
     assert cards[0] == ParmaCard(
         "48761", 'Beer "Paulaner Original" light 330ml', 970, True,
-        "https://parma.am/en/product/product?slug=beer-paulaner-original-light-330ml_48761")
+        "https://parma.am/en/product/product?slug=beer-paulaner-original-light-330ml_48761",
+        THUMBS + "48761(2)/thumb_48761(2).jpg?v=11790131568")
     by_id = {c.item_id: c for c in cards}
     assert by_id["21593"].price_amd == 520          # discount card: old price 650 is not data-price
     assert by_id["26934"].title == 'Beer "379" cherry, dark 330ml'
@@ -92,7 +95,7 @@ def test_parse_listing_first_page():
 def test_parse_listing_last_page():
     cards = parse_listing(P4)
     assert [c.item_id for c in cards] == ["99846", "28721", "28052", "28050", "28047", "28637", "28051"]
-    assert cards[-1] == ParmaCard("28051", 'Beer "Dahook Ipa" light 330ml', 790, True, URL_28051)
+    assert cards[-1] == ParmaCard("28051", 'Beer "Dahook Ipa" light 330ml', 790, True, URL_28051, THUMB_28051)
     assert cards[5].url == URL_28637
 
 
@@ -127,6 +130,29 @@ def _drop_title_span(html):
 def test_parse_listing_skips_card_without_code_title_or_parma_link(mutate):
     cards = parse_listing(mutate(P4))
     assert [c.item_id for c in cards] == ["28721", "28052", "28050", "28047", "28637", "28051"]
+
+
+def test_parse_listing_reads_the_thumb_of_every_card():
+    cards = parse_listing(P1) + parse_listing(P4)
+    assert len(cards) == 67
+    assert cards[0].photo == THUMBS + "48761(2)/thumb_48761(2).jpg?v=11790131568"   # the shop's own thumb as is
+    assert cards[-1].photo == THUMB_28051
+    assert all(c.photo and c.photo.startswith(THUMBS) for c in cards)
+
+
+@pytest.mark.parametrize("src", ["http://static.parma.am/cache/product/28051/thumb_28051.jpg",
+                                 "https://evil.example/thumb_28051.jpg", "//evil.example/thumb.jpg",
+                                 "javascript:alert(1)"])
+def test_parse_listing_drops_a_photo_that_is_not_https_on_the_shops_own_host(src):
+    cards = parse_listing(P4.replace(THUMB_28051, src))
+    assert (cards[-1].item_id, cards[-1].photo) == ("28051", None)
+
+
+def test_parse_listing_keeps_a_card_without_a_photo():
+    soup = BeautifulSoup(P4, "html.parser")
+    soup.select("div.product_item")[-1].select_one("img.product-image").decompose()
+    cards = parse_listing(str(soup))
+    assert (cards[-1].item_id, cards[-1].photo) == ("28051", None)
 
 
 @pytest.mark.parametrize("bad", ["", "1 270", "abc"])
@@ -194,10 +220,12 @@ def test_fetch_parma_walks_pages_and_fetches_product_pages_only_for_new_codes():
     assert by_id["28051"] == Sighting(
         place_id="parma", source="parma", beer_key="n:dahook ipa light", title='Beer "Dahook Ipa" light 330ml',
         name="Dahook Ipa light", seen_at=NOW, brewery="Dahook LLC", shop_item_id="28051", abv=6.0,
-        price_amd=790, volume_ml=330, in_stock=True, category="beer", url=URL_28051, shop_url=URL_28051)
-    vimpel = by_id["21593"]                                 # known code: no product page, so no brewery or abv
-    assert (vimpel.beer_key, vimpel.brewery, vimpel.abv, vimpel.price_amd, vimpel.in_stock) == \
-        ("n:vimpel lager light", None, None, 520, True)
+        price_amd=790, volume_ml=330, in_stock=True, category="beer", url=URL_28051, shop_url=URL_28051,
+        country="Armenia", logo=THUMB_28051)
+    vimpel = by_id["21593"]                                 # known code: no product page, so no brewery, abv or country
+    assert (vimpel.beer_key, vimpel.brewery, vimpel.abv, vimpel.country, vimpel.price_amd, vimpel.in_stock) == \
+        ("n:vimpel lager light", None, None, None, 520, True)
+    assert vimpel.logo == THUMBS + "21593/thumb_21593.jpg?v=11790130007"   # ... but its listing card has the photo
     assert by_id["26934"].beer_key == "n:379 cherry dark"
     assert by_id["226934"].title == 'Beer "379" cherry, dark 330ml'   # renumbered copy on page 2
 

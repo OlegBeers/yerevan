@@ -8,10 +8,11 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from taps.config import Place
-from taps.fetch import FetchError, Http
+from taps.fetch import FetchError, Http, shop_photo
 from taps.model import Sighting, SourceResult, n_key
 
 BASE = "https://parma.am"
+PHOTO_HOSTS = ("parma.am", "static.parma.am")   # listing cards carry the shop's own thumb on static.parma.am
 CATEGORY = "beer"
 LIST_URL = "https://parma.am/en/product/category?slug=beer&available=false&page={page}"
 HEADERS = {"Accept-Encoding": "gzip"}
@@ -34,6 +35,7 @@ class ParmaCard:
     price_amd: int | None
     in_stock: bool
     url: str
+    photo: str | None = None
 
 
 @dataclass(frozen=True)
@@ -59,12 +61,14 @@ def parse_listing(html: str) -> list[ParmaCard]:
             continue
         price = card.select_one("span.product_price[data-price]")
         p = _PRICE_RE.fullmatch(price["data-price"].strip()) if price else None
+        img = card.select_one("img.product-image[src]")
         cards.append(ParmaCard(
             item_id=m.group(1),
             title=title,
             price_amd=round(float(p.group(0))) if p else None,
             in_stock=card.select_one("div.not_av_content") is None,
             url=m.group(0),
+            photo=shop_photo(img["src"], BASE, PHOTO_HOSTS) if img else None,
         ))
     return cards
 
@@ -135,6 +139,7 @@ def fetch_parma(http: Http, place: Place, known_item_ids: set[str], now: datetim
             brewery=product.manufacturer if product else None,
             shop_item_id=card.item_id,
             abv=product.abv if product else None,
+            country=product.country if product else None, logo=card.photo,
             price_amd=card.price_amd, volume_ml=volume_ml(card.title),
             in_stock=card.in_stock, category=CATEGORY, url=card.url, shop_url=card.url,
         ))
