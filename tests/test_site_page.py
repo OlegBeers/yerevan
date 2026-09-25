@@ -181,6 +181,33 @@ def test_places_scroll_horizontally_on_narrow_screens():
     assert "scroll-snap" in block
 
 
+def test_places_row_fades_out_at_its_right_edge_on_narrow_screens():
+    css = _css(_soup())
+    block = css[css.index("max-width: 699px"):]
+    places = re.search(r"\.places\s*\{([^}]*)\}", block).group(1)
+    assert "mask-image: linear-gradient(to right" in places and "-webkit-mask-image" in places
+    assert "transparent" in places
+
+
+def test_spacing_is_a_scale_of_four_custom_properties():
+    css = _css(_soup())
+    root = re.search(r":root\s*\{([^}]*)\}", css).group(1)
+    for token, size in (("--s1", 4), ("--s2", 8), ("--s3", 12), ("--s4", 16)):
+        assert re.search(rf"{token}:\s*{size}px", root), token
+    assert re.search(r"--hit:\s*44px", root)                     # the smallest touch target
+    assert re.search(r"\.wrap\s*\{[^}]*padding:[^;}]*var\(--s4\)", css)
+
+
+def test_filters_and_badges_are_chips():
+    """One pill component for the place filters, the venues tag and (below) badges and servings."""
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    chip = re.search(r"\.chip\s*\{([^}]*)\}", css).group(1)
+    assert "border-radius: 999px" in chip and "font-variant-numeric: tabular-nums" in chip
+    assert 'class: "place chip"' in js and 'class: "chip tracked-badge"' in js
+    assert re.search(r"\.place\s*\{[^}]*min-height:\s*var\(--hit\)", css)
+
+
 def test_tabs_dont_wrap_on_narrow_screens():
     """The four tab labels (e.g. "Магазины") must not wrap letter-by-letter at 360-375px."""
     css = _css(_soup())

@@ -450,6 +450,26 @@ def test_a_long_title_wraps_under_itself_and_leaves_the_switch_where_it_is(open_
     assert problems == []
 
 
+@pytest.mark.parametrize("width", [375, 1280])
+def test_every_control_is_at_least_44px_tall(open_page, width):
+    page, problems = open_page(width=width)
+    for selector in ("#tab-all", "#tab-bars", "#tab-shops", "#tab-venues", "#search", "#sort", ".toggle", "#places .place"):
+        heights = page.eval_on_selector_all(selector, "els => els.map((e) => e.getBoundingClientRect().height)")
+        assert heights and min(heights) >= 44, (selector, heights)
+    assert problems == []
+
+
+def test_the_place_chips_fade_out_at_the_right_edge_and_the_last_chip_clears_the_fade(open_page):
+    page, problems = open_page(width=375)
+    mask = page.eval_on_selector("#places", "e => getComputedStyle(e).maskImage || getComputedStyle(e).webkitMaskImage")
+    assert "linear-gradient" in mask
+    page.eval_on_selector("#places", "e => { e.scrollLeft = e.scrollWidth; }")
+    last, row = box(page, "#places .place:last-child"), box(page, "#places")
+    assert row["right"] - last["right"] >= 23.5                           # scrolled to the end, the last chip is past the fade
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
 @pytest.mark.parametrize("lang", ["ru", "en"])
 def test_a_phone_needs_no_sideways_scrolling_in_either_language(open_page, lang):
     page, problems = open_page(width=375, query=f"?lang={lang}")
