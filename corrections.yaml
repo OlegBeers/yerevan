@@ -190,6 +190,16 @@ sightings:
     price: 1900
     by: Instagram бара
     date: 2026-09-24
+  - place: ferment
+    brewery: "Brewmen"
+    beer: "Пряный мёд"
+    untappd: 5138327
+    container: розлив
+    style: "Mead"
+    abv: 4.5
+    price: 1600
+    by: Instagram бара
+    date: 2026-09-24
   # Ferment: холодильник из той же сторис, сверено с Untappd
   - place: ferment
     brewery: "BrewDog"
@@ -264,6 +274,14 @@ sightings:
     brewery: "Brewlok Brewery"
     beer: "Лихо"
     untappd: 1802346
+    container: банка
+    price: 2800
+    by: Instagram бара
+    date: 2026-09-24
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Чёрное Лихо"
+    untappd: 6101438
     container: банка
     price: 2800
     by: Instagram бара
