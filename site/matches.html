@@ -90,8 +90,14 @@
   }
   .badge.weak { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; font-weight: 600; }
   .verdict { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
-  .verdict .toggle { color: var(--danger); font-weight: 600; }
-  .verdict input { accent-color: var(--danger); }
+  .verdict { display: flex; gap: 20px; flex-wrap: wrap; }
+  .verdict .toggle { font-weight: 600; }
+  .verdict .ok { color: var(--accent); }
+  .verdict .bad { color: var(--danger); }
+  .verdict .ok input { accent-color: var(--accent); }
+  .verdict .bad input { accent-color: var(--danger); }
+  .card.confirmed { opacity: .6; }
+  #confirm-visible { font: inherit; font-size: .85rem; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; }
   #bar {
     position: sticky; bottom: 0; z-index: 5; margin: 16px -20px 0; padding: 10px 20px;
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
@@ -114,11 +120,13 @@
   <main>
     <a class="back" href="index.html">← На главную</a>
     <h1><span aria-hidden="true">🔗</span> Проверка склеек</h1>
-    <p class="intro">Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. Если это разные пивоварни или сорта — отметьте «не то пиво». Потом нажмите «Скопировать для Олега» и отправьте текст Олегу.</p>
+    <p class="intro">Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. Если склейка правильная — отметьте «верно», она уйдёт из списка. Если это разные пивоварни или сорта — отметьте «не то пиво», потом нажмите «Скопировать для Олега» и отправьте текст Олегу.</p>
     <div class="controls">
       <label for="search" class="sr-only">Поиск по названию, пивоварне или месту</label>
       <input type="search" id="search" placeholder="Название, пивоварня или место" autocomplete="off">
       <label class="toggle"><input type="checkbox" id="only-weak"><span>только слабые</span></label>
+      <label class="toggle"><input type="checkbox" id="show-ok"><span>показать проверенные</span></label>
+      <button type="button" id="confirm-visible">Всё показанное — верно</button>
     </div>
     <p id="count" class="count" aria-live="polite">загружаем…</p>
     <div id="list"></div>
@@ -132,8 +140,9 @@
 <script>
 "use strict";
 const STORAGE_KEY = "matches-wrong";
+const OK_KEY = "matches-ok";   // {entry id: the Untappd link it was confirmed against}
 const VIA_RU = { local: "авто по названию", search: "поиск Untappd", manual: "вручную" };
-const ui = { matches: [], marked: new Set() };
+const ui = { matches: [], marked: new Set(), ok: {} };
 const $ = (id) => document.getElementById(id);
 
 // Every value from data.json goes into the DOM as text, never as HTML.
@@ -153,6 +162,23 @@ function loadMarked() {
   } catch (err) {
     return new Set();
   }
+}
+function loadOk() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(OK_KEY) || "{}");
+    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  } catch (err) {
+    return {};
+  }
+}
+function saveOk() {
+  try {
+    localStorage.setItem(OK_KEY, JSON.stringify(ui.ok));
+  } catch (err) { /* private mode or blocked storage: confirmations last until the page is closed */ }
+}
+// a confirmation only counts while the entry still points at the Untappd beer it was confirmed against
+function isOk(m) {
+  return ui.ok[idOf(m)] === (m.untappd_url || "");
 }
 function saveMarked() {
   try {
@@ -192,17 +218,31 @@ function untappdSide(m) {
         m.weak ? el("span", { class: "badge weak" }, "⚠️ слабое совпадение") : null)));
 }
 function cardNode(m) {
-  const box = el("input", { type: "checkbox" });
-  box.checked = ui.marked.has(idOf(m));
+  const wrong = el("input", { type: "checkbox" });
+  const right = el("input", { type: "checkbox" });
+  wrong.checked = ui.marked.has(idOf(m));
+  right.checked = isOk(m);
   const card = el("li", { class: "card" },
     el("div", { class: "pair" }, shopSide(m), el("span", { class: "arrow", "aria-hidden": "true" }, "→"), untappdSide(m)),
-    el("div", { class: "verdict" }, el("label", { class: "toggle" }, box, el("span", null, "не то пиво"))));
-  card.classList.toggle("marked", box.checked);
-  box.addEventListener("change", () => {
-    if (box.checked) ui.marked.add(idOf(m)); else ui.marked.delete(idOf(m));
-    card.classList.toggle("marked", box.checked);
-    saveMarked();
+    el("div", { class: "verdict" },
+      el("label", { class: "toggle ok" }, right, el("span", null, "верно")),
+      el("label", { class: "toggle bad" }, wrong, el("span", null, "не то пиво"))));
+  card.classList.toggle("marked", wrong.checked);
+  card.classList.toggle("confirmed", right.checked);
+  right.addEventListener("change", () => {
+    if (right.checked) { ui.ok[idOf(m)] = m.untappd_url || ""; ui.marked.delete(idOf(m)); wrong.checked = false; }
+    else delete ui.ok[idOf(m)];
+    saveOk(); saveMarked();
+    render();
+  });
+  wrong.addEventListener("change", () => {
+    if (wrong.checked) { ui.marked.add(idOf(m)); delete ui.ok[idOf(m)]; right.checked = false; }
+    else ui.marked.delete(idOf(m));
+    card.classList.toggle("marked", wrong.checked);
+    card.classList.toggle("confirmed", right.checked);
+    saveOk(); saveMarked();
     renderBar();
+    renderCount();
   });
   return card;
 }
@@ -210,7 +250,8 @@ function cardNode(m) {
 function visibleMatches() {
   const q = $("search").value.trim().toLowerCase();
   const onlyWeak = $("only-weak").checked;
-  return ui.matches.filter((m) => (!onlyWeak || m.weak)
+  const showOk = $("show-ok").checked;
+  return ui.matches.filter((m) => (!onlyWeak || m.weak) && (showOk || !isOk(m))
     && (!q || [m.shop_name, m.shop_brewery, m.untappd_name, m.untappd_brewery, m.place]
       .some((s) => s && String(s).toLowerCase().includes(q))));
 }
@@ -228,14 +269,29 @@ function renderBar() {
   $("copy").disabled = n === 0;
   $("copy-status").textContent = "";
 }
+function renderCount() {
+  const total = ui.matches.length;
+  const ok = ui.matches.filter(isOk).length;
+  const left = ui.matches.filter((m) => !isOk(m) && !ui.marked.has(idOf(m))).length;
+  $("count").textContent = `Осталось проверить: ${left} из ${total} · верно: ${ok} · не то: ${markedMatches().length}`;
+}
 function render() {
   const shown = visibleMatches();
   const total = ui.matches.length;
-  $("count").textContent = shown.length === total ? `Склеек: ${total}` : `Показано ${shown.length} из ${total}`;
+  renderCount();
   $("list").replaceChildren(shown.length
     ? el("ul", { class: "cards" }, ...shown.map(cardNode))
-    : el("p", { class: "empty" }, total ? "Ничего не нашлось — попробуйте другой запрос или фильтр." : "Склеек пока нет."));
+    : el("p", { class: "empty" }, !total ? "Склеек пока нет."
+      : ui.matches.every(isOk) ? "Все склейки проверены." : "Ничего не нашлось — попробуйте другой запрос или фильтр."));
   renderBar();
+}
+function confirmVisible() {   // one tap for the long tail once the doubtful ones were looked at
+  const todo = visibleMatches().filter((m) => !isOk(m) && !ui.marked.has(idOf(m)));
+  if (!todo.length) return;
+  if (!window.confirm(`Отметить как верные все показанные склейки: ${todo.length}? Отмеченные «не то пиво» останутся.`)) return;
+  for (const m of todo) ui.ok[idOf(m)] = m.untappd_url || "";
+  saveOk();
+  render();
 }
 
 function fallbackCopy(text) {   // older browsers and non-secure origins have no navigator.clipboard
@@ -274,11 +330,14 @@ async function load() {
     return;
   }
   ui.marked = loadMarked();
+  ui.ok = loadOk();
   render();
 }
 
 $("search").addEventListener("input", render);
 $("only-weak").addEventListener("change", render);
+$("show-ok").addEventListener("change", render);
+$("confirm-visible").addEventListener("click", confirmVisible);
 $("copy").addEventListener("click", copyMarked);
 load();
 </script>

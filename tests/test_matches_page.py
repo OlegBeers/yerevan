@@ -34,7 +34,8 @@ def test_page_is_russian_and_mobile_ready():
 def test_intro_explains_the_two_sides_and_what_to_mark():
     text = _soup().find("main").get_text(" ", strip=True)
     assert ("Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. "
-            "Если это разные пивоварни или сорта — отметьте «не то пиво».") in text
+            "Если склейка правильная — отметьте «верно», она уйдёт из списка. "
+            "Если это разные пивоварни или сорта — отметьте «не то пиво»") in text
 
 
 def test_links_back_to_the_main_page_and_ships_with_the_published_site_folder():
@@ -124,3 +125,29 @@ def test_colours_are_custom_properties_with_dark_variant():
     assert "--bg:" in root and "--text:" in root and "--accent:" in root and "--danger:" in root
     dark = css.split("prefers-color-scheme: dark", 1)[1]
     assert "--bg:" in dark and "--accent:" in dark
+
+
+def test_confirmed_matches_are_hidden_by_default_and_can_be_shown():
+    soup = _soup()
+    assert soup.find(id="show-ok") is not None
+    assert "проверенные" in soup.find(id="show-ok").find_parent("label").get_text()
+    js = _js(soup)
+    fn = re.search(r"function visibleMatches\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "show-ok" in fn and "isOk" in fn
+
+
+def test_confirmation_is_tied_to_the_untappd_link_so_a_changed_match_is_reviewed_again():
+    js = _js(_soup())
+    fn = re.search(r"function isOk\(m\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "untappd_url" in fn
+    assert 'localStorage.getItem(OK_KEY' in js and 'localStorage.setItem(OK_KEY' in js
+
+
+def test_each_card_has_right_and_wrong_marks_that_exclude_each_other_and_a_bulk_confirm_exists():
+    soup = _soup()
+    js = _js(soup)
+    card_fn = re.search(r"function cardNode\(m\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "верно" in card_fn and "не то пиво" in card_fn
+    assert soup.find(id="confirm-visible").name == "button"
+    assert "confirm(" in js                                  # asks before confirming everything shown
+    assert "Осталось проверить" in js
