@@ -220,6 +220,7 @@
       <div id="sheet" tabindex="-1">
         <div class="sheet-head">
           <span>Выбрано: <b id="picked-count">0</b></span>
+          <button type="button" id="reset-merge" class="act">Сбросить</button>
           <button type="button" id="to-link" class="act main">Дальше ↓</button>
         </div>
         <ul id="picked-list" class="chips"></ul>
@@ -572,6 +573,28 @@ function renderMerge() {
   renderPicked();
   renderResult();
 }
+// the only thing about merging kept between visits: the last link typed
+const LINK_KEY = "matches-merge-link";
+function loadLink() {
+  try {
+    return localStorage.getItem(LINK_KEY) || "";
+  } catch (err) {
+    return "";
+  }
+}
+function saveLink() {
+  try {
+    localStorage.setItem(LINK_KEY, $("untappd-link").value);
+  } catch (err) { /* private mode or blocked storage: the link lasts until the page is closed */ }
+}
+function resetMerge() {
+  ui.picked.clear();
+  $("pick-search").value = "";
+  $("untappd-link").value = "";
+  saveLink();
+  renderMerge();
+  window.scrollTo(0, 0);   // back to the search box, ready for the next beer
+}
 
 const LOAD_FAILED = "Не удалось загрузить данные. Обновите страницу через минуту.";
 async function load() {
@@ -592,6 +615,7 @@ async function load() {
   ui.ok = loadOk();
   importFromHash();
   render();
+  $("untappd-link").value = loadLink();
   renderMerge();
   if (ui.note) $("copy-status").textContent = ui.note;   // render() clears the status line, so set it after
 }
@@ -608,7 +632,11 @@ function setMode(mode) {
 $("mode-review").addEventListener("click", () => setMode("review"));
 $("mode-merge").addEventListener("click", () => setMode("merge"));
 $("pick-search").addEventListener("input", renderResults);
-$("untappd-link").addEventListener("input", renderResult);
+$("untappd-link").addEventListener("input", () => {
+  saveLink();
+  renderResult();
+});
+$("reset-merge").addEventListener("click", resetMerge);
 $("copy-yaml").addEventListener("click", () => copyMerged("yaml-out", "Скопировано — вставьте под same_as: в corrections.yaml"));
 $("copy-text").addEventListener("click", () => copyMerged("text-out", "Скопировано — отправьте Олегу или Claude"));
 $("to-link").addEventListener("click", () => {

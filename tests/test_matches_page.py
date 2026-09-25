@@ -237,3 +237,19 @@ def test_two_copy_buttons_give_the_yaml_block_and_the_plain_text_and_both_wrap_l
     assert js.count("navigator.clipboard.writeText") == js.count("async function clipboardCopy") + 1   # one helper, plus the old transfer link
     assert "clipboardCopy(" in re.search(r"async function copyMarked\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "clipboardCopy(" in re.search(r"async function copyMerged\(.*?\)\s*\{(.*?)\n\}", js, re.S).group(1)
+
+
+def test_the_last_link_is_kept_in_local_storage_guarded_by_try_catch_and_a_reset_button_exists():
+    soup = _soup()
+    reset = soup.find(id="reset-merge")
+    assert reset.name == "button" and reset["type"] == "button" and reset.get_text(strip=True) == "Сбросить"
+    assert reset.find_parent(id="sheet") is not None
+    js = _js(soup)
+    for call in ("getItem", "setItem"):
+        idx = js.index(f"localStorage.{call}(LINK_KEY")
+        before = js[:idx]
+        assert before.rfind("try {") > before.rfind("catch"), call
+    assert "removeItem" not in js and "localStorage.clear" not in js       # the review's marks are never wiped
+    fn = re.search(r"function resetMerge\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "ui.picked.clear()" in fn and "localStorage" not in fn and "marked" not in fn
+    assert re.search(r"async function load\(\).*?\$\(\"untappd-link\"\)\.value = loadLink\(\);.*?renderMerge\(\);", js, re.S)

@@ -16,6 +16,7 @@ PIXEL = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQV
 LOGO = "https://img.test/label.png"
 PLACE_IDS = {"beer-city", "parma", "yerevan-city", "gargoyle"}
 BEER_LINK = "https://untappd.com/b/wolf-s-brewery-indian-pale-ale-ipa/1941326"
+NO_STORAGE = "Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('blocked', 'SecurityError'); } });"
 NO_CLIPBOARD_API = """
 Object.defineProperty(navigator, 'clipboard', { value: undefined });
 document.addEventListener('copy', () => { const a = document.activeElement; window.copied = a.value.slice(a.selectionStart, a.selectionEnd); });
@@ -165,7 +166,7 @@ def test_a_card_shows_the_photo_name_brewery_place_abv_price_and_whether_it_is_a
 
 def test_tapping_cards_collects_them_in_the_sheet_which_can_take_them_back(open_page):
     page, problems = open_page(mode="merge")
-    assert text(page, "#sheet") == "Выбрано: 0 Дальше ↓"
+    assert text(page, "#sheet") == "Выбрано: 0 Сбросить Дальше ↓"
     page.fill("#pick-search", "wolf")
     page.click("#pick-list li:nth-child(1) .pick")
     page.click("#pick-list li:nth-child(2) .pick")
@@ -204,7 +205,7 @@ def test_everything_to_tap_is_at_least_44px_high_on_a_phone(open_page):
     page, problems = open_page(mode="merge")
     page.fill("#pick-search", "wolf")
     page.click("#pick-list .pick")
-    for selector in ("#mode-review", "#mode-merge", "#pick-search", "#pick-list .pick", "#untappd-link", "#to-link"):
+    for selector in ("#mode-review", "#mode-merge", "#pick-search", "#pick-list .pick", "#untappd-link", "#reset-merge", "#to-link"):
         assert size(page, selector)[1] >= 44, selector
     assert min(size(page, "#picked-list .chip button")) >= 44
     assert problems == []
@@ -438,4 +439,52 @@ def test_the_review_lists_copy_button_still_puts_the_marked_lines_on_the_clipboa
     assert page.evaluate("navigator.clipboard.readText()") == (
         "beer-city | n:волковская пиваварня indian pale ale ipa | Волковская пиваварня Indian Pale Ale Ipa"
         " → Wolf IPA (https://untappd.com/beer/1941326)")
+    assert problems == []
+
+
+def test_reset_starts_over_but_leaves_the_review_marks_alone(open_page):
+    page, problems = open_page()
+    page.click("#list .verdict .bad input")                                    # a mark of the review list
+    page.click("#mode-merge")
+    page.fill("#pick-search", "wolf")
+    page.click("#pick-list .pick")
+    page.fill("#untappd-link", BEER_LINK)
+    assert page.is_visible("#output")
+    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    page.click("#reset-merge")
+    assert page.input_value("#pick-search") == "" and page.input_value("#untappd-link") == ""
+    assert text(page, "#picked-count") == "0" and page.locator("#picked-list .chip").count() == 0
+    assert text(page, "#pick-count") == "Позиций: 4" and page.locator("#pick-list .pick input:checked").count() == 0
+    assert text(page, "#link-status") == "" and not page.is_visible("#output") and page.is_visible("#output-hint")
+    assert page.evaluate("window.scrollY") == 0
+    assert page.evaluate("localStorage.getItem('matches-merge-link')") in ("", None)
+    page.click("#mode-review")
+    assert page.is_checked("#list .verdict .bad input") and text(page, "#marked") == "1"
+    assert problems == []
+
+
+def test_only_the_last_link_is_remembered_the_picks_are_not(open_page):
+    page, problems = open_page(mode="merge")
+    ready(page)
+    page.reload()
+    page.wait_for_selector("#list > *")
+    assert page.input_value("#untappd-link") == BEER_LINK        # the link is back, and understood
+    assert text(page, "#link-status") == "Пиво № 1941326 · открыть на Untappd"
+    assert page.evaluate("localStorage.getItem('matches-merge-link')") == BEER_LINK
+    assert text(page, "#picked-count") == "0" and page.input_value("#pick-search") == ""
+    assert page.evaluate("Object.keys(localStorage).sort()") == ["matches-merge-link"]   # nothing else about merging is kept
+    page.click("#mode-merge")
+    page.fill("#untappd-link", "")                               # a link taken out of the field is not brought back
+    page.reload()
+    page.wait_for_selector("#list > *")
+    assert page.input_value("#untappd-link") == ""
+    assert problems == []
+
+
+def test_a_browser_that_blocks_local_storage_still_gets_a_working_merge(open_page):
+    page, problems = open_page(mode="merge", init_script=NO_STORAGE)
+    ready(page)
+    assert page.is_visible("#output") and page.text_content("#yaml-out").endswith("untappd_id: 1941326")
+    page.click("#reset-merge")
+    assert page.input_value("#untappd-link") == "" and not page.is_visible("#output")
     assert problems == []
