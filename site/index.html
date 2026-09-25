@@ -408,7 +408,9 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     return {
       rows: group,
       name: r0.name, brewery: r0.brewery, style: r0.style, style_inferred: r0.style_inferred, ibu: r0.ibu, url: r0.url,
-      beer_logo: group.map((r) => r.beer_logo).find(Boolean),
+      // Untappd's own logo first, then a matched row's, then any row's
+      beer_logo: [(r) => r.beer_key && r.beer_key.startsWith("u:"), (r) => r.match_via, () => true]
+        .map((pick) => group.filter(pick).map((r) => r.beer_logo).find(Boolean)).find(Boolean),
       country: group.map((r) => r.country).find(Boolean),
       abv: bestOf(group, "abv"), rating: bestOf(group, "rating"),
       since: group.map((r) => r.since).sort()[0],

@@ -220,6 +220,14 @@ def test_search_ignores_a_style_that_was_only_inferred_from_the_name():
     assert "r.style_inferred ? null : r.style" in filter_fn
 
 
+def test_group_logo_prefers_untappd_rows_then_matched_rows_then_any():
+    js = _js(_soup())
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    logo = re.search(r"beer_logo: (.*?\.find\(Boolean\)),\n", group_fn, re.S).group(1)
+    assert logo.index('startsWith("u:")') < logo.index("match_via") < logo.index("r.beer_logo")
+    assert "r0.beer_logo" not in group_fn
+
+
 def test_beer_group_key_falls_back_to_normalized_brewery_and_name():
     js = _js(_soup())
     group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
@@ -296,12 +304,6 @@ def test_back_to_top_button():
     assert button["aria-label"] == "Наверх"
     js = _js(soup)
     assert "scrollTo" in js and 'addEventListener("scroll"' in js
-
-
-def test_group_logo_is_the_first_non_empty_logo_in_the_group():
-    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", _js(_soup()), re.S).group(1)
-    assert re.search(r"beer_logo:\s*group\.map\(\(?r\)?\s*=>\s*r\.beer_logo\)\.find\(Boolean\)", group_fn)
-    assert "r0.beer_logo" not in group_fn
 
 
 def test_shop_name_line_shows_only_when_it_differs_from_the_displayed_name():
