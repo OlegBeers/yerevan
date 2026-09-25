@@ -69,9 +69,14 @@ _VARIANT_TOKENS = {"alkoholfrei", "alcoholfree", "non", "free", "zero", "0", "ba
                    "smoked", "vanilla", "shake"}
 # Too generic to serve as brewery evidence on their own -- many unrelated breweries share one of
 # these words (e.g. "St. Bernardus" and "St-Feuillien", or "Pivovar Svijany" and "Pivovar Chotěboř").
+# Deliberately NOT here: real brand words like "black"/"old" that happen to coincide between two
+# unrelated breweries (e.g. "Black Sheep" vs "Black Tie Brewing") -- those are caught instead by
+# requiring EVERY non-generic shop-brewery token to be verified, not just one of them.
 _GENERIC_BREWERY_WORDS = {"st", "saint", "sint", "pivovar", "pivovarna", "the", "brau", "brauerei", "brasserie",
                           "brouwerij", "birrificio", "cerveceria", "brewery", "brewing", "beer", "co", "company",
-                          "craft", "group", "gruppe"}
+                          "craft", "group", "gruppe", "abbaye", "abbey", "abdij", "browar", "brauhaus", "birra",
+                          "cerveza", "pivo", "gmbh", "kg", "ag", "llc", "ltd", "sa", "nv", "bv", "srl", "spa",
+                          "inc", "oy", "ab", "as"}
 _PAREN_RE = re.compile(r"\(([^()]*)\)")
 
 
@@ -114,23 +119,25 @@ def _evaluate(shop_brewery: str | None, shop_name_tokens: Sequence[str], candida
     """"exact", "loose", "variant" (never chosen, but makes the name ambiguous) or None for how well `candidate` fits -- used to break ties when several
     candidates pass (local_match prefers an exact token-set match).
 
-    Brewery compatibility: the shop brewery's first significant token (ignoring generic words like
-    "st"/"pivovar"/"brewery" -- too common across unrelated breweries to serve as evidence) appears
-    in the candidate's own brewery or name tokens; or, when the shop brewery is empty/non-latin
-    (often an importer's legal-entity name, e.g. Parma), the shop name's first token stands in for
-    it instead. Either way, whichever tokens served as the brewery signal are excluded from the
-    name-containment check below.
+    Brewery compatibility: EVERY non-generic token of the shop brewery (ignoring generic words like
+    "st"/"pivovar"/"brewery" -- too common across unrelated breweries to serve as evidence on their
+    own) must appear in the candidate's own brewery or name tokens -- a single shared word is not
+    enough (e.g. "Black" alone must not merge "Black Sheep" into an unrelated "Black Tie Brewing");
+    or, when the shop brewery is empty/non-latin (often an importer's legal-entity name, e.g. Parma)
+    or disagrees outright, the shop name's first token stands in for it instead. Either way,
+    whichever tokens served as the brewery signal are excluded from the name-containment check below.
     """
     shop_brewery_tokens = _shop_tokens(shop_brewery or "")
     brewery_tokens = set(shop_brewery_tokens)
     candidate_brewery_tokens = set(_candidate_tokens(candidate.brewery))
     candidate_name_tokens = set(_candidate_tokens(candidate.name))
+    candidate_tokens = candidate_brewery_tokens | candidate_name_tokens
     consumed = brewery_tokens
 
-    first_significant = next((t for t in shop_brewery_tokens if t not in _GENERIC_BREWERY_WORDS), None)
-    if first_significant is None or first_significant not in (candidate_brewery_tokens | candidate_name_tokens):
+    significant = [t for t in shop_brewery_tokens if t not in _GENERIC_BREWERY_WORDS]
+    if not significant or not all(t in candidate_tokens for t in significant):
         if brewery_tokens and _is_latin(shop_brewery or ""):
-            return None   # a present, Latin brewery that simply disagrees (e.g. an importer's name)
+            return None   # a present, Latin brewery that only partly overlaps or disagrees
         first = shop_name_tokens[0] if shop_name_tokens else None
         if first is None or first not in candidate_brewery_tokens:
             return None

@@ -213,3 +213,44 @@ def test_local_match_accepts_brand_repeated_in_the_candidates_own_name():
     found = local_match("Weihenstephaner", "Hefeweissbier",
                         [KnownBeer(untappd_id=1, name="Weihenstephaner Hefeweissbier", brewery="Weihenstephaner")])
     assert found is not None
+
+
+# --- local_match(): every non-generic shop-brewery token must be verified (2nd review round) ---
+
+def test_local_match_rejects_a_shared_word_when_the_other_brewery_word_disagrees():
+    """"Black" alone is a real, meaningful brand word (unlike "St"/"Pivovar") shared by two
+    unrelated breweries here -- the shop's OTHER brewery word ("Sheep") must also be checked, not
+    silently dropped just because "Black" happened to match first."""
+    found = local_match("Black Sheep", "Black Sheep Ale",
+                        [KnownBeer(untappd_id=1, name="Ale", brewery="Black Tie Brewing")])
+    assert found is None
+
+
+def test_local_match_rejects_browar_prefixed_brewery_as_generic_evidence():
+    """"Browar" (Polish for "brewery") is generic too."""
+    found = local_match("Browar Kormoran", "Porter",
+                        [KnownBeer(untappd_id=1, name="Porter", brewery="Browar Pinta")])
+    assert found is None
+
+
+def test_local_match_rejects_browar_prefixed_brewery_even_when_the_name_also_matches():
+    found = local_match("Browar Kormoran", "Kormoran Porter",
+                        [KnownBeer(untappd_id=1, name="Pinta Porter", brewery="Browar Pinta")])
+    assert found is None
+
+
+def test_local_match_rejects_abbaye_prefixed_brewery_as_generic_evidence():
+    """"Abbaye"/"Abbey"/"Abdij" (French/English/Dutch for "abbey") is generic too -- shared by many
+    unrelated abbey-branded beers."""
+    found = local_match("Abbaye de Leffe", "Leffe Blonde",
+                        [KnownBeer(untappd_id=1, name="Abbaye des Rocs Blonde",
+                                  brewery="Brasserie de l'Abbaye des Rocs")])
+    assert found is None
+
+
+def test_local_match_still_finds_westmalle_when_brewery_says_abbey():
+    """Regression guard: "Abbey" becoming generic must not stop "Westmalle" alone from matching."""
+    found = local_match("Westmalle Abbey", "Westmalle Trappist Dubbel dark",
+                        [KnownBeer(untappd_id=1, name="Westmalle Trappist Dubbel",
+                                  brewery="Brouwerij der Trappisten van Westmalle")])
+    assert found is not None
