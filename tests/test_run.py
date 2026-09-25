@@ -2204,3 +2204,28 @@ def test_hand_entered_servings_are_announced_as_one_beer_and_a_later_serving_is_
     row = _site_row(world, "craft-story", "u:1715344")
     assert [(s["container"], s["price_amd"]) for s in row["servings"]] == [("draft", 2800), ("bottle", None), ("can", 900)]
     assert row["new"] is True                                              # still the day's 🆕, not a second one
+
+
+def test_a_beer_fixed_after_its_entries_were_announced_together_is_not_announced_again(world):
+    assert world.run(NOW) == 0
+    world.next_run()
+    corrections = world.repo / "corrections.yaml"
+    corrections.write_text(
+        "sightings:\n"
+        "  - {place: craft-story, untappd: 1715344, brewery: Rodenbach, beer: Fruitage, container: розлив,"
+        " price: 2800, by: Аня, date: 2026-09-24}\n"
+        "  - {place: craft-story, untappd: 1715344, brewery: Rodenbach, beer: Fruitage, container: бутылка,"
+        " by: Олег, date: 2026-09-25}\n", encoding="utf-8")
+    assert world.run(NEXT_EVENING) == 0
+    assert len(world.sends) == 1                    # two friends' entries, one beer, one announcement
+    assert world.state().announced_manual == ["craft-story|2026-09-24|Аня", "craft-story|2026-09-25|Олег"]
+
+    # the first entry is deleted and the second one's beer is corrected: that is the same news, not a new beer
+    world.next_run()
+    corrections.write_text(
+        "sightings:\n"
+        "  - {place: craft-story, untappd: 1715345, brewery: Rodenbach, beer: Fruitage Rosé, container: бутылка,"
+        " by: Олег, date: 2026-09-25}\n", encoding="utf-8")
+    assert world.run(NEXT_EVENING + timedelta(days=1)) == 0
+    assert world.sends == []
+    assert world.state().pairs["craft-story"]["u:1715345"].notified_at == "suppressed"

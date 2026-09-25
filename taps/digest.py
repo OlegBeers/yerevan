@@ -238,9 +238,10 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
 
     manual_ids = []
     for p, k in pairs:
-        mid = state.pairs[p][k].info.get("manual_id")
-        if mid and mid not in manual_ids:
-            manual_ids.append(mid)
+        info = state.pairs[p][k].info
+        for mid in info.get("manual_ids") or [info.get("manual_id")]:   # every entry merged into the pair
+            if mid and mid not in manual_ids:
+                manual_ids.append(mid)
     return Digest(html=text, lines_total=len(entries), lines_shown=len(shown), pairs=pairs,
                   brewery_keys=brewery_keys, manual_ids=manual_ids,
                   to_admin=state.digest.sent_count < settings.preview_digests)

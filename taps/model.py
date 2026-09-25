@@ -54,6 +54,7 @@ class Sighting:
     manual_by: str | None = None
     manual_date: str | None = None  # "YYYY-MM-DD"
     servings: tuple[Serving, ...] = ()   # all of them, only when several; the first is also container/price/volume
+    manual_ids: tuple[str, ...] = ()     # ids of all merged entries, only when several; the first is manual_id
 
     @property
     def kind(self) -> str:

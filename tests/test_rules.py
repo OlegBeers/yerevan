@@ -799,3 +799,24 @@ def test_a_single_serving_board_leaves_a_check_in_owned_pair_as_it_was():
     merge(state, venue_checkins(checkin(5)), manual(tap))
     info = state.pairs["tap-station"]["u:5"].info
     assert not {"container", "price_amd", "volume_ml", "servings"} & set(info)   # a beer with one serving shows as before
+
+
+# --- entries of several friends for one beer: every id belongs to the pair -----------------------------
+
+def test_a_pair_from_entries_of_several_friends_keeps_all_their_ids_while_they_last():
+    state = empty_state(NOW - 10 * DAY)
+    first, friend = entry("tap-station", "Hazy Pale", 2, by="Аня"), entry("tap-station", "Hazy Pale", 1, by="Ваня")
+    merge(state, manual(first, friend))
+    info = state.pairs["tap-station"]["n:379 hazy pale"].info
+    assert (info["manual_id"], info["manual_ids"]) == (first.id, [first.id, friend.id])
+    merge(state, manual(first))                    # the friend's entry was withdrawn
+    assert info["manual_id"] == first.id and "manual_ids" not in info
+
+
+def test_a_new_pair_from_entries_one_of_which_was_announced_is_not_announced_again():
+    state = empty_state(NOW - 10 * DAY)
+    first, friend = entry("tap-station", "Hazy Pale", 2, by="Аня"), entry("tap-station", "Hazy Pale", 1, by="Ваня")
+    state.announced_manual = [friend.id]      # the friend's entry went out in a digest, say under another key
+    out = merge(state, manual(first, friend))
+    assert out.events == []
+    assert state.pairs["tap-station"]["n:379 hazy pale"].notified_at == "suppressed"

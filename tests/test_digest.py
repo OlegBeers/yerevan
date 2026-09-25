@@ -407,3 +407,12 @@ def test_a_beer_with_several_servings_is_announced_by_its_first_one_as_before():
     assert several.html == single.html
     assert "Zagovor — Black Sails · 🔥3.90 · 2300 ֏" in several.html and "1500 ֏" not in several.html   # first price only
     assert (several.lines_total, several.pairs, several.manual_ids) == (2, single.pairs, ["m1"])
+
+
+def test_a_pair_of_merged_entries_marks_every_entry_id_as_announced():
+    s = new_state(pairs={"tap-station": {"n:x": pair(yv(24, 14), kind="manual", name="X", manual_id="m1",
+                                                    manual_ids=["m1", "m2"], manual_by="Аня")}})
+    digest = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert digest.manual_ids == ["m1", "m2"]
+    mark_sent(s, digest, yv(24, 18, 30))
+    assert s.announced_manual == ["m1", "m2"]

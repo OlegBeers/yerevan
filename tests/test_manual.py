@@ -162,3 +162,13 @@ def test_entries_that_an_alias_joins_are_servings_of_one_sighting():
     [s] = run(by_name, by_id, aliases=aliases).sightings   # whichever comes first, the Untappd id and link are kept
     assert (s.beer_key, s.untappd_beer_id, s.url) == ("u:1715344", 1715344, "https://untappd.com/beer/1715344")
     assert s.servings == (Serving("bottle"), Serving("draft", 2800))
+
+
+def test_every_merged_entrys_id_is_carried_and_the_first_stays_the_announcement():
+    first = rodenbach(container="draft", price_amd=2800)
+    friend = rodenbach(container="bottle", day=date(2026, 9, 23), by="Олег")
+    repeat = rodenbach(container="can", price_amd=900)                       # the first entry's id again
+    [s] = run(first, friend, repeat).sightings
+    assert (s.manual_id, s.manual_ids) == (first.id, (first.id, friend.id))   # distinct ids, in order
+    [s] = run(first, repeat).sightings
+    assert (s.manual_id, s.manual_ids) == (first.id, ())                      # one id: nothing extra to carry

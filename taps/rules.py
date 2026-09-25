@@ -56,12 +56,16 @@ def _rank(kind: str | None) -> int:
     return KIND_RANK.get(kind, 2)
 
 
-def _set_servings(info: dict, s: Sighting) -> None:
-    """The list is the source's whole answer: a serving that left is gone."""
-    if s.servings:
-        info["servings"] = [asdict(serving) for serving in s.servings]
+def _set_list(info: dict, name: str, values: list) -> None:
+    """A list a source sends whole: a value that left it is gone."""
+    if values:
+        info[name] = values
     else:
-        info.pop("servings", None)
+        info.pop(name, None)
+
+
+def _set_servings(info: dict, s: Sighting) -> None:
+    _set_list(info, "servings", [asdict(serving) for serving in s.servings])
 
 
 def _refresh_board_servings(rec: PairRec, s: Sighting) -> None:
@@ -219,6 +223,8 @@ class _Merger:
             self._backfill_checkin(rec, key)
         else:   # a check-in brings no serving data: it must not wipe the list a board gave
             _set_servings(rec.info, s)
+        if s.kind == "manual":   # the ids of the merged entries are the board's whole answer too
+            _set_list(rec.info, "manual_ids", list(s.manual_ids))
         rec.info.pop("hidden", None)      # set again by _drop while hidden or filtered
 
     def _backfill_checkin(self, rec: PairRec, key: str) -> None:
@@ -250,7 +256,8 @@ class _Merger:
             if manual_date < to_yerevan(parse_iso(self.state.started_at)).date():
                 return True   # predates this state generation: likely already announced before it was lost
             days = (to_yerevan(self.now).date() - manual_date).days
-            if s.manual_id in self.state.announced_manual or days > MANUAL_EVENT_DAYS:
+            announced = any(m in self.state.announced_manual for m in s.manual_ids or (s.manual_id,))
+            if announced or days > MANUAL_EVENT_DAYS:
                 return True
         if s.kind == "checkin" and age_days(s.seen_at, self.now) > CHECKIN_EVENT_DAYS:
             return True
