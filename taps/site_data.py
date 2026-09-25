@@ -143,7 +143,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: 
     row.update({f: info.get(f) for f in INFO_FIELDS})
     # No Untappd behind a shop/menu beer: its own name may state the style. Shown as inferred and kept out of the
     # pair (the digest reads info["style"]); an Untappd style, matched or not, always wins.
-    if row["style"] is None and match is None and kind in ("shop", "menu") \
+    if row["style"] is None and match is None and kind in ("shop", "menu") and not key.startswith("u:") \
             and not UNTAPPD_BEER_RE.search(row["url"] or ""):
         row["style"] = guess_style(_shop_name(info, key))
         if row["style"]:

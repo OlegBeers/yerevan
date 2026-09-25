@@ -221,6 +221,12 @@ def test_a_real_untappd_menu_beer_with_no_style_gets_no_guess_either():
     assert (row["style"], "style_inferred" in row) == (None, False)
 
 
+def test_a_shop_beer_aliased_to_an_untappd_key_gets_no_guess():
+    st = state({"beer-city": {"u:4473": pair("beercity", in_stock=True, info={"name": "Bever pilsner"})}})
+    row = build(st)["rows"][0]
+    assert (row["style"], "style_inferred" in row) == (None, False)
+
+
 def test_untappd_check_in_and_hand_entered_beers_get_no_guess():
     untappd = "https://untappd.com/b/pilsner-urquell/1"
     st = state({"gargoyle": {"u:1": pair("untappd_menu", last_in_result=True, info={"name": "Pilsner Urquell", "url": untappd}),
