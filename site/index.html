@@ -64,15 +64,16 @@
   }
   .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
   h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0; font-weight: 800; }
-  .lang { display: inline-flex; }
+  .lang { display: inline-flex; flex: 0 0 auto; }
   .lang button {
-    font: inherit; font-size: .75rem; font-weight: 700; letter-spacing: .04em; cursor: pointer;
+    position: relative; font: inherit; font-size: .75rem; font-weight: 700; letter-spacing: .04em; cursor: pointer;
     padding: 4px 11px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
   }
+  .lang button::after { content: ""; position: absolute; inset: -9px -3px; }   /* the pill stays small, the finger gets a 44px area */
   .lang button:first-child { border-radius: 999px 0 0 999px; }
   .lang button:last-child { border-radius: 0 999px 999px 0; margin-left: -1px; }
   .lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-  .lang button[aria-pressed="true"], .lang button:focus-visible { position: relative; }
+  .lang button[aria-pressed="true"], .lang button:focus-visible { z-index: 1; }
   .sub { margin: 6px 0 20px; color: var(--muted); }
   .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
   .tab {
@@ -85,8 +86,8 @@
     .tabs { gap: 4px; }
     .tab { flex: 1 1 auto; min-width: 0; white-space: nowrap; font-size: .78rem; padding: 9px 4px; }
     .tab .ico { display: none; }   /* four tabs must fit 375px in both languages without scrolling */
-    .head { flex-direction: column-reverse; align-items: flex-end; }   /* the switch above the title, wherever the title breaks */
-    h1 { align-self: flex-start; }
+    .head { flex-wrap: nowrap; align-items: flex-start; }   /* the switch stays top right on the title's line, a long title wraps under itself */
+    h1 { min-width: 0; font-size: 1.5rem; }   /* the Russian title fits beside the switch at 375px */
   }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 16px; }
   #search, select {

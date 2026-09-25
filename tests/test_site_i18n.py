@@ -247,8 +247,14 @@ def test_english_tab_labels_are_no_wider_than_the_russian_ones():
     assert sum(len(dictionaries["en"][key]) for key in keys) <= sum(len(dictionaries["ru"][key]) for key in keys)
 
 
-def test_on_a_phone_the_switch_sits_above_the_title_whatever_language_the_title_is_in():
+def test_on_a_phone_the_switch_is_a_small_pill_at_the_top_right_of_the_title_line():
+    """No row of its own: the title takes what is left of the line and wraps under itself, whatever language it is in."""
     css = _css()
     phone = css[css.index("max-width: 560px"):]
-    assert re.search(r"\.head\s*\{[^}]*flex-direction:\s*column-reverse[^}]*align-items:\s*flex-end", phone)
-    assert re.search(r"h1\s*\{[^}]*align-self:\s*flex-start", phone)
+    head = re.search(r"\.head\s*\{([^}]*)\}", phone).group(1)
+    assert "flex-wrap: nowrap" in head and "align-items: flex-start" in head and "column-reverse" not in head
+    assert re.search(r"h1\s*\{[^}]*min-width:\s*0", phone)
+    assert re.search(r"\.lang\s*\{[^}]*flex:\s*0 0 auto", css)          # the switch is never squeezed or pushed down
+    # the pill stays small, the finger gets a 44px area around it
+    hit = re.search(r"\.lang button::after\s*\{([^}]*)\}", css).group(1)
+    assert "position: absolute" in hit and re.search(r"inset:\s*-\d+px -\d+px", hit)

@@ -413,6 +413,43 @@ def test_a_shared_language_link_follows_the_switch_and_a_plain_link_stays_plain(
     assert problems == []
 
 
+BOX_JS = "e => { const r = e.getBoundingClientRect(); return {top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height}; }"
+
+
+def box(page, selector):
+    return page.eval_on_selector(selector, BOX_JS)
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_on_a_phone_the_language_switch_shares_the_title_line_as_a_compact_pill(open_page, lang):
+    page, problems = open_page(width=375, query=f"?lang={lang}")
+    title, switch, head = box(page, "h1"), box(page, ".lang"), box(page, ".head")
+    assert title["right"] <= switch["left"] + 0.5                       # beside the title, not above or under it
+    assert abs(switch["top"] - title["top"]) <= 2                       # aligned to the top of the line
+    assert switch["bottom"] <= title["bottom"] + 1                      # no row of its own: the line is as tall as the title
+    assert 26 <= switch["height"] <= 32                                 # a small pill
+    assert abs(switch["right"] - head["right"]) <= 0.5                  # pinned to the right edge
+    for selector in (".lang [data-lang=ru]", ".lang [data-lang=en]"):   # the finger still gets 44px
+        area = page.eval_on_selector(selector, "e => { const s = getComputedStyle(e, '::after'); "
+                                               "return [parseFloat(s.width), parseFloat(s.height)]; }")
+        assert min(area) >= 44, (selector, area)
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_a_long_title_wraps_under_itself_and_leaves_the_switch_where_it_is(open_page, lang):
+    page, problems = open_page(width=375, query=f"?lang={lang}")
+    before = box(page, ".lang")
+    page.evaluate("document.querySelector('h1 [data-i18n=title]').textContent += ' Yerevan on Tap Yerevan on Tap'")
+    after, title = box(page, ".lang"), box(page, "h1")
+    assert title["height"] > 1.5 * before["height"]                     # it did wrap
+    assert (after["top"], after["right"], after["height"]) == (before["top"], before["right"], before["height"])
+    assert title["right"] <= after["left"] + 0.5
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
 @pytest.mark.parametrize("lang", ["ru", "en"])
 def test_a_phone_needs_no_sideways_scrolling_in_either_language(open_page, lang):
     page, problems = open_page(width=375, query=f"?lang={lang}")
