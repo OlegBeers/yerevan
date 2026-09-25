@@ -151,3 +151,16 @@ def test_each_card_has_right_and_wrong_marks_that_exclude_each_other_and_a_bulk_
     assert soup.find(id="confirm-visible").name == "button"
     assert "confirm(" in js                                  # asks before confirming everything shown
     assert "Осталось проверить" in js
+
+
+def test_marks_can_be_moved_to_another_device_through_a_link():
+    soup = _soup()
+    assert soup.find(id="transfer").name == "button"
+    assert "другое устройство" in soup.find(id="transfer").get_text()
+    js = _js(soup)
+    assert re.search(r"function transferLink\(\)", js) and "#marks=" in js and "btoa" in js
+    import_fn = re.search(r"function importFromHash\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "location.hash" in import_fn and "fromB64(" in import_fn and "try {" in import_fn   # a broken link must not break the page
+    assert "atob(" in js
+    assert "history.replaceState" in js                       # the marks leave the address bar after loading
+    assert "importFromHash();" in js.split("async function load()")[1]
