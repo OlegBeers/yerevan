@@ -696,6 +696,21 @@ def test_fetch_beer_ratings_dumps_debug_html_on_a_page_that_does_not_parse(monke
     assert beer.rating is None and beer.rating_at == iso(NOW)   # stamped, so it isn't retried every run
 
 
+def test_fetch_beer_ratings_dumps_one_parsed_page_as_a_sample(monkeypatch, tmp_path):
+    """One real beer page per run reaches the debug artifact even when it parses, so a parser (e.g. the
+    label image) can be verified against production markup without spending extra pages."""
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
+    client = _untappd_client({BEER_URL: BEER_PAGE_HTML})
+
+    run_mod.fetch_beer_ratings(state, client, NOW)
+
+    assert (debug_dir / "untappd_beer_sample_1559917.html").exists()
+    assert not (debug_dir / "untappd_beer_1559917.html").exists()   # that name is for pages that failed
+
+
 def test_fetch_beer_ratings_survives_a_parse_crash_and_continues(monkeypatch):
     """I-1, unit-level: a parse error must fail only that beer -- it is stamped checked, and the loop
     continues to the next candidate instead of crashing the run."""
