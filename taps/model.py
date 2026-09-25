@@ -140,6 +140,13 @@ _STOP_TOKENS = frozenset(
 )
 
 
+_CYRILLIC_RE = re.compile("[а-яё]", re.IGNORECASE)
+
+
+def has_cyrillic(text: str) -> bool:
+    return bool(_CYRILLIC_RE.search(text))
+
+
 def normalize_base(text: str) -> str:
     """Steps 1-3 of normalize_title, spaces collapsed."""
     text = unicodedata.normalize("NFKD", text.lower())

@@ -87,3 +87,17 @@ def matches(shop_brand: str, shop_name: str, result: SearchResult) -> bool:
     if not name_tokens:
         return True
     return len(name_tokens & _tokens(result.name)) / len(name_tokens) >= MIN_NAME_OVERLAP
+
+
+_RU_COLOURS = {"светлое", "светлый", "темное", "темный"}   # the shop's colour suffix; Untappd names rarely carry it
+
+
+def matches_russian_name(shop_name: str, result: SearchResult) -> bool:
+    """For a Russian shop name whose Latin brewery is only a transliteration: its first word (the brand)
+    must be in the result's brewery or name, and at least half of the remaining words (colour suffix aside) in the result's name."""
+    words = normalize_base(shop_name).split()
+    own = _tokens(result.brewery) | _tokens(result.name)
+    if not words or words[0] not in own:
+        return False
+    rest = set(words[1:]) - _RU_COLOURS
+    return not rest or len(rest & _tokens(result.name)) / len(rest) >= MIN_NAME_OVERLAP

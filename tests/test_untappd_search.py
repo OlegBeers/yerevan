@@ -1,4 +1,4 @@
-from taps.sources.untappd_search import SearchResult, matches, parse_search_results, search_url
+from taps.sources.untappd_search import SearchResult, matches, matches_russian_name, parse_search_results, search_url
 
 # No capture of the real search results page exists yet (https://untappd.com/search?q=...&type=beer).
 # The row below is a SYNTHETIC page modeled on Untappd's div.beer-item markup (same shape as the
@@ -113,3 +113,16 @@ def test_matches_empty_brand_never_matches():
     result = SearchResult(beer_id=1, slug="s", name="Hell", brewery="Dahook", style=None, abv=None,
                           rating=None, logo=None)
     assert not matches("", "Hell", result)
+
+
+def test_matches_russian_name_by_first_word_and_name_overlap():
+    result = SearchResult(beer_id=1, slug="s", name="Жигулёвское", brewery="Очаково", style=None, abv=None,
+                          rating=None, logo=None)
+    assert matches_russian_name("Жигулевское светлое", result)   # ё equals е, the colour suffix is ignored
+
+
+def test_matches_russian_name_rejects_another_beer():
+    result = SearchResult(beer_id=1, slug="s", name="Баррель", brewery="Афанасий", style=None, abv=None,
+                          rating=None, logo=None)
+    assert not matches_russian_name("Жигулевское светлое", result)
+    assert not matches_russian_name("Афанасий Тверское светлое", result)   # brand only, name tokens all differ

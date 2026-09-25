@@ -1066,6 +1066,19 @@ def test_match_shop_beers_cleans_noise_from_the_query():
     assert state.shop_matches["n:379 dunkel dark"].matched_at == iso(NOW)   # the cleaned URL was fetched
 
 
+def test_match_shop_beers_searches_a_russian_name_without_the_latin_brewery():
+    """Yerevan City shows "Жигулевское светлое" under the brewery "Jigulyovskoye": the search query is the
+    Russian name alone and a Cyrillic Untappd result is accepted by name, not by brewery."""
+    html = KILIKIA_RESULT_HTML.replace("Kilikia Brewery", "Очаково").replace(">Kilikia</a>", ">Жигулёвское</a>")
+    state = empty_state(NOW)
+    state.pairs = {"yerevan-city": {"n:jigulyovskoye light": _shop_pair("Jigulyovskoye", "Жигулевское светлое")}}
+    client = _untappd_client({"https://untappd.com/search?q=%D0%96%D0%B8%D0%B3%D1%83%D0%BB%D0%B5%D0%B2%D1%81"
+                              "%D0%BA%D0%BE%D0%B5%20%D1%81%D0%B2%D0%B5%D1%82%D0%BB%D0%BE%D0%B5&type=beer": html})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:jigulyovskoye light"]
+    assert (match.untappd_beer_id, match.name, match.brewery) == (1547626, "Жигулёвское", "Очаково")
+
+
 def test_match_shop_beers_records_no_match_when_nothing_scores():
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Item")}}

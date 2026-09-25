@@ -8,7 +8,7 @@ import unicodedata
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from taps.model import normalize_base
+from taps.model import has_cyrillic, normalize_base
 
 # Noise dropped only for fuzzy matching -- deliberately NOT the same as taps.model's own
 # normalize_title/_STOP_TOKENS, which feed beer_key/n_key identity (must not change) and drop
@@ -44,9 +44,16 @@ def clean_text(text: str) -> str:
     return " ".join(text.split())
 
 
+def has_russian_name(brewery: str | None, name: str) -> bool:
+    """A Russian shop name under a Latin-only brewery (Yerevan City: "Jigulyovskoye" / "Жигулевское
+    светлое"): the Latin brewery is a transliteration, so Untappd's own Cyrillic spelling ignores it."""
+    return has_cyrillic(name) and bool(brewery) and not has_cyrillic(brewery)
+
+
 def clean_query(brewery: str | None, name: str) -> str:
-    """The same noise-cleaning applied to an Untappd search query string (v1.1 §3 match_shop_beers)."""
-    return clean_text(f"{brewery} {name}" if brewery else name)
+    """The same noise-cleaning applied to an Untappd search query string (v1.1 §3 match_shop_beers);
+    a Russian name is searched alone."""
+    return clean_text(f"{brewery} {name}" if brewery and not has_russian_name(brewery, name) else name)
 
 
 @dataclass(frozen=True)
@@ -175,6 +182,8 @@ def local_match_with_confidence(shop_brewery: str | None, shop_name: str, candid
     against papering over a real difference in strength (code review round 2, finding C); when such
     a match has no ABV on either side to corroborate it, it is still returned but weak is True (code
     review round 3, finding C2 -- flag it for review rather than reject a possibly-correct match)."""
+    if has_russian_name(shop_brewery, shop_name):
+        shop_brewery = None   # the name's first word stands in for the brewery, as for a non-Latin one
     shop_name_tokens = _shop_tokens(shop_name)
     passing = [(c, r) for c in candidates if (r := _evaluate(shop_brewery, shop_name_tokens, c, shop_abv))]
     if len(passing) == 1:
