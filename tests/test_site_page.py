@@ -7,7 +7,7 @@ PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
-              "beer_logo", "shop_url", "beer_key", "shop_name")
+              "beer_logo", "shop_url", "beer_key", "shop_name", "servings")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url", "addresses")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
@@ -317,3 +317,27 @@ def test_footer_links_to_the_match_review_page():
     footer = _soup().find("footer")
     link = footer.find("a", string="Проверка склеек")
     assert link["href"] == "matches.html"
+
+
+def test_several_servings_read_as_container_price_and_volume_joined_by_dots():
+    """v1.3: «розлив 2800 ֏ · бутылка 1500 ֏ 330 мл» -- container, price, then volume; dots between servings."""
+    js = _js(_soup())
+    serving_fn = re.search(r"const servingText = .*", js).group(0)
+    assert "CONTAINER_RU[s.container]" in serving_fn and "priceText(s)" in serving_fn
+    assert "s.volume_ml" in serving_fn and "мл" in serving_fn
+    assert re.search(r'const servingsText = \(r\) => .*\.map\(servingText\)\.join\(" · "\)', js)
+
+
+def test_servings_go_in_the_place_line_of_every_layout():
+    js = _js(_soup())
+    for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)"):
+        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
+        assert "servingsText(r)" in body, fn
+
+
+def test_a_beer_with_servings_does_not_repeat_its_first_one_next_to_the_name():
+    js = _js(_soup())
+    assert re.search(r"const singleServing = \(g\) => g\.rows\.length === 1 && !g\.rows\[0\]\.servings", js)
+    for fn in ("table(groups)", "cards(groups)"):
+        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
+        assert "singleServing(g)" in body, fn

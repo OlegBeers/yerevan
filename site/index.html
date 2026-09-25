@@ -305,6 +305,10 @@ const abvText = (r) => (r.abv != null ? `${r.abv}%` : "");
 const ibuText = (r) => (r.ibu != null ? `IBU ${r.ibu}` : "");
 const priceText = (r) => (r.price_amd != null ? `${r.price_amd} ֏` : "");
 const volumeText = (r) => [r.volume_ml != null ? `${r.volume_ml} мл` : "", CONTAINER_RU[r.container] || ""].filter(Boolean).join(" ");
+// several servings of one beer at one place, compactly: "розлив 2800 ֏ · бутылка 1500 ֏ 330 мл"
+const servingText = (s) => [CONTAINER_RU[s.container] || "", priceText(s), s.volume_ml != null ? `${s.volume_ml} мл` : ""].filter(Boolean).join(" ");
+const servingsText = (r) => (r.servings || []).map(servingText).join(" · ");
+const singleServing = (g) => g.rows.length === 1 && !g.rows[0].servings;   // only then price and size go next to the name
 function sinceText(s) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
   return m ? `${m[3]}.${m[2]}` : "";
@@ -405,13 +409,14 @@ function placeCell(r, name) {
   return [
     el("span", { class: "where-head" }, logoNode(place.name, place.logo, 22), placeNameNode(place)),
     el("span", { class: "small" }, ...badgeNodes(r)),
+    r.servings ? el("span", { class: "small" }, servingsText(r)) : null,
     shopNameLine(r, name),
   ];
 }
 function placeLines(rows, name) {   // one line per place a grouped beer is available at
   return rows.map((r) => {
     const place = placeObj(r.place_id);
-    const extra = dot([priceText(r), volumeText(r)]);
+    const extra = r.servings ? servingsText(r) : dot([priceText(r), volumeText(r)]);
     // the plain "on the menu" status is the common case: a tooltip icon saves a line, other statuses keep their text
     const status = r.badge === "menu"
       ? el("span", { class: "flag", role: "img", "aria-label": "есть в меню", title: "есть в меню" }, "✅")
@@ -438,7 +443,7 @@ function table(groups) {
     el("td", { class: "num" }, abvText(g)),
     el("td", { class: "num" }, g.ibu ?? ""),
     el("td", { class: "num" }, ratingNode(g)),
-    el("td", { class: "num" }, ...(g.rows.length === 1 ? [priceText(g.rows[0]),
+    el("td", { class: "num" }, ...(singleServing(g) ? [priceText(g.rows[0]),
       volumeText(g.rows[0]) ? el("span", { class: "small" }, volumeText(g.rows[0])) : null] : [])),
     el("td", null, ...(g.rows.length === 1 ? placeCell(g.rows[0], g.name) : [el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name))])),
     el("td", { class: "nowrap" }, sinceText(g.since))));
@@ -450,6 +455,7 @@ function cardWhere(r, name) {
     logoNode(place.name, place.logo, 20),
     placeNameNode(place),
     el("span", { class: "meta-inline" }, ...badgeNodes(r)),
+    r.servings ? el("span", { class: "meta-inline" }, servingsText(r)) : null,
     shopNameLine(r, name));
 }
 function cards(groups) {
@@ -458,7 +464,7 @@ function cards(groups) {
     el("div", { class: "top" },
       el("span", { class: "beer-head" }, ...flagNodes(g), beerLogoNode(g.beer_logo), nameNode(g)), ratingNode(g)),
     line("meta", dot([g.brewery, g.style, abvText(g), ibuText(g)])),
-    g.rows.length === 1 ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
+    singleServing(g) ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
     g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
     g.rows.length === 1 ? cardWhere(g.rows[0], g.name) : el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name)),
     sinceText(g.since) ? el("div", { class: "meta" }, `Появилось ${sinceText(g.since)}`) : null)));
