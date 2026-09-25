@@ -85,6 +85,8 @@
     .tabs { overflow-x: auto; gap: 6px; }
     .tab { white-space: nowrap; font-size: .8rem; padding: 9px 8px; }
     .tab .ico { margin-right: .25em; }
+    .head { flex-direction: column-reverse; align-items: flex-end; }   /* the switch above the title, wherever the title breaks */
+    h1 { align-self: flex-start; }
   }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 16px; }
   #search, select {
@@ -364,7 +366,7 @@ const I18N = {
     "tab.all": "All beer",
     "tab.bars": "Bars",
     "tab.shops": "Shops",
-    "tab.venues": "Where to drink",
+    "tab.venues": "Venues",
     "search.label": "Search by name, style or brewery",
     "search.placeholder": "Name, style or brewery",
     "sort.label": "Sort by",

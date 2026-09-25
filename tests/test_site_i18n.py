@@ -234,3 +234,17 @@ def test_counted_words_take_their_form_from_the_languages_plural_rules():
     assert re.search(r"const plural = \(n, key\) => t\(key\)\[new Intl\.PluralRules\(ui\.lang\)\.select\(n\)\];", js)
     assert 'const days = (n) => `${n} ${plural(n, "unit.day")}`;' in js
     assert not re.search(r"plural\([^)]*[Ѐ-ӿ]", js)                    # no Russian forms passed in by hand
+
+
+def test_english_tab_labels_are_no_wider_than_the_russian_ones():
+    """The four tabs already fill a 375px phone in Russian (the row scrolls sideways there), so English may not need more."""
+    dictionaries = _dictionaries()
+    keys = [f"tab.{name}" for name in ("all", "bars", "shops", "venues")]
+    assert sum(len(dictionaries["en"][key]) for key in keys) <= sum(len(dictionaries["ru"][key]) for key in keys)
+
+
+def test_on_a_phone_the_switch_sits_above_the_title_whatever_language_the_title_is_in():
+    css = "\n".join(s.get_text() for s in _soup().find_all("style"))
+    phone = css[css.index("max-width: 560px"):]
+    assert re.search(r"\.head\s*\{[^}]*flex-direction:\s*column-reverse[^}]*align-items:\s*flex-end", phone)
+    assert re.search(r"h1\s*\{[^}]*align-self:\s*flex-start", phone)
