@@ -202,3 +202,17 @@ def test_merge_panel_searches_shop_items_and_keeps_the_chosen_ones_in_a_sticky_s
     css = _css(soup)
     assert re.search(r"#bar\s*\{[^}]*position:\s*sticky[^}]*bottom:\s*0", css, re.S)
     assert re.search(r"#sheet[^{]*\{[^}]*position:\s*sticky[^}]*bottom:\s*0", css, re.S)
+
+
+def test_the_untappd_link_field_is_a_big_url_field_and_the_number_is_read_with_a_strict_pattern():
+    soup = _soup()
+    field = soup.find(id="untappd-link")
+    assert field.name == "input" and field["type"] == "url" and field["inputmode"] == "url" and field["autocomplete"] == "off"
+    label = soup.find("label", attrs={"for": "untappd-link"})
+    assert label is not None and label.get_text(strip=True) == "Ссылка на пиво в Untappd"
+    assert soup.find(id="link-status")["role"] == "status"
+    js = _js(soup)
+    assert r"/untappd\.com\/(?:b\/[^\/\s]+\/|beer\/)(\d+)/" in js
+    fn = re.search(r"function renderLink\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "safeUrl(" in fn and "noopener" in fn and "noreferrer" in fn      # the link to the beer goes through the same checks
+    assert soup.find(id="to-link").name == "button" and "Дальше" in soup.find(id="to-link").get_text()

@@ -137,6 +137,17 @@
   .pick.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
   .pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pick input { width: 26px; height: 26px; margin: 0; flex-shrink: 0; accent-color: var(--accent); }
+  .act {
+    font: inherit; font-weight: 700; min-height: 44px; padding: 9px 16px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text);
+  }
+  .act.main { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+  .field-label { display: block; font-weight: 600; margin: 0 0 6px; }
+  .field[aria-invalid="true"] { border-color: var(--danger); }
+  .link-status { min-height: 1.55em; margin: 6px 0 0; color: var(--muted); }
+  .link-status.bad { color: var(--danger); }
+  .sheet-head { display: flex; align-items: center; gap: 8px 12px; }
+  .sheet-head > span { flex: 1 1 auto; }
   .chips { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto; }
   .chips:empty { display: none; }
   .chip {
@@ -183,8 +194,15 @@
       <input type="search" id="pick-search" class="field" placeholder="Название, пивоварня или магазин" autocomplete="off">
       <p id="pick-count" class="count" aria-live="polite"></p>
       <div id="pick-list"></div>
+      <h2 class="step" id="step-link"><span class="num" aria-hidden="true">2</span>Пиво на Untappd</h2>
+      <label for="untappd-link" class="field-label">Ссылка на пиво в Untappd</label>
+      <input type="url" id="untappd-link" class="field" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://untappd.com/b/название/1941326" aria-describedby="link-status">
+      <p id="link-status" class="link-status" role="status"></p>
       <div id="sheet" tabindex="-1">
-        <span>Выбрано: <b id="picked-count">0</b></span>
+        <div class="sheet-head">
+          <span>Выбрано: <b id="picked-count">0</b></span>
+          <button type="button" id="to-link" class="act main">Дальше ↓</button>
+        </div>
         <ul id="picked-list" class="chips"></ul>
       </div>
     </section>
@@ -482,9 +500,32 @@ function renderPicked() {
   $("picked-count").textContent = String(items.length);
   $("picked-list").replaceChildren(...items.map(chipNode));
 }
+// the number of the beer: from its Untappd address (a beer's page is /b/<name>/<number> or /beer/<number>) or a bare number
+const BEER_URL_RE = /untappd\.com\/(?:b\/[^\/\s]+\/|beer\/)(\d+)/gi;
+const beerUrl = (id) => `https://untappd.com/beer/${id}`;
+function parseBeerLink(text) {   // -> null (nothing typed) | { id } | { error }
+  const t = text.trim();
+  if (!t) return null;
+  const ids = /^\d+$/.test(t) ? [t] : [...new Set([...t.matchAll(BEER_URL_RE)].map((m) => m[1]))];
+  if (ids.length > 1) return { error: "В поле несколько разных ссылок — оставьте одну." };
+  if (!ids.length || !/^[1-9]\d{0,8}$/.test(ids[0])) {
+    return { error: "Не нашёл номер пива. Нужна ссылка вида untappd.com/b/название/1941326 или просто номер; короткие ссылки untp.beer не подходят." };
+  }
+  return { id: ids[0] };
+}
+function renderLink() {
+  const link = parseBeerLink($("untappd-link").value);
+  const bad = Boolean(link && link.error);
+  $("untappd-link").setAttribute("aria-invalid", String(bad));
+  $("link-status").classList.toggle("bad", bad);
+  $("link-status").replaceChildren(...(!link ? [] : bad ? [link.error] : [`Пиво № ${link.id} · `,
+    el("a", { href: safeUrl(beerUrl(link.id)), target: "_blank", rel: "noopener noreferrer" }, "открыть на Untappd")]));
+  return link;
+}
 function renderMerge() {
   renderResults();
   renderPicked();
+  renderLink();
 }
 
 const LOAD_FAILED = "Не удалось загрузить данные. Обновите страницу через минуту.";
@@ -522,6 +563,11 @@ function setMode(mode) {
 $("mode-review").addEventListener("click", () => setMode("review"));
 $("mode-merge").addEventListener("click", () => setMode("merge"));
 $("pick-search").addEventListener("input", renderResults);
+$("untappd-link").addEventListener("input", renderLink);
+$("to-link").addEventListener("click", () => {
+  $("step-link").scrollIntoView({ block: "start" });
+  $("untappd-link").focus({ preventScroll: true });
+});
 $("search").addEventListener("input", render);
 $("only-weak").addEventListener("change", render);
 $("show-ok").addEventListener("change", render);

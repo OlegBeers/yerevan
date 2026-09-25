@@ -146,7 +146,7 @@ def test_a_card_shows_the_photo_name_brewery_place_abv_price_and_whether_it_is_a
 
 def test_tapping_cards_collects_them_in_the_sheet_which_can_take_them_back(open_page):
     page, problems = open_page(mode="merge")
-    assert text(page, "#sheet") == "Выбрано: 0"
+    assert text(page, "#sheet") == "Выбрано: 0 Дальше ↓"
     page.fill("#pick-search", "wolf")
     page.click("#pick-list li:nth-child(1) .pick")
     page.click("#pick-list li:nth-child(2) .pick")
@@ -185,7 +185,7 @@ def test_everything_to_tap_is_at_least_44px_high_on_a_phone(open_page):
     page, problems = open_page(mode="merge")
     page.fill("#pick-search", "wolf")
     page.click("#pick-list .pick")
-    for selector in ("#mode-review", "#mode-merge", "#pick-search", "#pick-list .pick"):
+    for selector in ("#mode-review", "#mode-merge", "#pick-search", "#pick-list .pick", "#untappd-link", "#to-link"):
         assert size(page, selector)[1] >= 44, selector
     assert min(size(page, "#picked-list .chip button")) >= 44
     assert problems == []
@@ -197,6 +197,78 @@ def test_a_phone_needs_no_sideways_scrolling_even_with_names_that_never_break(op
     page.fill("#pick-search", "оченьдлинное")
     page.click("#pick-list .pick")
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
+BEER_LINKS = [   # what Oleg may paste -> the number of the beer
+    ("https://untappd.com/b/wolf-s-brewery-volkovskaya-pivovarnya-indian-pale-ale-ipa/1941326", "1941326"),
+    ("untappd.com/beer/1941326", "1941326"),
+    ("https://untappd.com/beer/1941326?ref=share#reviews", "1941326"),
+    ("https://untappd.com/b/slug/1941326/", "1941326"),
+    ("https://m.untappd.com/b/slug/1941326", "1941326"),
+    ("Https://Untappd.com/B/Slug/1941326", "1941326"),                    # a phone's keyboard may capitalise
+    ("1941326", "1941326"),
+    ("  1941326 \n", "1941326"),
+    ("Смотри: https://untappd.com/b/x/123 — это оно", "123"),             # a link inside a message
+    ("https://untappd.com/b/x/123 https://untappd.com/beer/123", "123"),   # the same beer twice is one beer
+    ("999999999", "999999999"),
+]
+NOT_BEER_LINKS = [
+    "https://untappd.com/brewery/1234", "https://untappd.com/user/oleg/checkin/1234", "https://untappd.com/b/slug",
+    "https://untappd.com/b/slug/abc", "https://untappd.com/beer/", "https://untp.beer/abc", "https://example.com/b/slug/1941326",
+    "0", "007", "12.5", "-5", "1941326abc", "https://untappd.com/beer/0123", "1234567890", "untappd", "https://untappd.com/b/x/",
+]
+
+
+@pytest.mark.parametrize("pasted, number", BEER_LINKS)
+def test_the_number_of_the_beer_is_read_from_its_untappd_link_or_from_the_bare_number(open_page, pasted, number):
+    page, problems = open_page(mode="merge")
+    assert page.evaluate("(t) => parseBeerLink(t)", pasted) == {"id": number}
+    assert problems == []
+
+
+@pytest.mark.parametrize("pasted", NOT_BEER_LINKS)
+def test_anything_else_is_refused_not_guessed_at(open_page, pasted):
+    page, problems = open_page(mode="merge")
+    error = page.evaluate("(t) => parseBeerLink(t)", pasted)
+    assert list(error) == ["error"] and error["error"].startswith("Не нашёл номер пива."), pasted
+    assert problems == []
+
+
+def test_two_different_beers_in_the_field_are_refused_rather_than_the_first_taken(open_page):
+    page, _ = open_page(mode="merge")
+    assert page.evaluate("(t) => parseBeerLink(t)", "https://untappd.com/b/a/111 https://untappd.com/b/b/222") == {
+        "error": "В поле несколько разных ссылок — оставьте одну."}
+    assert page.evaluate("parseBeerLink('')") is None and page.evaluate("parseBeerLink('  ')") is None
+
+
+def test_the_field_says_what_it_understood_and_links_to_the_beer(open_page):
+    page, problems = open_page(mode="merge")
+    field = page.locator("#untappd-link")
+    assert [field.get_attribute(a) for a in ("type", "inputmode", "autocomplete")] == ["url", "url", "off"]
+    assert text(page, "label[for=untappd-link]") == "Ссылка на пиво в Untappd" and text(page, "#link-status") == ""
+    field.fill("https://untappd.com/brewery/1234")
+    assert text(page, "#link-status").startswith("Не нашёл номер пива.")
+    assert field.get_attribute("aria-invalid") == "true" and page.locator("#link-status.bad").count() == 1
+    field.fill("https://untappd.com/b/wolf-ipa/1941326?ref=x")
+    assert text(page, "#link-status") == "Пиво № 1941326 · открыть на Untappd"
+    link = page.locator("#link-status a")
+    assert link.get_attribute("href") == "https://untappd.com/beer/1941326"
+    assert link.get_attribute("target") == "_blank" and link.get_attribute("rel") == "noopener noreferrer"
+    assert field.get_attribute("aria-invalid") == "false" and page.locator("#link-status.bad").count() == 0
+    field.fill("")
+    assert text(page, "#link-status") == "" and field.get_attribute("aria-invalid") == "false"
+    assert problems == []
+
+
+def test_the_button_of_the_sheet_takes_you_from_the_cards_to_the_link_field(open_page):
+    page, problems = open_page(make_data(*[row("parma", f"n:bulk lager {n}", f"Bulk Lager {n}") for n in range(40)]), mode="merge")
+    page.click("#pick-list li:nth-child(1) .pick")
+    assert page.evaluate("document.activeElement.id") != "untappd-link"
+    page.click("#to-link")
+    assert page.evaluate("document.activeElement.id") == "untappd-link"
+    assert page.eval_on_selector("#untappd-link", "(e) => e.getBoundingClientRect().top >= 0 && "
+                                                  "e.getBoundingClientRect().bottom <= window.innerHeight")
     assert problems == []
 
 
