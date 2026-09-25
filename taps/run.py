@@ -22,7 +22,7 @@ from taps.fetch import (
 from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
-from taps.site_data import build_site_data, write_site_data
+from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
 from taps.sources.local_match import KnownBeer, clean_query, local_match
@@ -437,6 +437,24 @@ def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> 
         match.checked_at = iso(now)
 
 
+def _clear_shop_match(info: dict) -> None:
+    """Drop a shop/menu/manual n: pair's stale identity overlay once its match is gone (code review
+    round 2, finding B) -- a removed corrections.yaml same_as entry, or an untappd_id: null block,
+    must not leave the previous run's canonical name/brewery, or its Untappd url/rating/logo,
+    showing the wrong beer forever. style/abv are left alone even then: unlike rating/logo (only
+    ever set here, from a match), a shop can genuinely scrape its own style/abv, so there is no
+    cheap way to tell whether they came from a match -- clearing them risks losing real shop data."""
+    info.pop("u_name", None)
+    info.pop("u_brewery", None)
+    if UNTAPPD_BEER_RE.search(info.get("url") or ""):
+        if info.get("shop_url"):
+            info["url"] = info["shop_url"]
+        else:
+            info.pop("url", None)
+        info.pop("rating", None)
+        info.pop("logo", None)
+
+
 def apply_shop_matches(state: State) -> None:
     """Overlay a matched Untappd beer's rating/style/abv/logo/url onto every shop/menu/manual pair
     that shares its key (v1.1 §3, v1.2 beer identity), after this run's merge. The shop's own
@@ -444,13 +462,17 @@ def apply_shop_matches(state: State) -> None:
     data needs to move in here. The Untappd beer's own canonical name/brewery go into separate
     info["u_name"]/["u_brewery"] fields instead of overwriting info["name"]/["brewery"] (code
     review): the digest and rules.py's brand classification must keep using the shop's own,
-    familiar text -- only site_data.py prefers the canonical identity for display."""
+    familiar text -- only site_data.py prefers the canonical identity for display. A shop/menu/
+    manual "n:" pair with no active match has any previous match's identity cleared (_clear_shop_
+    match) -- a bar's own "u:"-keyed pair never goes through shop_matches at all, so it is untouched."""
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if rec.info.get("kind") not in ("shop", "menu", "manual"):
                 continue
             match = state.shop_matches.get(key)
             if match is None or match.untappd_beer_id is None:
+                if key.startswith("n:"):
+                    _clear_shop_match(rec.info)
                 continue
             rec.info["url"] = match.url
             for field in ("logo", "rating", "style", "abv"):

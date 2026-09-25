@@ -1184,6 +1184,57 @@ def test_apply_shop_matches_leaves_unmatched_and_non_shop_pairs_alone():
     assert state.pairs["gargoyle"]["u:1"].info == {"kind": "menu"}
 
 
+# --- apply_shop_matches: clears a stale identity once the match is gone (2nd review round) ----
+
+def test_apply_shop_matches_clears_stale_identity_when_the_match_is_removed():
+    """Code review round 2, finding B: a same_as untappd_id: null block or a corrections.yaml entry
+    removed since the last run leaves no active shop_matches entry -- the previous run's
+    u_name/u_brewery and Untappd url/rating/logo must not linger and show the wrong identity."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "X", "brewery": "Y", "shop_url": "https://beer-city.am/p/1",
+              "url": "https://untappd.com/beer/999", "rating": 4.1, "logo": "https://x/logo.jpg",
+              "u_name": "Stale Name", "u_brewery": "Stale Brewery"})}}
+    run_mod.apply_shop_matches(state)   # no shop_matches entry for "n:x" at all
+    info = state.pairs["beer-city"]["n:x"].info
+    assert "u_name" not in info and "u_brewery" not in info
+    assert info["url"] == "https://beer-city.am/p/1"   # falls back to the shop's own product page
+    assert "rating" not in info and "logo" not in info
+
+
+def test_apply_shop_matches_clears_untappd_url_entirely_when_no_shop_url_is_on_file():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "X", "url": "https://untappd.com/beer/999"})}}
+    run_mod.apply_shop_matches(state)
+    assert "url" not in state.pairs["beer-city"]["n:x"].info
+
+
+def test_apply_shop_matches_leaves_style_abv_and_a_non_untappd_url_alone_when_unmatched():
+    """style/abv can be genuinely scraped by the shop itself (unlike rating/logo, always
+    Untappd's), so they are not cleared just because there is no active match."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "name": "X", "url": "https://beer-city.am/p/1", "style": "IPA", "abv": 5.5})}}
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:x"].info
+    assert info["url"] == "https://beer-city.am/p/1" and (info["style"], info["abv"]) == ("IPA", 5.5)
+
+
+def test_apply_shop_matches_never_touches_a_native_untappd_keyed_pairs_own_url():
+    """A bar's own "u:"-keyed menu pair never goes through shop_matches at all (only "n:" shop/menu/
+    manual pairs do) -- its own, genuine Untappd url must survive the cleanup above untouched."""
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {"u:1": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "menu", "name": "Celebrator", "url": "https://untappd.com/b/ayinger-celebrator/1"})}}
+    run_mod.apply_shop_matches(state)
+    assert state.pairs["gargoyle"]["u:1"].info["url"] == "https://untappd.com/b/ayinger-celebrator/1"
+
+
 def test_apply_shop_matches_overlays_canonical_name_and_brewery_separately():
     """v1.2 beer identity: a matched shop row carries the Untappd beer's own name/brewery in
     separate u_name/u_brewery fields (e.g. so the site can group/display it correctly) -- the
@@ -1220,6 +1271,30 @@ def test_apply_shop_matches_also_overlays_menu_and_manual_kind_pairs():
     run_mod.apply_shop_matches(state)
     assert state.pairs["dargett-brewpub"]["n:apricot ale"].info["url"] == "https://untappd.com/beer/1"
     assert state.pairs["tap-station"]["n:hazy pale"].info["url"] == "https://untappd.com/beer/2"
+
+
+def test_site_row_falls_back_to_shops_own_identity_after_a_null_block():
+    """Code review round 2, finding B, the reviewer's exact scenario: corrections.yaml same_as
+    untappd_id: null must not leave the site showing the previous run's stale canonical name/
+    brewery/group_key -- it must fall back to the shop's own, exactly like an unmatched item."""
+    from taps.site_data import build_site_data
+
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:chimay peres trappistes blue": PairRec(
+        first_seen=iso(NOW), last_seen=iso(NOW),
+        info={"kind": "shop", "source": "beercity", "name": "Chimay peres trappistes blue", "brewery": "Chimay",
+              "u_name": "Chimay Grande Réserve (Blue)", "u_brewery": "Bières de Chimay",
+              "url": "https://untappd.com/beer/34039"})}}
+    corrections = run_mod.Corrections(same_as={("beer-city", "n:chimay peres trappistes blue"): None})
+    run_mod.apply_same_as(state, corrections, NOW)
+    run_mod.apply_shop_matches(state)
+    config = Config(places={"beer-city": Place(id="beer-city", name="Beer City", kind="shop",
+                                               sources={"beercity": {}})},
+                    breweries=(), settings=Settings())
+    rows = build_site_data(state, config, NOW)["rows"]
+    assert len(rows) == 1
+    assert (rows[0]["name"], rows[0]["brewery"], rows[0]["group_key"]) == (
+        "Chimay peres trappistes blue", "Chimay", "n:chimay peres trappistes blue")
 
 
 def test_digest_line_for_a_matched_shop_pair_uses_the_shops_own_name_and_brewery():
