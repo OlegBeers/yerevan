@@ -14,7 +14,7 @@ from taps.timeutil import age_days, iso, parse_iso, to_yerevan, yerevan_date
 CHECKIN_KEEP_DAYS = 21   # same window as rules.CHECKIN_KEEP_DAYS
 NEW_DAYS = 7             # 🆕/⭐ badges live this long after the event was sent
 INFO_FIELDS = ("brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container", "url", "serving",
-               "shop_url")
+               "shop_url", "country")
 
 
 MATCH_VIA_ORDER = {"search": 0, "local": 1, "manual": 2}   # review page: least trustworthy first

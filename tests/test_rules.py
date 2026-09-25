@@ -253,6 +253,18 @@ def test_matched_shop_item_stays_visible_after_partial_refresh_even_with_a_not_c
 
 # --- shops: stock, item keys, aliases, Parma colours -------------------------
 
+def test_shop_country_and_photo_reach_the_pair_and_country_outlives_a_sighting_without_it():
+    """The product page (country) is read once, for a new item; the listing photo comes with every sighting."""
+    state = ready("beercity:beer-city")
+    key = "n:hard root ipa"
+    first, later = "https://www.beer-city.am/media/product-img/small_1.jpg", "https://www.beer-city.am/media/product-img/small_2.jpg"
+    merge(state, shop(item(1, key, country="Russia", logo=first)))
+    info = state.pairs["beer-city"][key].info
+    assert (info["country"], info["logo"]) == ("Russia", first)
+    merge(state, shop(item(1, key, logo=later)), now=NOW + 12 * H)
+    assert (info["country"], info["logo"]) == ("Russia", later)
+
+
 def test_out_of_stock_new_item_becomes_an_event_only_when_in_stock():
     state = ready("beercity:beer-city")
     key = "n:hard root ipa"

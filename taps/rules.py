@@ -16,7 +16,8 @@ CHECKIN_KEEP_DAYS = 21     # older check-ins are ignored
 MANUAL_EVENT_DAYS = 3      # older manual entries are stored silently
 TRIP_REASONS = ("shrink", "mass_new", "list_mass_new")   # breaker trips; any other discard is a failure
 INFO_FIELDS = ("title", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd", "volume_ml", "container",
-               "serving", "url", "shop_url", "logo", "menu_id", "shop_item_id", "manual_id", "manual_by", "manual_date")
+               "serving", "url", "shop_url", "logo", "country", "menu_id", "shop_item_id", "manual_id", "manual_by",
+               "manual_date")
 SERVING_FIELDS = ("container", "price_amd", "volume_ml")   # the first serving, as single-serving readers see it
 BREWERY_INFO_FIELDS = ("name", "brewery", "style", "abv", "url")
 CHECKIN_BACKFILL_FIELDS = ("style", "abv", "ibu", "rating")   # filled from a menu pair when the check-in lacks them
