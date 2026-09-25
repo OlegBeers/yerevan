@@ -159,7 +159,7 @@ Dargett Brewpub в списке 4.3 нет: у него есть меню чер
 - `places`: `id`, `name`, `kind` (bar / brewpub / shop), источники и их параметры (`untappd_slug` + `untappd_id` для заведения; id пивоварни у brewpub), `enabled`.
 - **Несколько заведений Untappd — одно место (v1.1).** `untappd_checkins` вместо одной пары `{slug, venue_id}` может нести `{venues: [{slug, venue_id, address?}, ...]}`: чекины со всех заведений собираются в одну пару «место + пиво». `merged_from: [старый-id, ...]` объединяет пары уже существующего места со старым id (например, когда два заведения в Untappd свели в одно место) — перенос происходит один раз при загрузке `state.json` и не создаёт новых событий.
 - `breweries`: пивоварни из 4.2 (`id`, `name`, `brewery_slug`, `brewery_id`, `list_enabled`). Это не места: на сайт они не выводятся.
-- `settings`: `preview_digests: 2`, `digest_time: "17:00"` (должно быть раньше вечернего cron), `digest_max_lines: 15`, `hot_rating: 3.75`, `untappd_daily_pages: 30`.
+- `settings`: `preview_digests: 2`, `digest_time: "10:30"` (утренний cron 10:35 идёт позже; сводка уходит утром и собирает вечерние обновления), `digest_max_lines: 15`, `hot_rating: 3.75`, `untappd_daily_pages: 30`.
 
 **«Замечено» (Sighting):** `place_id`, `source`, `beer_key`, `untappd_beer_id?`, `shop_item_id?`, `title` (как в источнике), `name`, `brewery?`, `style?`, `abv?`, `ibu?`, `rating?`, `price_amd?`, `volume?`, `container?`, `serving?`, `in_stock?`, `menu_id?`, `seen_at`, `url`.
 
@@ -276,7 +276,7 @@ Dargett Brewpub в списке 4.3 нет: у него есть меню чер
 - по Еревану сейчас 09:00–23:00;
 - `digest.last_sent_date` ≠ сегодня, и с `last_sent_at` прошло не меньше 20 часов;
 - после отбрасывания устаревших остались неотправленные события;
-- сейчас не раньше `digest_time` (17:00), **или** самое старое неотправленное событие создано раньше вчерашних 17:00.
+- сейчас не раньше `digest_time` (10:30), **или** самое старое неотправленное событие создано раньше вчерашних 10:30.
 
 События, найденные сегодня до 17:00, ждут вечернего прогона. Если вечерний прогон пропал, сводка уйдёт утренним прогоном следующего дня. Пустую сводку не шлём и отметку `last_sent_*` не ставим.
 

@@ -2,8 +2,9 @@ name: taps
 
 on:
   schedule:
-    # 10:17 and 18:17 Asia/Yerevan (UTC+4); off the top of the hour on purpose
-    - cron: "17 6 * * *"
+    # 10:35 and 18:17 Asia/Yerevan (UTC+4); off the top of the hour on purpose. The morning run
+    # must start after settings.digest_time (10:30): it is the one that sends the daily digest.
+    - cron: "35 6 * * *"
     - cron: "17 14 * * *"
   workflow_dispatch:
 

@@ -58,7 +58,8 @@ def test_live_places_file_invariants():
     assert len({b.brewery_id for b in live.breweries}) == len(live.breweries)
     venues = [p.venue_id for p in live.places.values() if p.venue_id]
     assert len(venues) == len(set(venues))
-    assert live.settings.digest_time < time(18, 17)               # before the evening run (README)
+    assert live.settings.digest_time == time(10, 30)              # the digest goes with the morning run (10:35)
+    assert live.settings.digest_time < time(18, 17)               # the evening run is only a fallback
 
 
 def test_menu_places(cfg):

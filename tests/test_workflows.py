@@ -36,7 +36,7 @@ def test_run_schedule_and_manual_trigger():
     wf = load("run.yml")
     assert wf["name"] == "taps"
     on = triggers(wf)
-    assert [s["cron"] for s in on["schedule"]] == ["17 6 * * *", "17 14 * * *"]
+    assert [s["cron"] for s in on["schedule"]] == ["35 6 * * *", "17 14 * * *"]
     assert "workflow_dispatch" in on
     assert "push" not in on and "pull_request" not in on
 
