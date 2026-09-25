@@ -264,6 +264,11 @@ sightings:
 hide:
 
 aliases:
+  # Ferment: доска кранов ↔ те же сорта из чекинов Untappd
+  "n:brewdog double hazy": u:2152137
+  "n:ballantine stout": u:2897667
+  "n:brewlok wild ale blueberry": u:6166058
+  "n:brewlok лихо греипфрут": u:6583573
 
 brewery_aliases:
   "v engelman": "volfas engelman"

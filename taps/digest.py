@@ -17,6 +17,7 @@ CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег"
 SERVING_RU = {"Draft": "розлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
              "Cask": "из бочки", None: "подача неизвестна"}
 BREWERY_NEW_NOTE = "новый сорт в Untappd, где наливают — пока неизвестно"
+MANUAL_LIST_MAX = 5   # more manual entries from one place: one "list updated" line instead of every beer
 
 esc = html.escape
 
@@ -124,6 +125,14 @@ def _pack(info: dict) -> str | None:
     return esc(text) or None
 
 
+def _positions_word(n: int) -> str:
+    if n % 10 == 1 and n % 100 != 11:
+        return "позиция"
+    if 2 <= n % 10 <= 4 and not 11 <= n % 100 <= 14:
+        return "позиции"
+    return "позиций"
+
+
 def _days_word(n: int) -> str:
     if n % 10 == 1 and n % 100 != 11:
         return "день"
@@ -154,6 +163,16 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
         place, rec = config.places[pid], state.pairs[pid][key]
         groups[_section(rec, place.kind)].setdefault(key, []).append((place, rec))
 
+    # a whole menu entered by hand (a photo of the tap board) is news about the place, not a batch of new beers
+    per_place: dict[str, int] = {}
+    for found in groups["manual"].values():
+        for place, _ in found:
+            per_place[place.id] = per_place.get(place.id, 0) + 1
+    listed = [pid for pid in config.places if per_place.get(pid, 0) > MANUAL_LIST_MAX]
+    if listed:
+        groups["manual"] = {k: kept for k, found in groups["manual"].items()
+                            if (kept := [(p, r) for p, r in found if p.id not in listed])}
+
     def sort_key(item):   # config order of the first place, then ⭐ first, then oldest event
         found = item[1]
         place, rec = found[0]
@@ -181,6 +200,14 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
                 line = _line(rec.star, rec.info, [_style_abv(rec.info)], []) + f" ({BREWERY_NEW_NOTE})"
                 entries.append(("bars", "🏭 <b>Новые сорта пивоварен</b>", line))
             continue
+        if section == "manual":
+            for pid in listed:
+                by = sorted({r.info.get("manual_by") or "?" for p, k in pairs if p == pid
+                             for r in [state.pairs[p][k]] if (r.info.get("kind") or r.info.get("source")) == "manual"})
+                line = (f"• <b>{esc(config.places[pid].name)}</b>: обновился список, "
+                        f"{per_place[pid]} {_positions_word(per_place[pid])} (от {esc(', '.join(by))}) — на сайте")
+                block = "shops" if config.places[pid].kind == "shop" else "bars"
+                entries.append((block, group_header["manual"], line))
         for key, found in sorted(groups[section].items(), key=sort_key):
             place, rec = found[0]
             line = _line(any(r.star for _, r in found), rec.info, details(section, place, rec),
