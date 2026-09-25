@@ -388,7 +388,7 @@ function filteredRows() {
   return ui.data.rows.filter((r) => inSection(r)
     && (!onlyNew || r.new)
     && (!ui.place || r.place_id === ui.place)
-    && (!q || [r.name, r.style, r.brewery].some((s) => s && String(s).toLowerCase().includes(q))));
+    && (!q || [r.name, r.style_inferred ? null : r.style, r.brewery].some((s) => s && String(s).toLowerCase().includes(q))));
 }
 function bestOf(rows, field) {   // highest non-null value, for sorting/display of a beer group
   let best = null;

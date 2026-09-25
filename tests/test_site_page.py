@@ -214,6 +214,12 @@ def test_rows_are_filtered_before_being_grouped_by_beer():
     assert "beer_key" in group_fn
 
 
+def test_search_ignores_a_style_that_was_only_inferred_from_the_name():
+    js = _js(_soup())
+    filter_fn = re.search(r"function filteredRows\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "r.style_inferred ? null : r.style" in filter_fn
+
+
 def test_beer_group_key_falls_back_to_normalized_brewery_and_name():
     js = _js(_soup())
     group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
