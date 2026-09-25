@@ -138,6 +138,8 @@
   .card .meta { color: var(--muted); font-size: .85rem; margin-top: 2px; }
   .where { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .85rem; margin-top: 6px; }
   .where .meta-inline { color: var(--muted); }
+  .shop-name { color: var(--muted); font-size: .78rem; }
+  .where .shop-name { flex: 0 0 100%; }
   .wherelist { display: flex; flex-direction: column; gap: 5px; }
   .wherelist .where { margin-top: 0; gap: 2px 6px; }
   .wherelist .where + .where { padding-top: 5px; border-top: 1px dashed var(--border); }
@@ -211,6 +213,7 @@
     <p>Нашли ошибку, знаете бар с крафтом или хотите что-то предложить — пишите в Telegram:
       <a href="https://t.me/oleg_sorokin">@oleg_sorokin</a>.</p>
     <p>Подписывайтесь на меня в Untappd: <a href="https://untappd.com/user/Oleg_Sorokin">Oleg_Sorokin</a> 🍻</p>
+    <p><a href="matches.html">Проверка склеек</a> — как магазинные названия сопоставлены с Untappd.</p>
   </footer>
 </div>
 <script>
@@ -378,7 +381,8 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     const r0 = group.find((r) => r.beer_key && r.beer_key.startsWith("u:")) || group[0];
     return {
       rows: group,
-      name: r0.name, brewery: r0.brewery, style: r0.style, ibu: r0.ibu, url: r0.url, beer_logo: r0.beer_logo,
+      name: r0.name, brewery: r0.brewery, style: r0.style, ibu: r0.ibu, url: r0.url,
+      beer_logo: group.map((r) => r.beer_logo).find(Boolean),
       abv: bestOf(group, "abv"), rating: bestOf(group, "rating"),
       since: group.map((r) => r.since).sort()[0],
       new: group.some((r) => r.new), star: group.some((r) => r.star),
@@ -392,14 +396,19 @@ function visibleGroups() {
       || String(a.name).localeCompare(String(b.name), "ru"));
 }
 
-function placeCell(r) {
+function shopNameLine(r, name) {   // v1.2: what the shop calls a matched beer, when it differs from the displayed name
+  const same = (a, b) => String(a).toLowerCase().replace(/\s+/g, "") === String(b).toLowerCase().replace(/\s+/g, "");
+  return r.shop_name && !same(r.shop_name, name) ? el("div", { class: "shop-name" }, `в магазине: ${r.shop_name}`) : null;
+}
+function placeCell(r, name) {
   const place = placeObj(r.place_id);
   return [
     el("span", { class: "where-head" }, logoNode(place.name, place.logo, 22), placeNameNode(place)),
     el("span", { class: "small" }, ...badgeNodes(r)),
+    shopNameLine(r, name),
   ];
 }
-function placeLines(rows) {   // one line per place a grouped beer is available at
+function placeLines(rows, name) {   // one line per place a grouped beer is available at
   return rows.map((r) => {
     const place = placeObj(r.place_id);
     const extra = dot([priceText(r), volumeText(r)]);
@@ -412,7 +421,8 @@ function placeLines(rows) {   // one line per place a grouped beer is available 
       placeNameNode(place),
       status,
       extra ? el("span", { class: "meta-inline" }, extra) : null,
-      shopLinkNode(r));
+      shopLinkNode(r),
+      shopNameLine(r, name));
   });
 }
 function table(groups) {
@@ -430,16 +440,17 @@ function table(groups) {
     el("td", { class: "num" }, ratingNode(g)),
     el("td", { class: "num" }, ...(g.rows.length === 1 ? [priceText(g.rows[0]),
       volumeText(g.rows[0]) ? el("span", { class: "small" }, volumeText(g.rows[0])) : null] : [])),
-    el("td", null, ...(g.rows.length === 1 ? placeCell(g.rows[0]) : [el("div", { class: "wherelist" }, ...placeLines(g.rows))])),
+    el("td", null, ...(g.rows.length === 1 ? placeCell(g.rows[0], g.name) : [el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name))])),
     el("td", { class: "nowrap" }, sinceText(g.since))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
 }
-function cardWhere(r) {
+function cardWhere(r, name) {
   const place = placeObj(r.place_id);
   return el("div", { class: "where" },
     logoNode(place.name, place.logo, 20),
     placeNameNode(place),
-    el("span", { class: "meta-inline" }, ...badgeNodes(r)));
+    el("span", { class: "meta-inline" }, ...badgeNodes(r)),
+    shopNameLine(r, name));
 }
 function cards(groups) {
   const line = (cls, text) => (text ? el("div", { class: cls }, text) : null);
@@ -449,7 +460,7 @@ function cards(groups) {
     line("meta", dot([g.brewery, g.style, abvText(g), ibuText(g)])),
     g.rows.length === 1 ? line("meta", dot([volumeText(g.rows[0]), priceText(g.rows[0])])) : null,
     g.rows.length === 1 ? shopLinkNode(g.rows[0]) : null,
-    g.rows.length === 1 ? cardWhere(g.rows[0]) : el("div", { class: "wherelist" }, ...placeLines(g.rows)),
+    g.rows.length === 1 ? cardWhere(g.rows[0], g.name) : el("div", { class: "wherelist" }, ...placeLines(g.rows, g.name)),
     sinceText(g.since) ? el("div", { class: "meta" }, `Появилось ${sinceText(g.since)}`) : null)));
 }
 function render() {

@@ -7,7 +7,7 @@ PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
-              "beer_logo", "shop_url", "beer_key")
+              "beer_logo", "shop_url", "beer_key", "shop_name")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url", "addresses")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked")
@@ -233,8 +233,8 @@ def test_group_since_is_earliest_and_rating_abv_use_best_value():
 
 def test_multi_place_beers_list_every_place_with_its_own_price_and_link():
     js = _js(_soup())
-    assert re.search(r"function placeLines\(rows\)", js)
-    place_lines_fn = re.search(r"function placeLines\(rows\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r"function placeLines\(rows, name\)", js)
+    place_lines_fn = re.search(r"function placeLines\(rows, name\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "badgeNodes" in place_lines_fn
     assert "priceText" in place_lines_fn and "volumeText" in place_lines_fn
     assert "shopLinkNode" in place_lines_fn
@@ -245,8 +245,8 @@ def test_multi_place_beers_list_every_place_with_its_own_price_and_link():
 def test_single_place_beers_keep_todays_layout():
     """Beers found at only one place still render through the pre-grouping helpers unchanged."""
     js = _js(_soup())
-    assert "function placeCell(r)" in js
-    assert "function cardWhere(r)" in js
+    assert "function placeCell(r, name)" in js
+    assert "function cardWhere(r, name)" in js
 
 
 def test_wherelist_css_stacks_multiple_place_lines():
@@ -290,3 +290,30 @@ def test_back_to_top_button():
     assert button["aria-label"] == "Наверх"
     js = _js(soup)
     assert "scrollTo" in js and 'addEventListener("scroll"' in js
+
+
+def test_group_logo_is_the_first_non_empty_logo_in_the_group():
+    group_fn = re.search(r"function groupBeers\(rows\)\s*\{(.*?)\n\}", _js(_soup()), re.S).group(1)
+    assert re.search(r"beer_logo:\s*group\.map\(\(?r\)?\s*=>\s*r\.beer_logo\)\.find\(Boolean\)", group_fn)
+    assert "r0.beer_logo" not in group_fn
+
+
+def test_shop_name_line_shows_only_when_it_differs_from_the_displayed_name():
+    """v1.2 review aid: `в магазине: <shop_name>` under the place, for every layout that draws a place line."""
+    js = _js(_soup())
+    line_fn = re.search(r"function shopNameLine\(r, name\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "r.shop_name" in line_fn and "в магазине: " in line_fn
+    assert re.search(r"toLowerCase\(\)", line_fn) and r"\s" in line_fn   # case/space-insensitive comparison
+    for fn in ("placeCell(r, name)", "placeLines(rows, name)", "cardWhere(r, name)"):
+        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
+        assert "shopNameLine(r, name)" in body, fn
+    assert re.search(r"placeLines\(g\.rows,\s*g\.name\)", js)
+    assert len(re.findall(r"placeCell\(g\.rows\[0\],\s*g\.name\)", js)) == 1
+    assert len(re.findall(r"cardWhere\(g\.rows\[0\],\s*g\.name\)", js)) == 1
+    assert re.search(r"\.shop-name\s*\{[^}]*color:\s*var\(--muted\)", _css(_soup()))
+
+
+def test_footer_links_to_the_match_review_page():
+    footer = _soup().find("footer")
+    link = footer.find("a", string="Проверка склеек")
+    assert link["href"] == "matches.html"
