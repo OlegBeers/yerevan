@@ -151,3 +151,14 @@ def test_an_entry_outside_the_window_gives_no_serving():
     result = run(rodenbach(container="draft", price_amd=2800), rodenbach(container="bottle", day=date(2026, 9, 1)))
     [s] = result.sightings
     assert (s.container, s.servings) == ("draft", ())
+
+
+def test_entries_that_an_alias_joins_are_servings_of_one_sighting():
+    by_id = rodenbach(container="draft", price_amd=2800)
+    by_name = entry(place="dors", by="Instagram бара", brewery="Rodenbach", beer="Fruitage", container="bottle")
+    aliases = {"n:rodenbach fruitage": "u:1715344"}   # the name-only entry is the same beer as untappd: 1715344
+    [s] = run(by_id, by_name, aliases=aliases).sightings
+    assert (s.beer_key, s.servings) == ("u:1715344", (Serving("draft", 2800), Serving("bottle")))
+    [s] = run(by_name, by_id, aliases=aliases).sightings   # whichever comes first, the Untappd id and link are kept
+    assert (s.beer_key, s.untappd_beer_id, s.url) == ("u:1715344", 1715344, "https://untappd.com/beer/1715344")
+    assert s.servings == (Serving("bottle"), Serving("draft", 2800))

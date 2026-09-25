@@ -5,17 +5,18 @@ from datetime import datetime
 from taps.config import Config
 from taps.corrections import Corrections, ManualEntry
 from taps.model import Serving, Sighting, SourceResult, u_key, untappd_n_key, with_servings
+from taps.state import resolve_alias
 from taps.timeutil import to_yerevan
 
 MANUAL_KEEP_DAYS = 14
-DETAIL_FIELDS = ("brewery", "beer", "style", "abv", "ibu")   # a later entry for the same beer may add these
+DETAIL_FIELDS = ("brewery", "beer", "untappd_id", "style", "abv", "ibu")   # a later entry for the beer may add these
 
 
 def manual_result(corrections: Corrections, config: Config, now: datetime) -> SourceResult:
     """Entries at enabled places dated 0..MANUAL_KEEP_DAYS Yerevan days ago; future dates wait for their day.
 
-    Entries for one beer at one place are servings of one sighting: the first entry gives the beer and the
-    announcement (manual_id/by/date), every entry gives a serving."""
+    Entries for one beer at one place (an alias counts as the same beer) are servings of one sighting: the
+    first entry gives the beer and the announcement (manual_id/by/date), every entry gives a serving."""
     today = to_yerevan(now).date()
     entries: dict[tuple[str, str], list[ManualEntry]] = {}
     for e in corrections.sightings:
@@ -25,7 +26,7 @@ def manual_result(corrections: Corrections, config: Config, now: datetime) -> So
             key = u_key(e.untappd_id)
         else:
             key = untappd_n_key(e.brewery, e.beer, corrections.brewery_aliases)
-        entries.setdefault((e.place, key), []).append(e)
+        entries.setdefault((e.place, resolve_alias(key, corrections.aliases)), []).append(e)
     sightings = []
     for (place, key), beer_entries in entries.items():
         e = replace(beer_entries[0], **{
