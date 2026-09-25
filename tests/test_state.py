@@ -81,7 +81,8 @@ def test_to_dict_is_plain_json_data():
     assert d["pairs"]["gargoyle"]["u:3539672"]["notified_at"] == ago(1)
     assert d["pairs"]["yerevan-city"]["n:kilikia"]["info"]["hidden"] is True
     assert d["beers"]["u:3539672"] == {"first_seen_city": ago(2), "n_key": "n:zagovor black sails",
-                                       "rating": None, "style": None, "abv": None, "ibu": None, "rating_at": None}
+                                       "rating": None, "style": None, "abv": None, "ibu": None, "rating_at": None,
+                                       "logo": None, "country": None}
     assert d["brewery_new"]["u:6000001"]["brewery_id"] == 265165
     assert d["sources"]["untappd_menu:gargoyle"]["last_trip_keys"] == ["u:1", "u:2"]
     assert d["untappd"]["pages_today"] == 12
@@ -532,3 +533,10 @@ def test_record_venues_does_not_let_checkins_overwrite_meta_name_and_url():
                                      venue_url="https://untappd.com/v/stale/1", checkin_id=5, at=NOW)])
     record_venues(s, [checkin_result], NOW, known_venue_ids=frozenset({1}))
     assert (s.venues["1"].name, s.venues["1"].url) == ("Real Name", "https://untappd.com/v/real/1")
+
+
+def test_beer_rec_from_an_old_state_without_label_and_country():
+    from taps.state import BeerRec
+    old = {"first_seen_city": "2026-09-24T10:00:00+00:00", "rating": 3.5}
+    beer = BeerRec(**old)
+    assert (beer.logo, beer.country) == (None, None)

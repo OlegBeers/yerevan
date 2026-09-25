@@ -620,6 +620,64 @@ def _untappd_client(pages, daily_pages=30, untappd=None):
     return UntappdClient(untappd or UntappdRec(), daily_pages, NOW, fetch_page, sleep=lambda s: None)
 
 
+REAL_BEER_URL = "https://untappd.com/b/brouwerij-rodenbach-rodenbach-fruitage/1715344"
+REAL_BEER_PAGE = fixture_text("untappd/beer_page_real.html")
+
+
+def _manual_pair(**info):
+    return PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "manual", "name": "X", **info})
+
+
+def test_fetch_beer_ratings_caches_label_and_country_from_a_real_page():
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1715344": _checkin_pair(iso(NOW - timedelta(days=1)), url=REAL_BEER_URL)}}
+    run_mod.fetch_beer_ratings(state, _untappd_client({REAL_BEER_URL: REAL_BEER_PAGE}), NOW)
+    beer = state.beers["u:1715344"]
+    assert (beer.rating, beer.country) == (3.48902, "Belgium")
+    assert beer.logo == "https://assets.untappd.com/site/beer_logos/beer-1715344_b8fec_sm.jpeg"
+
+
+def test_beer_page_candidates_put_label_less_hand_entered_beers_first():
+    state = empty_state(NOW)
+    state.pairs = {
+        "ferment": {"u:1715344": _manual_pair(brewery="Rodenbach"),
+                    "u:5": _manual_pair(brewery="Jever", logo="https://assets.untappd.com/x.jpg")},   # has a label
+        "t": {"u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/b/2")},
+    }
+    keys = [key for key, _ in run_mod._beer_page_candidates(state, NOW)]
+    assert keys[:2] == ["u:1715344", "u:2"] and "u:5" not in keys[:2]
+    assert dict(run_mod._beer_page_candidates(state, NOW))["u:1715344"] == "https://untappd.com/beer/1715344"
+
+
+def test_beer_page_candidates_skip_a_beer_fetched_recently_even_without_a_label():
+    state = empty_state(NOW)
+    state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}
+    state.beers["u:1715344"] = BeerRec(first_seen_city=iso(NOW), rating_at=iso(NOW - timedelta(days=2)))
+    assert run_mod._beer_page_candidates(state, NOW) == []
+
+
+def test_beer_page_candidates_ask_for_a_country_once_per_brewery():
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {
+        "u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
+                       info={"kind": "menu", "brewery": "Zagovor", "logo": "https://assets.untappd.com/a.jpg", "url": "https://untappd.com/b/z/1"}),
+        "u:2": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
+                       info={"kind": "menu", "brewery": "Zagovor", "logo": "https://assets.untappd.com/b.jpg", "url": "https://untappd.com/b/z/2"}),
+        "u:3": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
+                       info={"kind": "menu", "brewery": "Konix", "logo": "https://assets.untappd.com/c.jpg", "url": "https://untappd.com/b/k/3"})}}
+    state.beers["u:3"] = BeerRec(first_seen_city=iso(NOW), country="Armenia", rating_at=iso(NOW - timedelta(days=40)))
+    keys = [key for key, _ in run_mod._beer_page_candidates(state, NOW)]
+    assert keys == ["u:1"]          # Konix is known, and one Zagovor beer is enough
+
+
+def test_apply_known_beer_info_uses_the_cached_label_of_a_beer_page():
+    state = empty_state(NOW)
+    state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}
+    state.beers["u:1715344"] = BeerRec(first_seen_city=iso(NOW), logo="https://assets.untappd.com/l.jpg")
+    run_mod.apply_known_beer_info(state)
+    assert state.pairs["ferment"]["u:1715344"].info["logo"] == "https://assets.untappd.com/l.jpg"
+
+
 def test_beer_rating_candidates_excludes_beers_also_seen_on_a_menu():
     state = empty_state(NOW)
     state.pairs = {

@@ -255,6 +255,62 @@ def _beer_rating_candidates(state: State, now: datetime) -> list[tuple[str, str]
     return [(key, url) for key, (_, url) in ordered[:BEER_RATING_CANDIDATES_PER_RUN]]
 
 
+BEER_PAGE_CANDIDATES_PER_RUN = 8   # all tiers together; the daily page budget still decides how many really run
+
+
+def _fetched_recently(state: State, key: str, now: datetime) -> bool:
+    beer = state.beers.get(key)
+    return bool(beer and beer.rating_at and age_days(parse_iso(beer.rating_at), now) <= BEER_RATING_MAX_AGE_DAYS)
+
+
+def _beer_url(key: str, info: dict) -> str:
+    return info.get("url") or f"https://untappd.com/beer/{key[2:]}"
+
+
+def _label_less_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """Hand-entered and check-in Untappd beers shown without any label image (a menu pair brings its
+    own): one beer page gives the label, the rating and the country."""
+    out: dict[str, str] = {}
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            info = rec.info
+            if (key.startswith("u:") and info.get("kind") in ("manual", "checkin") and key not in out
+                    and not info.get("logo") and not (state.beers.get(key) and state.beers[key].logo)
+                    and not _fetched_recently(state, key, now)):
+                out[key] = _beer_url(key, info)
+    return list(out.items())
+
+
+def _country_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """One shown Untappd beer per brewery whose country is still unknown (any beer page of the brewery
+    tells it), the breweries with the most beers first."""
+    known = {rec.info.get("brewery") for pairs in state.pairs.values() for key, rec in pairs.items()
+             if key.startswith("u:") and state.beers.get(key) and state.beers[key].country}
+    count: dict[str, int] = {}
+    first: dict[str, tuple[str, str]] = {}
+    for pairs in state.pairs.values():
+        for key, rec in pairs.items():
+            brewery = rec.info.get("brewery")
+            if not key.startswith("u:") or not brewery or brewery in known:
+                continue
+            if rec.info.get("kind") == "menu" and not rec.last_in_result:
+                continue
+            count[brewery] = count.get(brewery, 0) + 1
+            if brewery not in first and not _fetched_recently(state, key, now):
+                first[brewery] = (key, _beer_url(key, rec.info))
+    return [first[b] for b in sorted(first, key=lambda b: -count[b])]
+
+
+def _beer_page_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """Beer pages to fetch this run: label-less beers first, then the check-in-only ratings, then one
+    beer per brewery of unknown country; deduplicated and capped."""
+    out: dict[str, str] = {}
+    for key, url in (_label_less_candidates(state, now) + _beer_rating_candidates(state, now)
+                     + _country_candidates(state, now)):
+        out.setdefault(key, url)
+    return list(out.items())[:BEER_PAGE_CANDIDATES_PER_RUN]
+
+
 def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> None:
     """Fetch up to BEER_RATING_CANDIDATES_PER_RUN beer pages to fill state.beers rating/style/abv/ibu
     for beers seen only in check-ins (v1.1 §2), so rules._backfill_checkin can use them; a budget or
@@ -262,7 +318,7 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
     that doesn't come back parseable as a beer page is dumped for debugging (TAPS_DEBUG_DIR) --
     the cache is still stamped as checked, so it isn't refetched every run."""
     sampled = False
-    for key, url in _beer_rating_candidates(state, now):
+    for key, url in _beer_page_candidates(state, now):
         try:
             html = client.get(url)
         except FetchError:
@@ -278,7 +334,7 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
             sampled = True
         beer = state.beers.setdefault(key, BeerRec(first_seen_city=iso(now)))
         if data:
-            for field in ("rating", "style", "abv", "ibu"):
+            for field in ("rating", "style", "abv", "ibu", "logo", "country"):
                 if data[field] is not None:
                     setattr(beer, field, data[field])
         beer.rating_at = iso(now)
@@ -549,6 +605,8 @@ def apply_known_beer_info(state: State) -> None:
             beer = state.beers.get(key)
             if got.get("rating") is None and beer is not None and beer.rating is not None:
                 got["rating"] = beer.rating
+            if got.get("logo") is None and beer is not None and beer.logo is not None:
+                got["logo"] = beer.logo
             for field, value in got.items():
                 if value is not None:
                     rec.info[field] = value
