@@ -31,14 +31,6 @@ def pending_brewery(state: State) -> list[str]:
     return [k for k, r in state.brewery_new.items() if r.notified_at is None]
 
 
-def _pair_time(rec: PairRec) -> datetime:
-    """A manual pair's event time is the reported date (Yerevan midnight), not when it was merged."""
-    manual_date = rec.info.get("manual_date")
-    if manual_date:
-        return datetime.combine(date.fromisoformat(manual_date), time.min, tzinfo=YEREVAN)
-    return parse_iso(rec.event_at)
-
-
 def _is_stale(rec: PairRec, now: datetime) -> bool:
     manual_date = rec.info.get("manual_date")
     if manual_date:   # the calendar-day rule that records a manual entry as an event (rules.MANUAL_EVENT_DAYS)
@@ -71,7 +63,9 @@ def is_due(state: State, settings: Settings, now: datetime) -> bool:
         return False
     if d.last_sent_at is not None and now - parse_iso(d.last_sent_at) < timedelta(hours=MIN_GAP_HOURS):
         return False
-    times = [_pair_time(state.pairs[p][k]) for p, k in pending_pairs(state)]
+    # a hand-entered board counts from when it reached the bot: its own date is midnight, which would
+    # look like a missed evening and trigger a daytime send
+    times = [parse_iso(state.pairs[p][k].event_at) for p, k in pending_pairs(state)]
     times += [parse_iso(state.brewery_new[k].found_at) for k in pending_brewery(state)]
     if not times:
         return False

@@ -322,12 +322,23 @@ def test_is_due_quiet_hours():
     assert is_due(s, SETTINGS, yv(24, 9, 0)) is True
 
 
-def test_is_due_uses_manual_date_for_a_manual_pair_merged_late():
-    manual_date = (to_yerevan(NOW).date() - timedelta(days=2)).isoformat()   # "2026-09-22"
-    s = new_state(pairs={"tap-station": {
+def test_is_due_manual_entry_waits_for_evening_even_with_an_older_date():
+    """A hand-entered board dated yesterday (midnight) must not trigger the daytime catch-up send:
+    the catch-up clock is when the entry reached the bot, not the date written in corrections.yaml."""
+    manual_date = (to_yerevan(NOW).date() - timedelta(days=1)).isoformat()
+    s = new_state(pairs={"ferment": {
         "n:x": pair(yv(24, 8, 30), kind="manual", manual_date=manual_date, name="X"),   # merged this morning
     }})
-    assert is_due(s, SETTINGS, yv(24, 9, 30)) is True
+    assert is_due(s, SETTINGS, yv(24, 9, 30)) is False
+    assert is_due(s, SETTINGS, yv(24, 18, 17)) is True
+
+
+def test_is_due_manual_entry_merged_before_yesterday_evening_still_catches_up():
+    manual_date = (to_yerevan(NOW).date() - timedelta(days=2)).isoformat()
+    s = new_state(pairs={"ferment": {
+        "n:x": pair(yv(23, 10, 17), kind="manual", manual_date=manual_date, name="X"),   # merged yesterday morning
+    }}, digest=DigestRec(last_sent_date="2026-09-22", last_sent_at=iso(yv(22, 18, 17))))
+    assert is_due(s, SETTINGS, yv(24, 10, 17)) is True
 
 
 def test_is_due_nothing_pending():
