@@ -173,8 +173,8 @@ def _match_entry(place: Place, key: str, rec: PairRec, match: ShopMatchRec) -> d
     """One line of the review page (site/matches.html): the shop's beer and the Untappd beer it was merged with."""
     info = rec.info
     logo, overlaid = info.get("logo"), (info.get("u_overlay") or {}).get("logo")
-    # only Yerevan City puts its own product photo in info["logo"]; a matched Untappd label replaces it
-    photo = logo if info.get("source") == "yerevan_city" and logo != overlaid else None
+    # a shop puts its own product photo in info["logo"]; a matched Untappd label replaces it
+    photo = logo if logo != overlaid else None
     return {
         "place_id": place.id, "place": place.name, "key": key,
         "shop_name": _shop_name(info, key), "shop_brewery": info.get("brewery"),

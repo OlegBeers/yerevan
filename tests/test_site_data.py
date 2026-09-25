@@ -499,6 +499,16 @@ def test_match_shop_photo_is_the_pairs_own_only_when_the_overlay_did_not_replace
     assert photos == {"n:a": "https://yc/photo.jpg", "n:b": None}
 
 
+def test_match_shop_photo_is_any_shops_own_photo_not_only_yerevan_citys():
+    """Beer City, Parma and buy.am put their product photo in info["logo"] as well."""
+    match = ShopMatchRec(untappd_beer_id=1, url="https://untappd.com/beer/1", via="search")
+    pairs = {"beer-city": {"n:a": pair("beercity", in_stock=True, info={"name": "A", "logo": "https://bc/a.jpg"})},
+             "parma": {"n:b": pair("parma", in_stock=True, info={"name": "B", "logo": "https://parma/b.jpg"})},
+             "gargoyle": {"n:c": pair("buyam", last_in_result=True, info={"name": "C", "logo": "https://buy/c.webp"})}}
+    photos = {m["key"]: m["shop_photo"] for m in build(match_state(pairs, a=match, b=match, c=match))["matches"]}
+    assert photos == {"n:a": "https://bc/a.jpg", "n:b": "https://parma/b.jpg", "n:c": "https://buy/c.webp"}
+
+
 def test_row_lists_servings_only_for_a_pair_that_has_several():
     servings = [{"container": "draft", "price_amd": 2800, "volume_ml": None},
                 {"container": "bottle", "price_amd": 1500, "volume_ml": 330}]
