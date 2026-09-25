@@ -297,6 +297,11 @@ sightings:
     date: 2026-09-24
 
 hide:
+  # пивные коктейли Beer City (Украина, 8%): не пиво, на Untappd нет
+  - place: beer-city
+    beer: "n:bronx"
+  - place: beer-city
+    beer: "n:bronx black cherry"
 
 same_as:                         # магазинное пиво == пиво с Untappd; untappd_id: null = "не то же"
   # Beer City "Bronx" и "Bronx black cherry" — пивные коктейли (Украина, 8%, банка), на Untappd их нет;
