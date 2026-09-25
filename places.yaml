@@ -45,6 +45,7 @@ places:
   - id: dors
     name: Dors Craft Beer & Kitchen
     kind: brewpub
+    # угол Амиряна и Павстоса Бюзанда: так адрес пишет сам бар (Amiryan 4/6 | Buzand); у Яндекса он на Бюзанда
     address: "Амиряна 4/6"
     enabled: true
     brewery_id: 441775
