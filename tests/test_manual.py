@@ -2,6 +2,7 @@ from datetime import date, datetime, timezone
 
 from taps.config import Config, Place, Settings
 from taps.corrections import Corrections, ManualEntry
+from taps.model import Serving
 from taps.sources.manual import MANUAL_KEEP_DAYS, manual_result
 
 NOW = datetime(2026, 9, 23, 21, 30, tzinfo=timezone.utc)  # 2026-09-24 01:30 in Yerevan
@@ -18,10 +19,11 @@ CONFIG = Config(
 )
 
 
-def entry(place="tap-station", day=date(2026, 9, 24), by="Аня", brewery="379", beer="Hazy Pale", untappd=None):
+def entry(place="tap-station", day=date(2026, 9, 24), by="Аня", brewery="379", beer="Hazy Pale", untappd=None,
+          **details):
     return ManualEntry(
         id=f"{place}|{day.isoformat()}|{by}", place=place, brewery=brewery, beer=beer,
-        untappd_id=untappd, by=by, date=day,
+        untappd_id=untappd, by=by, date=day, **details,
     )
 
 
@@ -76,7 +78,7 @@ def test_brewery_aliases_apply_to_n_key():
 def test_only_last_14_yerevan_days():
     assert MANUAL_KEEP_DAYS == 14
     days = [date(2026, 9, 24), date(2026, 9, 10), date(2026, 9, 9), date(2026, 9, 25)]
-    result = run(*(entry(day=d) for d in days))
+    result = run(*(entry(day=d, beer=f"Hazy Pale {d.day}") for d in days))   # one beer per day: not servings
     # today in Yerevan is 2026-09-24 (UTC is still 09-23); 09-10 is 14 days ago; 09-09 is too old; 09-25 is future
     assert [s.manual_date for s in result.sightings] == ["2026-09-24", "2026-09-10"]
     assert result.ok is True
@@ -99,3 +101,53 @@ def test_entry_details_reach_the_sighting():
                     container="draft", style="Wheat Beer", abv=5.0, ibu=11, price_amd=1500)
     [s] = run(e).sightings
     assert (s.container, s.style, s.abv, s.ibu, s.price_amd) == ("draft", "Wheat Beer", 5.0, 11, 1500)
+
+
+# --- several entries for one beer at one place are its servings -----------------------------------
+
+def rodenbach(by="Instagram бара", **details):
+    return entry(place="dors", by=by, brewery="Rodenbach", beer="Fruitage", untappd=1715344, **details)
+
+
+def test_entries_of_one_beer_at_one_place_are_servings_of_one_sighting():
+    [s] = run(rodenbach(container="draft", price_amd=2800), rodenbach(container="bottle")).sightings
+    assert s.beer_key == "u:1715344"
+    assert (s.container, s.price_amd, s.volume_ml) == ("draft", 2800, None)   # the first entry: single-serving readers
+    assert s.servings == (Serving("draft", 2800), Serving("bottle"))
+
+
+def test_a_later_entry_fills_in_what_the_first_one_lacks():
+    named = rodenbach(container="draft", price_amd=2800)
+    detailed = entry(place="dors", by="Instagram бара", brewery=None, beer=None, untappd=1715344,
+                     container="bottle", style="Cherry Ale", abv=3.4, ibu=7)
+    [s] = run(named, detailed).sightings
+    assert (s.style, s.abv, s.ibu) == ("Cherry Ale", 3.4, 7)
+    assert (s.brewery, s.name, s.title) == ("Rodenbach", "Fruitage", "Rodenbach Fruitage")
+    [s] = run(detailed, named).sightings   # the names come from the entry that has them, whichever is first
+    assert (s.brewery, s.name, s.title) == ("Rodenbach", "Fruitage", "Rodenbach Fruitage")
+
+
+def test_identical_entries_are_one_serving_and_the_first_one_keeps_the_announcement():
+    first = rodenbach(container="draft", price_amd=2800)
+    again = rodenbach(container="draft", price_amd=2800, day=date(2026, 9, 23), by="Олег")   # another day, another friend
+    [s] = run(first, again).sightings
+    assert (s.container, s.price_amd, s.servings) == ("draft", 2800, ())
+    assert (s.manual_id, s.manual_by, s.manual_date) == ("dors|2026-09-24|Instagram бара", "Instagram бара", "2026-09-24")
+
+
+def test_a_draft_entry_with_another_price_is_another_serving():
+    [s] = run(rodenbach(container="draft", price_amd=1400), rodenbach(container="draft", price_amd=2000)).sightings
+    assert s.servings == (Serving("draft", 1400), Serving("draft", 2000))
+
+
+def test_other_places_and_other_beers_stay_separate_sightings_in_order_of_appearance():
+    result = run(rodenbach(container="draft"), entry(untappd=1715344), rodenbach(container="bottle"),
+                 entry(beer="Gose"))
+    assert [(s.place_id, s.beer_key, len(s.servings)) for s in result.sightings] == [
+        ("dors", "u:1715344", 2), ("tap-station", "u:1715344", 0), ("tap-station", "n:379 gose", 0)]
+
+
+def test_an_entry_outside_the_window_gives_no_serving():
+    result = run(rodenbach(container="draft", price_amd=2800), rodenbach(container="bottle", day=date(2026, 9, 1)))
+    [s] = result.sightings
+    assert (s.container, s.servings) == ("draft", ())
