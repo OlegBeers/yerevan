@@ -1739,10 +1739,9 @@ def test_site_row_falls_back_to_shops_own_identity_after_a_null_block():
         "Chimay peres trappistes blue", "Chimay", "n:chimay peres trappistes blue")
 
 
-def test_digest_line_for_a_matched_shop_pair_uses_the_shops_own_name_and_brewery():
-    """Code review (HIGH): apply_shop_matches's canonical-identity overlay must not change the
-    Telegram digest text -- the digest keeps announcing the shop's own, familiar name/brewery, not
-    Untappd's (only site_data.py's site row prefers the canonical one)."""
+def test_digest_line_for_a_matched_shop_pair_uses_the_untappd_name_and_brewery():
+    """A shop pair matched to Untappd is announced under Untappd's canonical beer name and brewery
+    (info["u_name"]/["u_brewery"], set by apply_shop_matches); the pair key stays the shop's."""
     state = empty_state(NOW)
     state.pairs = {"beer-city": {"n:chimay peres trappistes blue": PairRec(
         first_seen=iso(NOW), last_seen=iso(NOW), event_at=iso(NOW),
@@ -1755,9 +1754,8 @@ def test_digest_line_for_a_matched_shop_pair_uses_the_shops_own_name_and_brewery
                                                sources={"beercity": {}})},
                     breweries=(), settings=Settings())
     digest = build_digest(state, config, config.settings, NOW)
-    assert "Chimay — Chimay peres trappistes blue" in digest.html
-    assert "Bières de Chimay" not in digest.html
-    assert "Grande Réserve" not in digest.html
+    assert "Chimay Grande Réserve (Blue) · Bières de Chimay" in digest.html
+    assert "Chimay peres trappistes blue" not in digest.html
 
 
 def test_discovery_report_pluralizes_checkins_correctly(world):
@@ -2429,7 +2427,7 @@ def test_hand_entered_servings_are_announced_as_one_beer_and_a_later_serving_is_
 
     [sent] = world.sends
     assert sent["text"].count("Fruitage") == 1                            # one line for the pair, not one per serving
-    assert "Rodenbach — Fruitage · в Craft Story (от Аня)" in sent["text"]
+    assert "Fruitage · Rodenbach · Craft Story (от Аня)" in sent["text"]
     assert world.state().announced_manual == ["craft-story|2026-09-24|Аня"]
     assert [s["container"] for s in _site_row(world, "craft-story", "u:1715344")["servings"]] == ["draft", "bottle"]
 

@@ -92,10 +92,13 @@ def _style_abv(info: dict) -> str | None:
     return esc(text) or None
 
 
-def _line(star: bool, info: dict, details: list[str | None], also: list[str]) -> str:
-    head = ("⭐ " if star else "") + (f"{esc(info['brewery'])} — " if info.get("brewery") else "")
-    name = info.get("name") or info.get("title") or ""
-    text = "• " + head + esc(name) + "".join(f" · {d}" for d in details if d)
+def _line(info: dict, rating: str | None, details: list[str | None], also: list[str]) -> str:
+    """rating, name, brewery, then the details; a shop pair matched to Untappd shows Untappd's name/brewery."""
+    name = info.get("u_name") or info.get("name") or info.get("title")
+    brewery = info.get("u_brewery") or info.get("brewery")
+    text = " · ".join(filter(None, (esc(name) if name else None, esc(brewery) if brewery else None, *details)))
+    if rating:
+        text = f"{rating} {text}"
     if also:
         text += " + ещё в " + ", ".join(esc(a) for a in also)
     return text
@@ -105,7 +108,7 @@ def _rating(info: dict, settings: Settings) -> str | None:
     r = info.get("rating")
     if r is None:
         return None
-    return f"🔥{r:.2f}" if r >= settings.hot_rating else f"{r:.2f}"
+    return f"<b>{r:.2f}</b>" if r >= settings.hot_rating else f"{r:.2f}"
 
 
 def _price(info: dict) -> str | None:
@@ -175,38 +178,36 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
     def details(section: str, place, rec: PairRec) -> list[str | None]:
         info = rec.info
         if section == "menu":
-            return [_style_abv(info), _rating(info, settings), _price(info)]
+            return [_style_abv(info), _price(info)]
         if section == "shop":
-            return [_style_abv(info), _rating(info, settings), _pack(info), _price(info)]
+            return [_style_abv(info), _pack(info), _price(info)]
         if section == "checkin":
             serving = info.get("serving")
-            where = f"в {esc(place.name)}, {esc(SERVING_RU.get(serving, serving))}, {_seen(info, rec, now)}"
-            return [_style_abv(info), _rating(info, settings), where]
-        where = f"в {esc(place.name)} (от {esc(info.get('manual_by') or '?')})"
-        return [_style_abv(info), where]
+            return [_style_abv(info), f"{esc(place.name)}, {esc(SERVING_RU.get(serving, serving))}, {_seen(info, rec, now)}"]
+        return [_style_abv(info), f"{esc(place.name)} (от {esc(info.get('manual_by') or '?')})"]
 
-    group_header = {"checkin": "👀 <b>Похоже, появилось</b>", "manual": "✍️ <b>Со слов</b>"}
+    group_header = {"checkin": "<i>Похоже, появилось</i>", "manual": "<i>Со слов</i>"}
     entries: list[tuple[str, str, str]] = []   # (block, group header, line)
     for section in ("menu", "brewery", "checkin", "manual", "shop"):
         if section == "brewery":
             for key in sorted(brewery_keys, key=lambda k: (not state.brewery_new[k].star, state.brewery_new[k].found_at)):
                 rec = state.brewery_new[key]
-                line = _line(rec.star, rec.info, [_style_abv(rec.info)], []) + f" ({BREWERY_NEW_NOTE})"
-                entries.append(("bars", "🏭 <b>Новые сорта пивоварен</b>", line))
+                line = _line(rec.info, None, [_style_abv(rec.info)], []) + f" ({BREWERY_NEW_NOTE})"
+                entries.append(("bars", "<i>Новые сорта пивоварен</i>", line))
             continue
         if section == "manual":
             for pid in listed:
                 by = sorted({r.info.get("manual_by") or "?" for p, k in pairs if p == pid
                              for r in [state.pairs[p][k]] if (r.info.get("kind") or r.info.get("source")) == "manual"})
-                line = (f"• <b>{esc(config.places[pid].name)}</b>: обновился список, "
+                line = (f"<b>{esc(config.places[pid].name)}</b>: обновился список, "
                         f"{per_place[pid]} {_positions_word(per_place[pid])} (от {esc(', '.join(by))}) — на сайте")
                 block = "shops" if config.places[pid].kind == "shop" else "bars"
                 entries.append((block, group_header["manual"], line))
         for key, found in sorted(groups[section].items(), key=sort_key):
             place, rec = found[0]
-            line = _line(any(r.star for _, r in found), rec.info, details(section, place, rec),
+            line = _line(rec.info, _rating(rec.info, settings), details(section, place, rec),
                          [p.name for p, _ in found[1:]])
-            header = group_header.get(section) or f"<b>{esc(place.name)}</b>" + (" ✅" if section == "menu" else "")
+            header = group_header.get(section) or f"<b>{esc(place.name)}</b>"
             # v1.1: a shop's own check-ins (e.g. Houl) belong in the shops block, not bars
             block = "shops" if section == "shop" or (section == "checkin" and place.kind == "shop") else "bars"
             entries.append((block, header, line))
@@ -224,17 +225,15 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
     last_block = last_group = None
     for block, group, line in shown:
         if block != last_block:
-            blocks.append(["🍻 <b>БАРЫ</b>" if block == "bars" else "🛒 <b>МАГАЗИНЫ</b>"])
+            blocks.append(["<b>Бары</b>" if block == "bars" else "<b>Магазины</b>"])
             last_block, last_group = block, None
         if group != last_group:
             blocks[-1].append(group)
             last_group = group
         blocks[-1].append(line)
-    since = to_yerevan(parse_iso(state.started_at)).strftime("%d.%m")
-    footer = f"<i>⭐ — возможно, впервые в Ереване (с тех пор, как следим, с {since})</i>"
-    tail = (f"…и ещё {hidden} — на сайте\n" if hidden else "") + footer
+    tail = f"…и ещё {hidden} — на сайте" if hidden else None
     header = f"🍺 <b>Новое в Ереване</b> · {WEEKDAYS[local.weekday()]}, {local.day} {MONTHS[local.month - 1]}"
-    text = "\n\n".join([header, *("\n".join(b) for b in blocks), tail])
+    text = "\n\n".join(filter(None, [header, *("\n".join(b) for b in blocks), tail]))
 
     manual_ids = []
     for p, k in pairs:

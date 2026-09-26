@@ -80,25 +80,23 @@ def full_state() -> State:
 
 EXPECTED = """🍺 <b>Новое в Ереване</b> · чт, 24 сен
 
-🍻 <b>БАРЫ</b>
-<b>Gargoyle Bar</b> ✅
-• ⭐ Zagovor — Black Sails · Imperial Stout 11% · 🔥4.12
-• Ayinger Privatbrauerei — Celebrator · Doppelbock 6.7% · 🔥3.76 · 2300 ֏
-• A&amp;B — Tom &amp; &lt;Jerry&gt; · Sour · 🔥3.75
-<b>Beatles Pub</b> ✅
-• Mystery Lager · 3.74
-🏭 <b>Новые сорта пивоварен</b>
-• ⭐ Dargett — DDH NEIPA · 6.5% (новый сорт в Untappd, где наливают — пока неизвестно)
-👀 <b>Похоже, появилось</b>
-• Dors — Smoked Porter · в Dors Craft Beer &amp; Kitchen, розлив, видели 2 дня назад
-✍️ <b>Со слов</b>
-• 379 — Hazy Pale · в Tap Station (от Аня)
+<b>Бары</b>
+<b>Gargoyle Bar</b>
+<b>4.12</b> Black Sails · Zagovor · Imperial Stout 11%
+<b>3.76</b> Celebrator · Ayinger Privatbrauerei · Doppelbock 6.7% · 2300 ֏
+<b>3.75</b> Tom &amp; &lt;Jerry&gt; · A&amp;B · Sour
+<b>Beatles Pub</b>
+3.74 Mystery Lager
+<i>Новые сорта пивоварен</i>
+DDH NEIPA · Dargett · 6.5% (новый сорт в Untappd, где наливают — пока неизвестно)
+<i>Похоже, появилось</i>
+Smoked Porter · Dors · Dors Craft Beer &amp; Kitchen, розлив, видели 2 дня назад
+<i>Со слов</i>
+Hazy Pale · 379 · Tap Station (от Аня)
 
-🛒 <b>МАГАЗИНЫ</b>
+<b>Магазины</b>
 <b>Beer City</b>
-• ⭐ Konix — Cassis Ruby · 0.45 л банка · 1900 ֏ + ещё в Parma
-
-<i>⭐ — возможно, впервые в Ереване (с тех пор, как следим, с 20.09)</i>"""
+Cassis Ruby · Konix · 0.45 л банка · 1900 ֏ + ещё в Parma"""
 
 
 def test_build_digest_full_text():
@@ -114,6 +112,22 @@ def test_build_digest_full_text():
     assert d.to_admin is True
 
 
+def test_digest_text_has_no_star_map_or_section_emoji():
+    d = build_digest(full_state(), CONFIG, SETTINGS, NOW)
+    assert d.html.count("🍺") == 1
+    assert not any(ch in d.html for ch in "⭐🔥🍻🛒✅👀✍🏭")
+
+
+def test_a_shop_pair_matched_to_untappd_shows_the_canonical_name_and_brewery():
+    s = new_state(pairs={"beer-city": {"n:x": pair(yv(24, 10), kind="shop", name="Shop Name", brewery="Shop Brew",
+                                                   u_name="Rise Of The Zombies", u_brewery="Plan B Brewery",
+                                                   style="Pale Ale", abv=6.3, rating=3.87, volume_ml=330,
+                                                   container="can", price_amd=2700)}})
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert "\n<b>3.87</b> Rise Of The Zombies · Plan B Brewery · Pale Ale 6.3% · 0.33 л банка · 2700 ֏" in d.html
+    assert "Shop Name" not in d.html
+
+
 def test_pending_lists():
     s = full_state()
     assert ("gargoyle", "u:4") not in pending_pairs(s)      # baseline
@@ -127,7 +141,7 @@ def test_checkin_seen_today_and_unknown_serving():
     s = new_state(pairs={"dors": {"u:8": pair(yv(24, 9), kind="checkin", name="Pils", serving=None,
                                              checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert "• Pils · в Dors Craft Beer &amp; Kitchen, подача неизвестна, видели сегодня" in d.html
+    assert "\nPils · Dors Craft Beer &amp; Kitchen, подача неизвестна, видели сегодня" in d.html
 
 
 @pytest.mark.parametrize("days_ago,expected", [
@@ -142,29 +156,29 @@ def test_checkin_seen_ago_uses_correct_russian_plural(days_ago, expected):
     assert expected in d.html
 
 
-@pytest.mark.parametrize("rating, expected", [(4.12, "🔥4.12"), (3.75, "🔥3.75"), (3.5, "3.50")])
+@pytest.mark.parametrize("rating, expected", [(4.12, "<b>4.12</b>"), (3.75, "<b>3.75</b>"), (3.5, "3.50")])
 def test_checkin_shows_a_cached_rating_with_the_hot_threshold(rating, expected):
     """v1.1 §2: a check-in row with a rating backfilled from state.beers (menu or the beer-page cache)
-    shows it exactly like a menu row -- 🔥 only at/above hot_rating, else a plain number."""
+    shows it exactly like a menu row -- bold only at/above hot_rating, else a plain number."""
     s = new_state(pairs={"dors": {"u:8": pair(yv(22, 20), kind="checkin", name="Smoked Porter", serving="Draft",
                                               checkin_at=iso(yv(22, 20)), rating=rating)}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert f"Smoked Porter · {expected} · в Dors" in d.html
+    assert f"\n{expected} Smoked Porter · Dors Craft Beer" in d.html
 
 
 def test_shop_checkin_goes_to_the_shops_block():
-    """v1.1: a check-in at a shop (e.g. Houl) belongs in МАГАЗИНЫ, not БАРЫ."""
+    """v1.1: a check-in at a shop (e.g. Houl) belongs in Магазины, not Бары."""
     s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving="Bottle",
                                               checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    shops_block = d.html.split("МАГАЗИНЫ</b>", 1)[1]
-    assert "Stout" in shops_block and "👀" in shops_block
-    assert "БАРЫ</b>" not in d.html
+    shops_block = d.html.split("Магазины</b>", 1)[1]
+    assert "Stout" in shops_block and "Похоже, появилось" in shops_block
+    assert "Бары</b>" not in d.html
 
 
 def test_bar_and_shop_checkins_dont_interleave_blocks():
     """I-2: a manual entry at a bar + a shop check-in (Houl) + a bar check-in + a shop item must not
-    interleave БАРЫ/МАГАЗИНЫ — all bars first, then all shops, each header exactly once."""
+    interleave Бары/Магазины — all bars first, then all shops, each header exactly once."""
     s = new_state(pairs={
         "tap-station": {"n:379 hazy pale": pair(yv(24, 14), kind="manual", brewery="379", name="Hazy Pale",
                                                 manual_by="Аня")},
@@ -175,9 +189,9 @@ def test_bar_and_shop_checkins_dont_interleave_blocks():
         "beer-city": {"n:x": pair(yv(24, 10), kind="shop", name="X")},
     })
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert d.html.count("БАРЫ</b>") == 1
-    assert d.html.count("МАГАЗИНЫ</b>") == 1
-    bars_pos, shops_pos = d.html.index("БАРЫ</b>"), d.html.index("МАГАЗИНЫ</b>")
+    assert d.html.count("Бары</b>") == 1
+    assert d.html.count("Магазины</b>") == 1
+    bars_pos, shops_pos = d.html.index("Бары</b>"), d.html.index("Магазины</b>")
     assert bars_pos < shops_pos
     assert d.html.index("Stout") > shops_pos
     assert d.html.index("X") > shops_pos
@@ -193,7 +207,7 @@ def test_serving_ru_translates_container_types(serving, ru):
     s = new_state(pairs={"houl": {"u:9": pair(yv(24, 9), kind="checkin", name="Stout", serving=serving,
                                               checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert f"в Houl, {ru}, видели" in d.html
+    assert f"Houl, {ru}, видели" in d.html
 
 
 def test_to_admin_false_after_preview_digests():
@@ -222,19 +236,18 @@ def cap_state(bars: int, shops: int) -> State:
 def test_cap_hides_tail_but_keeps_all_pairs():
     d = build_digest(cap_state(17, 0), CONFIG, SETTINGS, NOW)
     assert (d.lines_total, d.lines_shown) == (17, 15)
-    assert d.html.count("\n• ") == 15
-    assert "• Bar 14" in d.html and "Bar 15" not in d.html and "Bar 16" not in d.html
-    assert d.html.endswith("• Bar 14\n\n…и ещё 2 — на сайте\n"
-                           "<i>⭐ — возможно, впервые в Ереване (с тех пор, как следим, с 20.09)</i>")
+    assert d.html.count("\nBar ") == 15
+    assert "Bar 14" in d.html and "Bar 15" not in d.html and "Bar 16" not in d.html
+    assert d.html.endswith("Bar 14\n\n…и ещё 2 — на сайте")
     assert len(d.pairs) == 17
 
 
 def test_cap_drops_empty_shop_block():
     d = build_digest(cap_state(15, 2), CONFIG, SETTINGS, NOW)
-    assert "МАГАЗИНЫ" not in d.html and "Beer City" not in d.html
+    assert "Магазины" not in d.html and "Beer City" not in d.html
     assert "…и ещё 2 — на сайте" in d.html
     d = build_digest(cap_state(12, 5), CONFIG, SETTINGS, NOW)
-    assert "• Shop 02" in d.html and "Shop 03" not in d.html
+    assert "Shop 02" in d.html and "Shop 03" not in d.html
 
 
 def test_drop_stale_events():
@@ -376,9 +389,9 @@ def test_a_whole_board_entered_by_hand_is_one_line_about_the_place():
                             manual_id="tap-station|2026-09-24|Instagram бара", manual_by="Instagram бара")
         for i in range(6)})
     d = build_digest(st, CONFIG, SETTINGS, NOW)
-    assert "<b>Tap Station</b>: обновился список, 7 позиций (от Instagram бара, Аня) — на сайте" in d.html
+    assert "\n<b>Tap Station</b>: обновился список, 7 позиций (от Instagram бара, Аня) — на сайте" in d.html
     assert "Beer 0" not in d.html and "Hazy Pale" not in d.html
-    assert d.html.count("✍️ <b>Со слов</b>") == 1
+    assert d.html.count("<i>Со слов</i>") == 1
     # every entry is still marked as announced
     assert ("tap-station", "n:beer 5") in d.pairs and "tap-station|2026-09-24|Instagram бара" in d.manual_ids
 
@@ -405,7 +418,7 @@ def test_a_beer_with_several_servings_is_announced_by_its_first_one_as_before():
 
     several, single = digest_with(servings=servings), digest_with()
     assert several.html == single.html
-    assert "Zagovor — Black Sails · 🔥3.90 · 2300 ֏" in several.html and "1500 ֏" not in several.html   # first price only
+    assert "<b>3.90</b> Black Sails · Zagovor · 2300 ֏" in several.html and "1500 ֏" not in several.html   # first price only
     assert (several.lines_total, several.pairs, several.manual_ids) == (2, single.pairs, ["m1"])
 
 
