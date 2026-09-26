@@ -1,4 +1,5 @@
 import copy
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -28,7 +29,8 @@ CONFIG = Config(
     places={
         "gargoyle": place("gargoyle", "Gargoyle Bar", "bar", {"untappd_menu": {"slug": "g", "venue_id": 1}}),
         "beatles": place("beatles", "Beatles Pub", "bar", {"untappd_menu": {"slug": "b", "venue_id": 2}}),
-        "dors": place("dors", "Dors Craft Beer & Kitchen", "brewpub", {"untappd_checkins": {"slug": "d", "venue_id": 3}}),
+        "dors": replace(place("dors", "Dors Craft Beer & Kitchen", "brewpub", {"untappd_checkins": {"slug": "d", "venue_id": 3}}),
+                      short_name="Dors"),
         "tap-station": place("tap-station", "Tap Station", "bar", {"untappd_checkins": {"slug": "t", "venue_id": 4}}),
         "beer-city": place("beer-city", "Beer City", "shop", {"beercity": {}}),
         "parma": place("parma", "Parma", "shop", {"parma": {}}),
@@ -90,7 +92,7 @@ EXPECTED = """🍺 <b>Новое в Ереване</b> · чт, 24 сен
 <i>Новые сорта пивоварен</i>
 DDH NEIPA · Dargett · 6.5% (новый сорт в Untappd, где наливают — пока неизвестно)
 <i>Похоже, появилось</i>
-Smoked Porter · Dors · Dors Craft Beer &amp; Kitchen, розлив, видели 2 дня назад
+Smoked Porter · Dors, розлив, видели 2 дня назад
 <i>Со слов</i>
 Hazy Pale · 379 · Tap Station (от Аня)
 
@@ -128,6 +130,16 @@ def test_a_shop_pair_matched_to_untappd_shows_the_canonical_name_and_brewery():
     assert "Shop Name" not in d.html
 
 
+def test_the_brewery_is_dropped_when_it_is_the_place_itself_and_full_names_give_way_to_short_ones():
+    s = new_state(pairs={"dors": {"u:8": pair(yv(24, 9), kind="checkin", brewery="DORS", name="Pils", serving="Draft",
+                                             style="Pilsner", checkin_at=iso(yv(24, 9)))},
+                         "tap-station": {"n:x": pair(yv(24, 9), kind="manual", brewery="Dors", name="X", manual_by="Аня")}})
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert "\nPils · Pilsner · Dors, розлив, видели сегодня" in d.html
+    assert "\nX · Dors · Tap Station (от Аня)" in d.html      # a brewery that is another place's name stays
+    assert "Craft Beer" not in d.html
+
+
 def test_pending_lists():
     s = full_state()
     assert ("gargoyle", "u:4") not in pending_pairs(s)      # baseline
@@ -141,7 +153,7 @@ def test_checkin_seen_today_and_unknown_serving():
     s = new_state(pairs={"dors": {"u:8": pair(yv(24, 9), kind="checkin", name="Pils", serving=None,
                                              checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert "\nPils · Dors Craft Beer &amp; Kitchen, подача неизвестна, видели сегодня" in d.html
+    assert "\nPils · Dors, подача неизвестна, видели сегодня" in d.html
 
 
 @pytest.mark.parametrize("days_ago,expected", [
@@ -163,7 +175,7 @@ def test_checkin_shows_a_cached_rating_with_the_hot_threshold(rating, expected):
     s = new_state(pairs={"dors": {"u:8": pair(yv(22, 20), kind="checkin", name="Smoked Porter", serving="Draft",
                                               checkin_at=iso(yv(22, 20)), rating=rating)}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert f"\n{expected} Smoked Porter · Dors Craft Beer" in d.html
+    assert f"\n{expected} Smoked Porter · Dors, розлив" in d.html
 
 
 def test_shop_checkin_goes_to_the_shops_block():

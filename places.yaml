@@ -17,6 +17,7 @@
 places:
   - id: gargoyle
     name: Gargoyle Bar
+    short_name: Gargoyle
     kind: bar
     address: "Рафаэля Исраеляна 73"
     map_url: "https://yandex.com/maps/org/gargoyle_kruzhok/84867664974/"
@@ -26,6 +27,7 @@ places:
 
   - id: beatles
     name: Beatles Pub
+    short_name: Beatles
     kind: bar
     address: "Пушкина 60"
     map_url: "https://yandex.com/maps/org/bitlz/7270608616/"
@@ -35,6 +37,7 @@ places:
 
   - id: dargett-brewpub
     name: Dargett Brewpub
+    short_name: Dargett
     kind: brewpub
     address: "Арама 72"
     enabled: true
@@ -46,6 +49,7 @@ places:
 
   - id: dors
     name: Dors Craft Beer & Kitchen
+    short_name: Dors
     kind: brewpub
     # адрес и метка — по карточке бара на Яндекс Картах (Павстос Бюзанд), ссылку дал Олег
     address: "Павстоса Бюзанда"
@@ -58,6 +62,7 @@ places:
 
   - id: pulpulak
     name: Pulpulak Craft Beer & Kitchen
+    short_name: Pulpulak
     kind: brewpub
     address: "Арама 2"
     enabled: true

@@ -311,6 +311,20 @@ def test_a_place_may_carry_its_own_street_address(tmp_path):
     assert cfg.places["gargoyle"].addresses == []
 
 
+def test_a_place_may_carry_a_short_name_for_the_digest(tmp_path):
+    extra = MINIMAL + """
+  - id: dors
+    name: Dors Craft Beer & Kitchen
+    short_name: Dors
+    kind: brewpub
+    sources:
+      untappd_checkins: {slug: dors-craft-beer-kitchen, venue_id: 9312556}
+"""
+    cfg = load_config(write(tmp_path, extra))
+    assert cfg.places["dors"].short == "Dors"
+    assert cfg.places["gargoyle"].short == cfg.places["gargoyle"].name   # optional: falls back to the name
+
+
 def test_a_multi_venue_places_venue_addresses_win_over_its_own_address(tmp_path):
     extra = MINIMAL + """
   - id: beer-academy

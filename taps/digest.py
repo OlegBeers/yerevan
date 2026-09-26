@@ -92,10 +92,13 @@ def _style_abv(info: dict) -> str | None:
     return esc(text) or None
 
 
-def _line(info: dict, rating: str | None, details: list[str | None], also: list[str]) -> str:
-    """rating, name, brewery, then the details; a shop pair matched to Untappd shows Untappd's name/brewery."""
+def _line(info: dict, rating: str | None, details: list[str | None], also: list[str], place: str | None = None) -> str:
+    """rating, name, brewery, then the details; a shop pair matched to Untappd shows Untappd's name/brewery.
+    A brewery that is the place itself (Dors at Dors) is dropped: the line already ends with the place."""
     name = info.get("u_name") or info.get("name") or info.get("title")
     brewery = info.get("u_brewery") or info.get("brewery")
+    if brewery and place and brewery.casefold() == place.casefold():
+        brewery = None
     text = " · ".join(filter(None, (esc(name) if name else None, esc(brewery) if brewery else None, *details)))
     if rating:
         text = f"{rating} {text}"
@@ -183,8 +186,8 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
             return [_style_abv(info), _pack(info), _price(info)]
         if section == "checkin":
             serving = info.get("serving")
-            return [_style_abv(info), f"{esc(place.name)}, {esc(SERVING_RU.get(serving, serving))}, {_seen(info, rec, now)}"]
-        return [_style_abv(info), f"{esc(place.name)} (от {esc(info.get('manual_by') or '?')})"]
+            return [_style_abv(info), f"{esc(place.short)}, {esc(SERVING_RU.get(serving, serving))}, {_seen(info, rec, now)}"]
+        return [_style_abv(info), f"{esc(place.short)} (от {esc(info.get('manual_by') or '?')})"]
 
     group_header = {"checkin": "<i>Похоже, появилось</i>", "manual": "<i>Со слов</i>"}
     entries: list[tuple[str, str, str]] = []   # (block, group header, line)
@@ -199,15 +202,15 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
             for pid in listed:
                 by = sorted({r.info.get("manual_by") or "?" for p, k in pairs if p == pid
                              for r in [state.pairs[p][k]] if (r.info.get("kind") or r.info.get("source")) == "manual"})
-                line = (f"<b>{esc(config.places[pid].name)}</b>: обновился список, "
+                line = (f"<b>{esc(config.places[pid].short)}</b>: обновился список, "
                         f"{per_place[pid]} {_positions_word(per_place[pid])} (от {esc(', '.join(by))}) — на сайте")
                 block = "shops" if config.places[pid].kind == "shop" else "bars"
                 entries.append((block, group_header["manual"], line))
         for key, found in sorted(groups[section].items(), key=sort_key):
             place, rec = found[0]
             line = _line(rec.info, _rating(rec.info, settings), details(section, place, rec),
-                         [p.name for p, _ in found[1:]])
-            header = group_header.get(section) or f"<b>{esc(place.name)}</b>"
+                         [p.short for p, _ in found[1:]], place.short)
+            header = group_header.get(section) or f"<b>{esc(place.short)}</b>"
             # v1.1: a shop's own check-ins (e.g. Houl) belong in the shops block, not bars
             block = "shops" if section == "shop" or (section == "checkin" and place.kind == "shop") else "bars"
             entries.append((block, header, line))

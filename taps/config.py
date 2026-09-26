@@ -20,7 +20,7 @@ SOURCE_PARAMS: dict[str, dict[str, type]] = {
 ID_RE = re.compile(r"[a-z0-9][a-z0-9-]*")
 CHECKIN_VENUE_FIELDS = ("slug", "venue_id", "address")
 PLACE_FIELDS = ("id", "name", "kind", "sources", "enabled", "brewery_id", "brewery_name", "untappd_venue_id",
-                "merged_from", "address", "map_url")
+                "merged_from", "address", "map_url", "short_name")
 BREWERY_FIELDS = ("id", "name", "brewery_id", "slug", "list_enabled")
 SETTINGS_FIELDS = ("preview_digests", "digest_time", "digest_max_lines", "hot_rating", "untappd_daily_pages",
                    "boost_until", "boost_daily_pages", "boost_search_per_run", "discovery_daily_until")
@@ -44,6 +44,11 @@ class Place:
     merged_from: tuple[str, ...] = ()   # old place ids merged into this one (state.merge_places), v1.1
     address: str | None = None          # street address of a single-venue place, as people write it (v1.4)
     map_url: str | None = None          # an exact Yandex Maps link (a place card); wins over the address search
+    short_name: str | None = None       # how the Telegram digest names the place; the site keeps `name`
+
+    @property
+    def short(self) -> str:
+        return self.short_name or self.name
 
     def source_keys(self) -> list[str]:
         return [f"{s}:{self.id}" for s in self.sources]
@@ -232,6 +237,7 @@ def _place(raw: Any, n: int) -> Place:
         merged_from=tuple(merged_from),
         address=_get(d, "address", str, where, None),
         map_url=_map_url(d, where),
+        short_name=_get(d, "short_name", str, where, None),
     )
 
 
