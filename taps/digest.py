@@ -17,6 +17,7 @@ CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег"
 SERVING_RU = {"Draft": "розлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
              "Cask": "из бочки", None: "подача неизвестна"}
 BREWERY_NEW_NOTE = "новый сорт в Untappd, где наливают — пока неизвестно"
+BLOCK_RULE = "──────────"
 MANUAL_LIST_MAX = 5   # more manual entries from one place: one "list updated" line instead of every beer
 
 esc = html.escape
@@ -236,7 +237,8 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
         blocks[-1].append(line)
     tail = f"…и ещё {hidden} — на сайте" if hidden else None
     header = f"🍺 <b>Новое в Ереване</b> · {WEEKDAYS[local.weekday()]}, {local.day} {MONTHS[local.month - 1]}"
-    text = "\n\n".join(filter(None, [header, *("\n".join(b) for b in blocks), tail]))
+    body = f"\n\n{BLOCK_RULE}\n\n".join("\n".join(b) for b in blocks)   # a rule between bars and shops
+    text = "\n\n".join(filter(None, [header, body, tail]))
 
     manual_ids = []
     for p, k in pairs:

@@ -96,6 +96,8 @@ Smoked Porter · Dors, розлив, видели 2 дня назад
 <i>Со слов</i>
 Hazy Pale · 379 · Tap Station (от Аня)
 
+──────────
+
 🛒 <b>Магазины</b>
 <b>Beer City</b>
 Cassis Ruby · Konix · 0.45 л банка · 1900 ֏ + ещё в Parma"""
@@ -442,3 +444,11 @@ def test_a_pair_of_merged_entries_marks_every_entry_id_as_announced():
     assert digest.manual_ids == ["m1", "m2"]
     mark_sent(s, digest, yv(24, 18, 30))
     assert s.announced_manual == ["m1", "m2"]
+
+
+def test_bars_and_shops_are_split_by_a_rule_and_a_single_block_has_none():
+    d = build_digest(full_state(), CONFIG, SETTINGS, NOW)
+    assert d.html.count("──────────") == 1
+    assert d.html.index("🍻 <b>Бары</b>") < d.html.index("──────────") < d.html.index("🛒 <b>Магазины</b>")
+    only_bars = new_state(pairs={"gargoyle": {"u:1": pair(yv(24, 10), kind="menu", name="X", brewery="Y")}})
+    assert "──────────" not in build_digest(only_bars, CONFIG, SETTINGS, NOW).html
