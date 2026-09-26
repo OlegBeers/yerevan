@@ -300,10 +300,10 @@ def test_every_beer_lists_a_block_per_place_with_its_own_source_price_and_addres
     js = _js(_soup())
     assert "function placeBlock(r, name, withServings = true)" in js
     block_fn = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    for part in ("sourceBadge(r)", "servingChips(r)", "seenNote(r)", "mapLinkNode(place)", "shopNameLine(r, name)"):
+    for part in ("sourceBadge(r)", "servingChips(r)", "seenNote(r)", "shopNameLine(r, name)"):
         assert part in block_fn, part
-    assert block_fn.index("sourceBadge(r)") < block_fn.index("servingChips(r)") < block_fn.index("mapLinkNode(place)") \
-        < block_fn.index("shopNameLine(r, name)")                    # the four lines of a block, in this order
+    assert "mapLinkNode" not in block_fn                             # the pin is the map link; no address text repeated
+    assert block_fn.index("sourceBadge(r)") < block_fn.index("servingChips(r)") < block_fn.index("shopNameLine(r, name)")
     assert re.search(r"g\.rows\.map\(\(r\) => placeBlock\(r, g\.name\)\)", js)
 
 
@@ -578,7 +578,7 @@ def test_the_map_pin_follows_the_place_name_and_the_address_line_follows_the_blo
     """A pin link on the name's line (place blocks of cards and table, the venues tab); the address line under it."""
     js = _js(_soup())
     block = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert "placeNameNode(place), mapPinNode(place)" in block and "mapLinkNode(place)" in block
+    assert "placeNameNode(place), mapPinNode(place)" in block and "mapLinkNode" not in block
     venue = re.search(r"function venueNode\(v\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "placeNameNode(place), mapPinNode(place)" in venue and "mapLinkNode(place)" in venue
 

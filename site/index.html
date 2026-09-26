@@ -771,7 +771,6 @@ function placeBlock(r, name, withServings = true) {   // one place a beer is at:
     el("div", { class: "pb-head" }, logoNode(place.name, place.logo, 20),
       el("span", { class: "pb-name" }, placeNameNode(place), mapPinNode(place)), sourceBadge(r)),
     chipsNode([...(withServings ? servingChips(r) : []), seenNote(r)].filter(Boolean)),
-    mapLinkNode(place),
     shopNameLine(r, name));
 }
 function table(groups) {
