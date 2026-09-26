@@ -287,7 +287,7 @@ def test_russian_wording_on_screen_is_what_the_page_has_always_said(open_page):
     assert titles(page, "#rows .chip-flag") == ["возможно, впервые в Ереване", "новинка за 7 дней"]
     assert "Верифицирован в Untappd" in titles(page, "#rows .verified")
     assert titles(page, "#rows .hot") == ["рейтинг Untappd"] and titles(page, "#rows .inferred") == ["определено по названию"]
-    assert page.get_attribute("#rows .map-link", "aria-label") == "Открыть на Яндекс Картах: 1 Test St"
+    assert page.get_attribute("#rows .map-pin", "aria-label") == "Открыть на Яндекс Картах: 1 Test St"
     page.click("#tab-bars")
     tips = titles(page, "#places .place")
     assert tips[1].startswith("1 Test St · меню обновлено 2 дня назад · проверено сегодня в ")
@@ -325,7 +325,7 @@ def test_english_wording_on_screen(open_page):
     assert titles(page, "#rows .chip-flag") == ["possibly the first time in Yerevan", "new in the last 7 days"]
     assert "Verified on Untappd" in titles(page, "#rows .verified")
     assert titles(page, "#rows .hot") == ["Untappd rating"] and titles(page, "#rows .inferred") == ["guessed from the name"]
-    assert page.get_attribute("#rows .map-link", "aria-label") == "Open in Yandex Maps: 1 Test St"
+    assert page.get_attribute("#rows .map-pin", "aria-label") == "Open in Yandex Maps: 1 Test St"
     page.click("#tab-bars")
     tips = titles(page, "#places .place")
     assert tips[1].startswith("1 Test St · menu updated 2 days ago · checked today at ")
@@ -521,7 +521,7 @@ def test_every_card_has_the_same_anatomy(open_page, lang):
     page.wait_for_function("!document.querySelector('#rows img.thumb[src*=\"missing\"]')")   # the broken picture was swapped out
     shapes = page.evaluate(CARDS_JS)
     assert len(shapes) == 13
-    order = ["chips", "map-link", "shop-name"]
+    order = ["chips", "shop-name"]   # no address line: the pin beside the name is the map link
     for shape in shapes:
         assert shape["parts"] in (["card-head", "meta", "place-blocks", "card-foot"], ["card-head", "place-blocks", "card-foot"]), shape["title"]
         assert shape["head"][:2] == ["thumb", "card-name"] and shape["head"][2:] in ([], ["rate-slot"]), shape["title"]
@@ -605,9 +605,10 @@ def test_price_and_serving_pills_and_the_seen_note_belong_to_their_place_block(o
         serving: [...b.querySelectorAll('.chip-serving')].map((c) => c.textContent),
         note: [...b.querySelectorAll('.chip-note')].map((c) => [c.textContent, c.firstChild.textContent]),
         order: [...b.children].map((c) => c.getBoundingClientRect().top),
-        map: !!b.querySelector('.map-link'), shopName: (b.querySelector('.shop-name') || {}).textContent || null,
+        addressLine: !!b.querySelector('.map-link'), shopName: (b.querySelector('.shop-name') || {}).textContent || null,
       }))}))""")
     by_title = {card["title"]: card["blocks"] for card in blocks}
+    assert not any(block["addressLine"] for card_blocks in by_title.values() for block in card_blocks)   # the pin is the only map link
     multi = by_title["Multi Beer"]
     bar, shop = multi
     assert bar["place"].startswith("Gargoyle Bar") and shop["place"] == "Beer City"
@@ -623,7 +624,7 @@ def test_price_and_serving_pills_and_the_seen_note_belong_to_their_place_block(o
     assert by_title["Friend Sour"][0]["source"] == sources["manual"]
     for card_blocks in by_title.values():
         for block in card_blocks:
-            assert block["order"] == sorted(block["order"])                                       # top to bottom: head, pills, address, shop name
+            assert block["order"] == sorted(block["order"])                                       # top to bottom: head, pills, shop name
     assert problems == []
 
 
@@ -785,7 +786,7 @@ def test_the_map_pin_sits_on_the_line_of_the_place_name_with_a_44px_hit_area(ope
     })""")
     pinned = [b for b in blocks if b["pin"]]
     assert "Beer City" in {b["name"] for b in blocks if not b["pin"]}                           # no map_url: no pin...
-    assert all(b["line"] is None for b in blocks if not b["pin"])                               # ...and no line
+    assert all(b["line"] is None for b in blocks)                                               # no address line in a place block, pinned or not
     assert {b["name"] for b in pinned} >= {"Gargoyle Bar✓", "Beatles Pub"}
     for b in pinned:
         assert abs(b["pin"]["width"] - 44) < 0.5 and abs(b["pin"]["height"] - 44) < 0.5, b["name"]   # the hit area
@@ -794,8 +795,8 @@ def test_the_map_pin_sits_on_the_line_of_the_place_name_with_a_44px_hit_area(ope
         assert b["head"]["height"] < 34, b["name"]                                                    # the pin does not make the head taller
         assert b["label"].startswith(where)
     by_name = {b["name"]: b for b in pinned}
-    assert by_name["Gargoyle Bar✓"]["title"] == "1 Test St" and by_name["Gargoyle Bar✓"]["line"] == "1 Test St"   # the address stays as a line
-    assert by_name["Beatles Pub"]["line"] is None and by_name["Beatles Pub"]["title"] == ("на карте" if lang == "ru" else "on the map")
+    assert by_name["Gargoyle Bar✓"]["title"] == "1 Test St" and by_name["Gargoyle Bar✓"]["label"] == where + "1 Test St"   # the pin carries the address
+    assert by_name["Beatles Pub"]["title"] == ("на карте" if lang == "ru" else "on the map")
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert problems == []
 
