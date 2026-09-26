@@ -82,7 +82,7 @@ def full_state() -> State:
 
 EXPECTED = """🍺 <b>Новое в Ереване</b> · чт, 24 сен
 
-<b>Бары</b>
+🍻 <b>Бары</b>
 <b>Gargoyle Bar</b>
 <b>4.12</b> Black Sails · Zagovor · Imperial Stout 11%
 <b>3.76</b> Celebrator · Ayinger Privatbrauerei · Doppelbock 6.7% · 2300 ֏
@@ -96,7 +96,7 @@ Smoked Porter · Dors, розлив, видели 2 дня назад
 <i>Со слов</i>
 Hazy Pale · 379 · Tap Station (от Аня)
 
-<b>Магазины</b>
+🛒 <b>Магазины</b>
 <b>Beer City</b>
 Cassis Ruby · Konix · 0.45 л банка · 1900 ֏ + ещё в Parma"""
 
@@ -114,10 +114,11 @@ def test_build_digest_full_text():
     assert d.to_admin is True
 
 
-def test_digest_text_has_no_star_map_or_section_emoji():
+def test_digest_text_has_emoji_only_in_the_title_and_the_two_section_headers():
     d = build_digest(full_state(), CONFIG, SETTINGS, NOW)
     assert d.html.count("🍺") == 1
-    assert not any(ch in d.html for ch in "⭐🔥🍻🛒✅👀✍🏭")
+    assert "🍻 <b>Бары</b>" in d.html and "🛒 <b>Магазины</b>" in d.html
+    assert not any(ch in d.html for ch in "⭐🔥✅👀✍🏭")
 
 
 def test_a_shop_pair_matched_to_untappd_shows_the_canonical_name_and_brewery():

@@ -228,7 +228,7 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
     last_block = last_group = None
     for block, group, line in shown:
         if block != last_block:
-            blocks.append(["<b>Бары</b>" if block == "bars" else "<b>Магазины</b>"])
+            blocks.append(["🍻 <b>Бары</b>" if block == "bars" else "🛒 <b>Магазины</b>"])
             last_block, last_group = block, None
         if group != last_group:
             blocks[-1].append(group)
