@@ -226,6 +226,30 @@ def test_colours_are_custom_properties_with_dark_variant():
     assert "overflow-x: auto" in css  # wide table scrolls inside its box, never the page
 
 
+def _contrast(foreground, background):
+    """WCAG contrast ratio of two #rrggbb colours."""
+    def luminance(color):
+        channels = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        r, g, b = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    light, dark = sorted((luminance(foreground), luminance(background)), reverse=True)
+    return (light + 0.05) / (dark + 0.05)
+
+
+def test_muted_text_and_the_hot_rating_keep_aa_contrast_on_every_surface_in_both_themes():
+    """Chips and lines of muted text sit on the page, the card and the chip surface; the hot chip on the card."""
+    css = _css(_soup())
+    tokens = lambda block: dict(re.findall(r"(--[\w-]+):\s*(#[0-9a-fA-F]{6})", block))
+    light = tokens(re.search(r":root\s*\{([^}]*)\}", css).group(1))
+    dark = {**light, **tokens(re.search(r"prefers-color-scheme: dark\)\s*\{\s*:root\s*\{([^}]*)\}", css).group(1))}
+    assert dark["--bg"] != light["--bg"]
+    for theme in (light, dark):
+        for surface in ("--bg", "--surface", "--surface-2"):
+            assert _contrast(theme["--muted"], theme[surface]) >= 4.5, (theme["--bg"], surface)
+        assert _contrast(theme["--hot"], theme["--surface"]) >= 4.5, theme["--bg"]
+        assert _contrast(theme["--danger"], theme["--surface-2"]) >= 4.5, theme["--bg"]
+
+
 def test_table_headers_use_new_since_label():
     js = _js(_soup())
     assert '"Появилось"' in js
