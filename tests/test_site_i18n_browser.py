@@ -305,7 +305,7 @@ def test_russian_wording_on_screen_is_what_the_page_has_always_said(open_page):
                                             "11 чекинов за 60 дней", "21 чекин за 60 дней", "22 чекина за 60 дней"]
     assert all(re.fullmatch(r"последний \d\d\.\d\d", line[1]) for line in lines[:5]) and len(lines[5]) == 1
     assert text(page, "#venues li:nth-child(1) .tracked-badge") == "в списке"
-    assert text(page, "#venues li:nth-child(6) .map-link") == "на карте"
+    assert page.get_attribute("#venues li:nth-child(6) .map-pin", "aria-label").startswith("Открыть на Яндекс Картах: ")   # no address: the pin alone
     assert problems == []
 
 
@@ -341,7 +341,7 @@ def test_english_wording_on_screen(open_page):
     assert all(re.fullmatch(r"last check-in \d\d\.\d\d", line[1]) for line in lines[:5])
     assert text(page, "#venues li:nth-child(1) .tracked-badge") == "listed"
     assert text(page, "#venues li:nth-child(1) .map-link") == "3 Test Rd"
-    assert text(page, "#venues li:nth-child(6) .map-link") == "on the map"
+    assert page.get_attribute("#venues li:nth-child(6) .map-pin", "aria-label").startswith("Open in Yandex Maps: ")   # no address: the pin alone
     assert page.get_attribute("#venues li:nth-child(1) .map-link", "aria-label") == "Open in Yandex Maps: 3 Test Rd"
     assert problems == []
 
@@ -756,7 +756,8 @@ def test_a_venue_card_has_a_beer_cards_header_with_its_tag_pinned_to_the_top_rig
     venues = page.evaluate(VENUES_JS)
     assert len(venues) == 6
     for venue in venues:
-        assert venue["parts"] == ["card-head", "map-link", "meta", "meta"] or venue["parts"] == ["card-head", "map-link", "meta"]
+        assert venue["parts"] in (["card-head", "map-link", "meta", "meta"], ["card-head", "map-link", "meta"],   # an address line, or none:
+                                  ["card-head", "meta", "meta"], ["card-head", "meta"])                        # the pin beside the name is the link
         assert venue["head"][:2] == ["avatar", "card-name"] and venue["head"][2:] in ([], ["rate-slot"])
         assert abs(venue["logo"]["width"] - 44) < 0.5 and abs(venue["logo"]["height"] - 44) < 0.5
         assert abs(venue["name"]["left"] - venue["box"]["left"] - 56) < 0.5                       # the name starts where a beer's does
@@ -767,6 +768,34 @@ def test_a_venue_card_has_a_beer_cards_header_with_its_tag_pinned_to_the_top_rig
             assert venue["slot"] is None and abs(venue["name"]["right"] - venue["box"]["right"]) <= 0.5
     assert [bool(venue["tag"]) for venue in venues] == [True, False, True, True, True, False]     # n % 2 == 1 is tracked
     assert len({round(venue["tag"]["width"], 1) for venue in venues if venue["tag"]}) == 1        # one size
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
+@pytest.mark.parametrize("width", [375, 1280])
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_the_map_pin_sits_on_the_line_of_the_place_name_with_a_44px_hit_area(open_page, lang, width):
+    page, problems = open_page(layout_data(), width=width, query=f"?lang={lang}")
+    where = "Открыть на Яндекс Картах: " if lang == "ru" else "Open in Yandex Maps: "
+    blocks = page.evaluate("""() => [...document.querySelectorAll('#rows .place-block')].map((b) => {
+      const r = (e) => { const x = e.getBoundingClientRect(); return {left: x.left, right: x.right, top: x.top, width: x.width, height: x.height}; };
+      const pin = b.querySelector('.map-pin'), name = b.querySelector('.pb-name > :first-child'), line = b.querySelector('.map-link');
+      return {name: name.textContent, pin: pin && r(pin), nameBox: r(name), label: pin && pin.getAttribute('aria-label'),
+              title: pin && pin.title, line: line && line.textContent, head: r(b.querySelector('.pb-head'))};
+    })""")
+    pinned = [b for b in blocks if b["pin"]]
+    assert "Beer City" in {b["name"] for b in blocks if not b["pin"]}                           # no map_url: no pin...
+    assert all(b["line"] is None for b in blocks if not b["pin"])                               # ...and no line
+    assert {b["name"] for b in pinned} >= {"Gargoyle Bar✓", "Beatles Pub"}
+    for b in pinned:
+        assert abs(b["pin"]["width"] - 44) < 0.5 and abs(b["pin"]["height"] - 44) < 0.5, b["name"]   # the hit area
+        assert b["pin"]["left"] >= b["nameBox"]["right"] - 0.5, b["name"]                            # right after the name...
+        assert abs((b["pin"]["top"] + 22) - (b["nameBox"]["top"] + b["nameBox"]["height"] / 2)) < 3, b["name"]   # ...on its line
+        assert b["head"]["height"] < 34, b["name"]                                                    # the pin does not make the head taller
+        assert b["label"].startswith(where)
+    by_name = {b["name"]: b for b in pinned}
+    assert by_name["Gargoyle Bar✓"]["title"] == "1 Test St" and by_name["Gargoyle Bar✓"]["line"] == "1 Test St"   # the address stays as a line
+    assert by_name["Beatles Pub"]["line"] is None and by_name["Beatles Pub"]["title"] == ("на карте" if lang == "ru" else "on the map")
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert problems == []
 

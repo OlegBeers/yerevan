@@ -17,7 +17,7 @@
     --border: #e7e3dc;
     --text: #201d18;
     --muted: #756f65;
-    --accent: #c8891c;
+    --accent: #8a5a08;   /* 5.9:1 on white, 5.4:1 on --surface-2: AA for text; white text on it 5.9:1 */
     --on-accent: #ffffff;
     --hot: #d1451b;
     --danger: #b42318;
@@ -133,7 +133,9 @@
   }
   .verified { color: var(--accent); font-weight: 800; margin-left: 1px; }
   .map-link { display: flex; align-items: flex-start; gap: var(--s1); width: fit-content; max-width: 100%; color: var(--muted); font-size: .78rem; line-height: 1.3; text-decoration: none; }
-  .map-link svg { flex-shrink: 0; margin-top: 1px; color: var(--accent); }
+  .pb-name { display: inline-flex; align-items: center; gap: var(--s2); min-width: 0; }
+  .map-pin { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: var(--hit); height: var(--hit); margin: -15px -14px -15px -8px; color: var(--accent); }   /* a 44px hit area around a 14px pin, without taking the room */
+  .card-name { gap: var(--s2); }
   .map-link:hover { color: var(--text); text-decoration: none; }
   .tracked-badge { border-color: var(--accent); background: transparent; }
   .intro { color: var(--muted); margin: 0 0 var(--s4); max-width: 60ch; }
@@ -149,7 +151,7 @@
   .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
   td.num .chips { flex-direction: column; align-items: flex-end; }   /* several servings stack on the right, like the price they carry */
   .col-beer { min-width: 11rem; }
-  .col-where { min-width: 14rem; }
+  .col-where { min-width: 16rem; }
   .beer-cell { display: flex; align-items: flex-start; gap: var(--s2); }
   .since { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--s1); }   /* the flags go above the date when the column is tight */
   .nowrap { white-space: nowrap; }
@@ -612,12 +614,22 @@ function pinIcon() {   // a map pin in currentColor
   svg.append(path, hole);
   return svg;
 }
-function mapLinkNode(place) {   // "pin + address" as one link to the place on Yandex Maps; "on the map" when there is no address
+function mapUrl(place) {   // the place on Yandex Maps: https only
   const url = safeUrl(place.map_url);
-  return url && /^https:/i.test(url)
+  return url && /^https:/i.test(url) ? url : null;
+}
+function mapPinNode(place) {   // a small pin link right after the place name; the address is its tooltip
+  const url = mapUrl(place);
+  return url
+    ? el("a", { class: "map-pin", href: url, target: "_blank", rel: "noopener noreferrer", title: place.address || t("map.link"),
+        "aria-label": t("map.open", { where: place.address || place.name }) }, pinIcon())
+    : null;
+}
+function mapLinkNode(place) {   // the address line under a place, muted text, the same link as the pin; no address: no line, the pin is the link
+  const url = mapUrl(place);
+  return url && place.address
     ? el("a", { class: "map-link", href: url, target: "_blank", rel: "noopener noreferrer",
-        "aria-label": t("map.open", { where: place.address || place.name }) },
-      pinIcon(), el("span", null, place.address || t("map.link")))
+        "aria-label": t("map.open", { where: place.address }) }, place.address)
     : null;
 }
 function placeObj(id) {
@@ -756,7 +768,8 @@ const chipsNode = (chips) => (chips.length ? el("div", { class: "chips" }, ...ch
 function placeBlock(r, name, withServings = true) {   // one place a beer is at: who and from where, what it costs and how it is served, where it is
   const place = placeObj(r.place_id);
   return el("div", { class: "place-block" },
-    el("div", { class: "pb-head" }, logoNode(place.name, place.logo, 20), placeNameNode(place), sourceBadge(r)),
+    el("div", { class: "pb-head" }, logoNode(place.name, place.logo, 20),
+      el("span", { class: "pb-name" }, placeNameNode(place), mapPinNode(place)), sourceBadge(r)),
     chipsNode([...(withServings ? servingChips(r) : []), seenNote(r)].filter(Boolean)),
     mapLinkNode(place),
     shopNameLine(r, name));
@@ -855,7 +868,7 @@ function venueNode(v) {
   return el("li", { class: "card" },
     el("div", { class: "card-head" },
       logoNode(v.name, v.logo, 44),
-      el("div", { class: "card-name" }, placeNameNode(place)),
+      el("div", { class: "card-name" }, placeNameNode(place), mapPinNode(place)),
       v.tracked ? el("div", { class: "rate-slot" }, el("span", { class: "chip tracked-badge" }, t("venue.listed"))) : null),
     mapLinkNode(place),
     el("div", { class: "meta" }, t("venue.checkins", { count: `${v.checkins_30d} ${plural(v.checkins_30d, "unit.checkin")}` })),

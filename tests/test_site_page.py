@@ -574,23 +574,28 @@ def test_a_style_guessed_from_the_name_is_set_apart_and_says_so():
     assert 'el("td", null, styleNode(g))' in table_fn
 
 
-def test_the_map_link_is_shown_in_every_place_block_and_the_venues_tab():
-    """The pin + address link: the third line of a place block (cards and table alike) and the venues tab."""
+def test_the_map_pin_follows_the_place_name_and_the_address_line_follows_the_block():
+    """A pin link on the name's line (place blocks of cards and table, the venues tab); the address line under it."""
     js = _js(_soup())
-    for fn in ("placeBlock(r, name, withServings = true)", "venueNode(v)"):
-        body = re.search(rf"function {re.escape(fn)}\s*\{{(.*?)\n\}}", js, re.S).group(1)
-        assert "mapLinkNode(place)" in body, fn
+    block = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "placeNameNode(place), mapPinNode(place)" in block and "mapLinkNode(place)" in block
+    venue = re.search(r"function venueNode\(v\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "placeNameNode(place), mapPinNode(place)" in venue and "mapLinkNode(place)" in venue
 
 
-def test_the_map_link_is_a_safe_pin_plus_address_link_that_opens_yandex_maps_in_a_new_tab():
+def test_the_map_links_are_safe_https_links_that_open_yandex_maps_in_a_new_tab():
     js = _js(_soup())
-    fn = re.search(r"function mapLinkNode\(place\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert "safeUrl(place.map_url)" in fn                       # the same URL check as every other link
-    assert "https:" in fn                                       # https only: an http link is dropped
-    assert 'target: "_blank"' in fn and 'rel: "noopener noreferrer"' in fn
-    assert 't("map.open", { where: place.address || place.name })' in fn     # «Открыть на Яндекс Картах: …», see test_site_i18n
-    assert "pinIcon()" in fn and 'place.address || t("map.link")' in fn     # the address is the link text; chains keep a button
-    assert "null" in fn                                         # no map_url: no link
+    url_fn = re.search(r"function mapUrl\(place\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "safeUrl(place.map_url)" in url_fn                   # the same URL check as every other link
+    assert "https:" in url_fn                                   # https only: an http link is dropped
+    pin = re.search(r"function mapPinNode\(place\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    line = re.search(r"function mapLinkNode\(place\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for fn in (pin, line):
+        assert "mapUrl(place)" in fn and "null" in fn           # no map_url: no link
+        assert 'target: "_blank"' in fn and 'rel: "noopener noreferrer"' in fn
+    assert 't("map.open", { where: place.address || place.name })' in pin     # «Открыть на Яндекс Картах: …», see test_site_i18n
+    assert "pinIcon()" in pin and "title: place.address" in pin               # the address is the pin's tooltip
+    assert "place.address" in line and "&& place.address" in line             # no address: no line, the pin is the only link
 
 
 def test_the_pin_is_an_inline_svg_in_the_current_colour_built_without_html_strings():
@@ -601,13 +606,36 @@ def test_the_pin_is_an_inline_svg_in_the_current_colour_built_without_html_strin
     assert "innerHTML" not in js
 
 
-def test_the_map_link_is_muted_text_with_an_accent_pin_taking_colours_from_the_theme_tokens():
+def test_the_address_line_is_muted_and_the_pin_is_an_accent_44px_hit_area_taking_colours_from_the_theme_tokens():
     css = _css(_soup())
     rule = re.search(r"\.map-link\s*\{([^}]*)\}", css).group(1)
     assert "var(--muted)" in rule
-    assert "var(--accent)" in re.search(r"\.map-link svg\s*\{([^}]*)\}", css).group(1)
-    assert not re.search(r"#[0-9a-fA-F]{3,8}\b|rgb", rule)       # colours only via the tokens: dark theme follows
+    pin = re.search(r"\.map-pin\s*\{([^}]*)\}", css).group(1)
+    assert "var(--accent)" in pin and pin.count("var(--hit)") == 2       # 44px wide and high, the negative margin keeps the layout
+    assert re.search(r"margin:\s*-\d+px", pin)
+    assert not re.search(r"#[0-9a-fA-F]{3,8}\b|rgb", rule + pin)        # colours only via the tokens: dark theme follows
     assert "🗺" not in _js(_soup())                              # the old emoji button is gone
+
+
+def _luminance(hex_colour):
+    rgb = [int(hex_colour[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def _contrast(a, b):
+    hi, lo = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_the_light_theme_accent_reaches_wcag_aa_as_text_and_as_a_button_fill():
+    css = _css(_soup())
+    light = css[:css.index("prefers-color-scheme: dark")]
+    token = lambda name: re.search(rf"--{name}:\s*(#[0-9a-fA-F]{{6}})", light).group(1)
+    accent = token("accent")
+    for surface in ("bg", "surface", "surface-2"):
+        assert _contrast(accent, token(surface)) >= 4.5, surface          # links, the check mark, the pin
+    assert _contrast(token("on-accent"), accent) >= 4.5                   # the pressed tab and language button
 
 
 def test_the_address_is_the_place_name_tooltip_and_the_venues_tab_links_it():
