@@ -156,7 +156,8 @@ def test_checkin_seen_today_and_unknown_serving():
     s = new_state(pairs={"dors": {"u:8": pair(yv(24, 9), kind="checkin", name="Pils", serving=None,
                                              checkin_at=iso(yv(24, 9)))}})
     d = build_digest(s, CONFIG, SETTINGS, NOW)
-    assert "\nPils · Dors, подача неизвестна, видели сегодня" in d.html
+    assert "\nPils · Dors, видели сегодня" in d.html
+    assert "подача неизвестна" not in d.html
 
 
 @pytest.mark.parametrize("days_ago,expected", [

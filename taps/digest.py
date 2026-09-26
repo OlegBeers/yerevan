@@ -15,7 +15,7 @@ DAY_START, DAY_END = time(9, 0), time(23, 0)
 MIN_GAP_HOURS = 20
 CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег", "draft": "розлив"}
 SERVING_RU = {"Draft": "розлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
-             "Cask": "из бочки", None: "подача неизвестна"}
+             "Cask": "из бочки"}
 BREWERY_NEW_NOTE = "новый сорт в Untappd, где наливают — пока неизвестно"
 BLOCK_RULE = "──────────"
 MANUAL_LIST_MAX = 5   # more manual entries from one place: one "list updated" line instead of every beer
@@ -187,7 +187,8 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
             return [_style_abv(info), _pack(info), _price(info)]
         if section == "checkin":
             serving = info.get("serving")
-            return [_style_abv(info), f"{esc(place.short)}, {esc(SERVING_RU.get(serving, serving))}, {_seen(info, rec, now)}"]
+            how = esc(SERVING_RU.get(serving, serving)) if serving else None   # an unknown serving is simply left out
+            return [_style_abv(info), ", ".join(filter(None, [esc(place.short), how, _seen(info, rec, now)]))]
         return [_style_abv(info), f"{esc(place.short)} (от {esc(info.get('manual_by') or '?')})"]
 
     group_header = {"checkin": "<i>Похоже, появилось</i>", "manual": "<i>Со слов</i>"}
