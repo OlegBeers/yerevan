@@ -407,6 +407,17 @@ def test_the_beer_and_where_columns_have_room_for_a_name_and_for_a_place_block()
     assert re.search(r"\.col-beer\s*\{[^}]*min-width:\s*\d+rem", css) and re.search(r"\.col-where\s*\{[^}]*min-width:\s*\d+rem", css)
 
 
+def test_a_venue_card_has_the_header_of_a_beer_card_a_logo_the_name_and_the_tag_in_the_slot():
+    soup = _soup()
+    js, css = _js(soup), _css(soup)
+    venue_fn = re.search(r"function venueNode\(v\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'class: "card-head"' in venue_fn and "logoNode(v.name, v.logo, 44)" in venue_fn
+    assert 'class: "card-name"' in venue_fn and "placeNameNode(place)" in venue_fn
+    assert re.search(r'v\.tracked \? el\("div", \{ class: "rate-slot" \}, el\("span", \{ class: "chip tracked-badge" \}', venue_fn)
+    assert 'class: "top"' not in js and "where-head" not in js and "where-head" not in css     # the old header is gone
+    assert re.search(r"\.card-head \.avatar\s*\{[^}]*font-size", css)                           # a letter fits its 44px circle
+
+
 def test_footer_sources_legend_and_credits():
     soup = _soup()
     footer = soup.find("footer")

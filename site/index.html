@@ -70,7 +70,7 @@
   .lang { display: inline-flex; flex: 0 0 auto; }
   .lang button {
     position: relative; font: inherit; font-size: .75rem; font-weight: 700; letter-spacing: .04em; cursor: pointer;
-    padding: 4px 11px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    padding: var(--s1) var(--s3); border: 1px solid var(--border); background: var(--surface); color: var(--muted);
   }
   .lang button::after { content: ""; position: absolute; inset: -9px -3px; }   /* the pill stays small, the finger gets a 44px area */
   .lang button:first-child { border-radius: 999px 0 0 999px; }
@@ -124,7 +124,7 @@
   .place b { font-size: .85rem; color: var(--text); font-weight: 600; white-space: nowrap; }
   .place .warn { color: var(--danger); }
   .place[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
-  .place-head, .where-head { display: inline-flex; align-items: center; gap: var(--s2); }
+  .place-head { display: inline-flex; align-items: center; gap: var(--s2); }
   .logo { border-radius: 50%; object-fit: cover; vertical-align: middle; flex-shrink: 0; background: var(--surface-2); }
   .avatar {
     display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
@@ -132,13 +132,13 @@
     vertical-align: middle; flex-shrink: 0;
   }
   .verified { color: var(--accent); font-weight: 800; margin-left: 1px; }
-  .map-link { display: flex; align-items: flex-start; gap: 4px; width: fit-content; max-width: 100%; color: var(--muted); font-size: .78rem; line-height: 1.3; text-decoration: none; }
+  .map-link { display: flex; align-items: flex-start; gap: var(--s1); width: fit-content; max-width: 100%; color: var(--muted); font-size: .78rem; line-height: 1.3; text-decoration: none; }
   .map-link svg { flex-shrink: 0; margin-top: 1px; color: var(--accent); }
   .map-link:hover { color: var(--text); text-decoration: none; }
-  .tracked-badge { margin-left: var(--s2); border-color: var(--accent); background: transparent; }
-  .intro { color: var(--muted); margin: 0 0 16px; max-width: 60ch; }
-  .count { color: var(--muted); font-size: .85rem; margin: 0 0 10px; }
-  .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
+  .tracked-badge { border-color: var(--accent); background: transparent; }
+  .intro { color: var(--muted); margin: 0 0 var(--s4); max-width: 60ch; }
+  .count { color: var(--muted); font-size: .85rem; margin: 0 0 var(--s2); }
+  .empty { text-align: center; color: var(--muted); padding: 32px var(--s4); }
   .table-wrap { --thumb: 32px; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
   table { width: 100%; border-collapse: collapse; font-size: .92rem; }
   th {
@@ -172,6 +172,7 @@
   .thumb { width: var(--thumb); height: var(--thumb); border-radius: 8px; object-fit: contain; background: var(--surface-2); }
   .thumb-empty { display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; opacity: .55; }
   .card-name { min-width: 0; min-height: var(--thumb); margin-left: var(--s3); display: flex; align-items: center; font-size: 1rem; font-weight: 700; line-height: 1.3; }
+  .card-head .avatar { font-size: 1.1rem; }   /* a venue's letter in its 44px circle */
   .rate-slot { display: flex; align-items: center; gap: var(--s1); min-height: var(--thumb); margin-left: var(--s3); }
   .meta { color: var(--muted); font-size: .85rem; }
   .place-blocks { display: grid; gap: var(--s3); }
@@ -183,14 +184,14 @@
   .card a { position: relative; }
   .card a::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: max(var(--hit), 100%); transform: translateY(-50%); }   /* a 44px hit area that takes no room */
   #to-top {
-    position: fixed; right: 16px; bottom: 16px; width: 44px; height: 44px; border-radius: 50%;
+    position: fixed; right: var(--s4); bottom: var(--s4); width: var(--hit); height: var(--hit); border-radius: 50%;
     border: 1px solid var(--border); background: var(--surface); color: var(--accent);
     font: inherit; font-size: 1.3rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
   }
   #to-top[hidden] { display: none; }
-  footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
-  footer h2 { font-size: .95rem; color: var(--text); margin: 20px 0 6px; font-weight: 700; }
-  footer p { margin: 4px 0; }
+  footer { margin-top: 40px; padding-top: var(--s3); border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem; }
+  footer h2 { font-size: .95rem; color: var(--text); margin: 20px 0 var(--s2); font-weight: 700; }
+  footer p { margin: var(--s1) 0; }
   .legend { list-style: none; margin: 0; padding: 0; }
 </style>
 </head>
@@ -852,9 +853,10 @@ function venueNode(v) {
   const place = { name: v.name, logo: v.logo, verified: v.verified, untappd_url: v.url, address: v.address, map_url: v.map_url };
   const last = parseTime(v.last_checkin);
   return el("li", { class: "card" },
-    el("div", { class: "top" },
-      el("span", { class: "where-head" }, logoNode(v.name, v.logo, 28), placeNameNode(place)),
-      v.tracked ? el("span", { class: "chip tracked-badge" }, t("venue.listed")) : null),
+    el("div", { class: "card-head" },
+      logoNode(v.name, v.logo, 44),
+      el("div", { class: "card-name" }, placeNameNode(place)),
+      v.tracked ? el("div", { class: "rate-slot" }, el("span", { class: "chip tracked-badge" }, t("venue.listed"))) : null),
     mapLinkNode(place),
     el("div", { class: "meta" }, t("venue.checkins", { count: `${v.checkins_30d} ${plural(v.checkins_30d, "unit.checkin")}` })),
     last ? el("div", { class: "meta" }, t("venue.last", { dm: yerevan(last).dm })) : null);

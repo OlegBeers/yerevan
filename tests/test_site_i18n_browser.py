@@ -735,6 +735,55 @@ def test_a_beer_carries_the_same_chips_in_the_table_and_in_its_card(open_page):
     assert problems == [] and more_problems == []
 
 
+VENUES_JS = """() => [...document.querySelectorAll('#venues .card')].map((card) => {
+  const rect = (selector) => {
+    const e = card.querySelector(selector);
+    if (!e) return null;
+    const r = e.getBoundingClientRect();
+    return {left: r.left, right: r.right, top: r.top, width: r.width, height: r.height};
+  };
+  const kinds = (parent) => [...parent.children].map((c) => c.classList[0]);
+  return {parts: kinds(card), head: kinds(card.querySelector('.card-head')), box: rect('.card-head'), name: rect('.card-name'),
+          logo: rect('.card-head > :first-child'), slot: rect('.rate-slot'), tag: rect('.tracked-badge'),
+          title: card.querySelector('.card-name').textContent.trim(), scroll: [card.scrollWidth, card.clientWidth]};
+})"""
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+def test_a_venue_card_has_a_beer_cards_header_with_its_tag_pinned_to_the_top_right(open_page, lang):
+    page, problems = open_page(width=375, query=f"?lang={lang}")
+    page.click("#tab-venues")
+    venues = page.evaluate(VENUES_JS)
+    assert len(venues) == 6
+    for venue in venues:
+        assert venue["parts"] == ["card-head", "map-link", "meta", "meta"] or venue["parts"] == ["card-head", "map-link", "meta"]
+        assert venue["head"][:2] == ["avatar", "card-name"] and venue["head"][2:] in ([], ["rate-slot"])
+        assert abs(venue["logo"]["width"] - 44) < 0.5 and abs(venue["logo"]["height"] - 44) < 0.5
+        assert abs(venue["name"]["left"] - venue["box"]["left"] - 56) < 0.5                       # the name starts where a beer's does
+        assert venue["scroll"][0] <= venue["scroll"][1]
+        if venue["tag"]:                                                                          # listed: the tag, at the top right
+            assert abs(venue["tag"]["right"] - venue["box"]["right"]) <= 0.5 and venue["name"]["right"] <= venue["slot"]["left"] - 11
+        else:                                                                                     # not listed: no tag, no gap
+            assert venue["slot"] is None and abs(venue["name"]["right"] - venue["box"]["right"]) <= 0.5
+    assert [bool(venue["tag"]) for venue in venues] == [True, False, True, True, True, False]     # n % 2 == 1 is tracked
+    assert len({round(venue["tag"]["width"], 1) for venue in venues if venue["tag"]}) == 1        # one size
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
+@pytest.mark.parametrize("tab", ["tab-all", "tab-bars", "tab-shops"])
+def test_the_bars_and_shops_tabs_draw_the_same_cards_as_all_beer(open_page, tab):
+    page, problems = open_page(layout_data(), width=375)
+    page.click(f"#{tab}")
+    shapes = page.evaluate(CARDS_JS)
+    assert len(shapes) >= 3
+    for shape in shapes:
+        assert shape["parts"][0] == "card-head" and shape["parts"][-1] == "card-foot" and "place-blocks" in shape["parts"], shape["title"]
+        assert shape["scroll"][0] <= shape["scroll"][1], shape["title"]
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+
+
 @pytest.mark.parametrize("lang", ["ru", "en"])
 def test_a_phone_needs_no_sideways_scrolling_in_either_language(open_page, lang):
     page, problems = open_page(width=375, query=f"?lang={lang}")
