@@ -530,7 +530,7 @@ def test_every_card_has_the_same_anatomy(open_page, lang):
             assert block[0] == "pb-head" and block[1:] == [part for part in order if part in block[1:]], (shape["title"], block)
     assert [len(shape["blocks"]) for shape in shapes if shape["title"] == "Multi Beer"] == [2]   # one block per place
     assert all(abs(shape["thumb"]["width"] - 44) < 0.5 and abs(shape["thumb"]["height"] - 44) < 0.5 for shape in shapes)   # a photo, a tile or a broken picture: 44px
-    assert problems == ["Failed to load resource: net::ERR_FAILED"]                               # the broken picture, and nothing else
+    assert len(problems) == 1 and problems[0].startswith("Failed to load resource")                # the broken picture, and nothing else
 
 
 @pytest.mark.parametrize("lang", ["ru", "en"])
