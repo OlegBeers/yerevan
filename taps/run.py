@@ -637,16 +637,20 @@ def apply_untappd_country(state: State) -> None:
                 rec.info["country"] = country
 
 
+BOARD_FIELDS = ("style", "abv", "ibu")   # what a hand-entered board may state itself
+
+
 def apply_known_beer_info(state: State) -> None:
     """A hand-entered Untappd beer borrows its label and rating from the same beer seen elsewhere
     (a menu, a check-in, a matched shop item) or from the cached beer page: nothing is fetched for
-    manual entries themselves. The board's own style/abv/price stay as entered."""
+    manual entries themselves. Style/ABV/IBU fill only what the board left out; its own stay."""
+    fields = ("logo", "rating") + BOARD_FIELDS
     known: dict[str, dict] = {}
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if key.startswith("u:") and rec.info.get("kind") != "manual":
                 got = known.setdefault(key, {})
-                for field in ("logo", "rating"):
+                for field in fields:
                     if got.get(field) is None and rec.info.get(field) is not None:
                         got[field] = rec.info[field]
     for pairs in state.pairs.values():
@@ -655,12 +659,11 @@ def apply_known_beer_info(state: State) -> None:
                 continue
             got = dict(known.get(key, {}))
             beer = state.beers.get(key)
-            if got.get("rating") is None and beer is not None and beer.rating is not None:
-                got["rating"] = beer.rating
-            if got.get("logo") is None and beer is not None and beer.logo is not None:
-                got["logo"] = beer.logo
+            for field in fields:
+                if got.get(field) is None and beer is not None and getattr(beer, field) is not None:
+                    got[field] = getattr(beer, field)
             for field, value in got.items():
-                if value is not None:
+                if value is not None and not (field in BOARD_FIELDS and rec.info.get(field) is not None):
                     rec.info[field] = value
 
 

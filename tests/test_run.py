@@ -775,6 +775,20 @@ def test_apply_untappd_country_by_beer_and_by_brewery_and_beats_the_shops_own():
     assert state.pairs["beer-city"]["n:y"].info["country"] == "Ukraine"      # unmatched: the shop's own stays
 
 
+def test_apply_known_beer_info_fills_missing_style_abv_ibu_but_keeps_the_boards_own():
+    state = empty_state(NOW)
+    state.pairs = {"ferment": {
+        "u:1715344": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "manual", "name": "Fruitage"}),
+        "u:4713": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                          info={"kind": "manual", "name": "Brugse Zot", "style": "Blonde", "abv": 6.0})}}
+    state.beers["u:1715344"] = BeerRec(first_seen_city=iso(NOW), style="Fruit Beer", abv=3.4, ibu=7)
+    state.beers["u:4713"] = BeerRec(first_seen_city=iso(NOW), style="Belgian Blonde", abv=6.2, ibu=20)
+    run_mod.apply_known_beer_info(state)
+    fruitage, zot = state.pairs["ferment"]["u:1715344"].info, state.pairs["ferment"]["u:4713"].info
+    assert (fruitage["style"], fruitage["abv"], fruitage["ibu"]) == ("Fruit Beer", 3.4, 7)
+    assert (zot["style"], zot["abv"], zot["ibu"]) == ("Blonde", 6.0, 20)      # the board's own wins, gaps filled
+
+
 def test_apply_known_beer_info_uses_the_cached_label_of_a_beer_page():
     state = empty_state(NOW)
     state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}

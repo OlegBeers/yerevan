@@ -35,6 +35,16 @@ places:
     sources:
       untappd_menu: {slug: beatles-pub-yerevan, venue_id: 2162817}
 
+  - id: ferment
+    name: Ferment
+    kind: bar
+    # крафтовый бар на месте Vertigo (Teryan 65), 16 кранов
+    address: "Терьяна 65"
+    map_url: "https://yandex.com/maps/org/ferment_craft_beer_bar_bottleshop/161253472087/"
+    enabled: true
+    sources:
+      untappd_checkins: {slug: ferment, venue_id: 13510969}
+
   - id: dargett-brewpub
     name: Dargett Brewpub
     short_name: Dargett
@@ -123,16 +133,6 @@ places:
     enabled: false
     sources:
       untappd_checkins: {slug: tap-station, venue_id: 8234456}
-
-  - id: ferment
-    name: Ferment
-    kind: bar
-    # крафтовый бар на месте Vertigo (Teryan 65), 16 кранов
-    address: "Терьяна 65"
-    map_url: "https://yandex.com/maps/org/ferment_craft_beer_bar_bottleshop/161253472087/"
-    enabled: true
-    sources:
-      untappd_checkins: {slug: ferment, venue_id: 13510969}
 
   - id: tuf
     name: Tuf
