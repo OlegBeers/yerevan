@@ -101,6 +101,28 @@
   .sort, .toggle { display: inline-flex; gap: var(--s2); align-items: center; }
   .toggle { cursor: pointer; min-height: var(--hit); }
   .toggle input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  #filters-toggle {
+    display: inline-flex; align-items: center; gap: var(--s1); font: inherit; font-weight: 700; cursor: pointer;
+    min-height: var(--hit); padding: var(--s2) var(--s3); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+  }
+  #filters-toggle[aria-expanded="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .filters-badge {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: .7rem; font-weight: 700;
+  }
+  .filters-panel {
+    display: flex; flex-direction: column; gap: var(--s3); margin-bottom: var(--s4); padding: var(--s3);
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
+  }
+  .filter-group { display: flex; flex-direction: column; gap: var(--s1); }
+  .filter-label { font-size: .78rem; font-weight: 700; color: var(--muted); }
+  .filter-chip { min-height: var(--hit); cursor: pointer; background: var(--surface); color: var(--text); font: inherit; }
+  .active-filters-wrap { display: flex; flex-direction: column; gap: var(--s2); margin-bottom: var(--s4); }
+  .filters-reset {
+    align-self: flex-start; min-height: var(--hit); padding: 0 var(--s1); border: none; background: transparent;
+    color: var(--accent); font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer;
+  }
   .places { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s4); }
   .chip {   /* the one pill: place filters, badges, servings, the rating */
     display: inline-flex; align-items: center; gap: var(--s1); max-width: 100%;
@@ -123,7 +145,7 @@
   }
   .place b { font-size: .85rem; color: var(--text); font-weight: 600; white-space: nowrap; }
   .place .warn { color: var(--danger); }
-  .place[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
+  .place[aria-pressed="true"], .filter-chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-2); }
   .place-head { display: inline-flex; align-items: center; gap: var(--s2); }
   .logo { border-radius: 50%; object-fit: cover; vertical-align: middle; flex-shrink: 0; background: var(--surface-2); }
   .avatar {
@@ -228,7 +250,30 @@
           <option value="abv" data-i18n="sort.abv">по крепости</option>
         </select>
       </span>
+      <button type="button" id="filters-toggle" aria-expanded="false" aria-controls="filters-panel"><span data-i18n="filters.button">Фильтры</span><span id="filters-badge" class="filters-badge" hidden>0</span></button>
       <label class="toggle"><input type="checkbox" id="only-new"><span class="ico" aria-hidden="true">🆕</span><span data-i18n="only.new">только новинки за 7 дней</span></label>
+    </div>
+    <div id="filters-panel" class="filters-panel" hidden>
+      <div class="filter-group">
+        <span class="filter-label" id="filter-label-rating" data-i18n="filters.rating">Рейтинг</span>
+        <div class="chips" id="filter-rating" role="group" aria-labelledby="filter-label-rating"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label" id="filter-label-serve" data-i18n="filters.serving">Подача</span>
+        <div class="chips" id="filter-serve" role="group" aria-labelledby="filter-label-serve"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label" id="filter-label-style" data-i18n="filters.style">Стиль</span>
+        <div class="chips" id="filter-style" role="group" aria-labelledby="filter-label-style"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label" id="filter-label-country" data-i18n="filters.country">Страна</span>
+        <div class="chips" id="filter-country" role="group" aria-labelledby="filter-label-country"></div>
+      </div>
+    </div>
+    <div id="active-filters-wrap" class="active-filters-wrap" hidden>
+      <button type="button" id="filters-reset" class="filters-reset" data-i18n="filters.reset">Сбросить</button>
+      <div id="active-filters" class="chips"></div>
     </div>
     <div id="places" class="places" role="group" aria-label="Места" data-i18n-aria-label="places.label"></div>
     <p id="count" class="count" aria-live="polite"></p>
@@ -294,6 +339,12 @@ const I18N = {
     "sort.rating": "по рейтингу",
     "sort.abv": "по крепости",
     "only.new": "только новинки за 7 дней",
+    "filters.button": "Фильтры",
+    "filters.rating": "Рейтинг",
+    "filters.serving": "Подача",
+    "filters.style": "Стиль",
+    "filters.country": "Страна",
+    "filters.reset": "Сбросить",
     "places.label": "Места",
     "venues.intro": "Все места Еревана, где за последние 60 дней отмечали пиво местных пивоварен, в том числе те, которые мы пока не отслеживаем. Метка «в списке» значит, что место уже есть среди баров или магазинов. Знаете, что стоит добавить, — напишите Олегу.",
     "totop": "Наверх",
@@ -328,6 +379,10 @@ const I18N = {
     "legend.hot.from": "🔥 — рейтинг Untappd от {rating}",
     "count.all": "Позиций: {total}",
     "count.some": "Показано {shown} из {total}",
+    "filters.rating.any": "любой",
+    "filters.rating.from": "от {rating}",
+    "filters.style.more": "ещё {n}",
+    "filters.remove": "Убрать: {name}",
     "empty.filtered": "Ничего не нашлось — попробуйте другой запрос или фильтр.",
     "empty.none": "Пока пусто.",
     "th.beer": "Пиво",
@@ -399,6 +454,12 @@ const I18N = {
     "sort.rating": "rating",
     "sort.abv": "ABV",
     "only.new": "only new arrivals (last 7 days)",
+    "filters.button": "Filters",
+    "filters.rating": "Rating",
+    "filters.serving": "Serving",
+    "filters.style": "Style",
+    "filters.country": "Country",
+    "filters.reset": "Reset",
     "places.label": "Places",
     "venues.intro": "Every place in Yerevan where beer from local breweries was checked in over the last 60 days, including places we don't track yet. The “listed” tag means the place is already among the bars or shops. Know one we should add? Message Oleg.",
     "totop": "Back to top",
@@ -433,6 +494,10 @@ const I18N = {
     "legend.hot.from": "🔥 — Untappd rating of {rating} or higher",
     "count.all": "Beers: {total}",
     "count.some": "Showing {shown} of {total}",
+    "filters.rating.any": "any",
+    "filters.rating.from": "{rating}+",
+    "filters.style.more": "{n} more",
+    "filters.remove": "Remove: {name}",
     "empty.filtered": "Nothing found — try a different search or filter.",
     "empty.none": "Nothing here yet.",
     "th.beer": "Beer",
@@ -495,8 +560,21 @@ const COUNTRY_RU = new Map(Object.entries({
   Spain: "Испания", Italy: "Италия", France: "Франция", Denmark: "Дания", Austria: "Австрия", Greece: "Греция",
   Mexico: "Мексика", USA: "США", "United States": "США",
 }));
+// a row's container/serving is one of three facets for the serving filter; keg counts as draft, a check-in's
+// own serving word (Taster/Cask) is a draft pour too
+const SERVE_FACET = {
+  draft: "draft", keg: "draft", bottle: "bottle", can: "can",
+  Draft: "draft", Taster: "draft", Cask: "draft", Bottle: "bottle", Can: "can",
+};
+const SERVE_OPTIONS = ["draft", "bottle", "can"];
+const RATING_OPTIONS = ["3.5", "3.75", "4.0"];
+const FILTER_STYLE_MAX = 12;   // the style facet shows this many chips before a "more" chip expands the rest
 const wide = window.matchMedia("(min-width: 700px)");
-const ui = { data: null, places: new Map(), section: "all", place: null, lang: "ru", failed: false };
+const ui = {
+  data: null, places: new Map(), section: "all", place: null, lang: "ru", failed: false,
+  filters: { rating: null, serve: new Set(), style: new Set(), country: new Set() },
+  filtersOpen: false, styleExpanded: false,
+};
 const $ = (id) => document.getElementById(id);
 
 const t = (key, vars) => {   // the text under `key` in the current language, with {name} taken from vars
@@ -515,6 +593,26 @@ function initialLang() {   // ?lang=en|ru (and remembered), else the choice made
   } catch (err) { /* storage is blocked */ }
   return (navigator.language || "").toLowerCase().split("-")[0] === "ru" ? "ru" : "en";
 }
+function initialFilters() {   // ?style=&country=&serve=&rating=, comma-separated; a serve/rating token outside its
+                               // fixed set is dropped now, a style/country one once data.json says which are real (load())
+  const params = new URLSearchParams(location.search);
+  const list = (key) => (params.get(key) || "").split(",").map((s) => s.trim()).filter(Boolean);
+  return {
+    rating: list("rating").find((v) => RATING_OPTIONS.includes(v)) || null,
+    serve: new Set(list("serve").filter((v) => SERVE_OPTIONS.includes(v))),
+    style: new Set(list("style")),
+    country: new Set(list("country")),
+  };
+}
+function writeFiltersToUrl() {   // the reverse of initialFilters(): a filtered view can be shared as a link
+  const url = new URL(location.href);
+  const put = (key, values) => { if (values.length) url.searchParams.set(key, values.join(",")); else url.searchParams.delete(key); };
+  put("rating", ui.filters.rating ? [ui.filters.rating] : []);
+  put("serve", [...ui.filters.serve]);
+  put("style", [...ui.filters.style]);
+  put("country", [...ui.filters.country]);
+  history.replaceState(null, "", url);
+}
 function applyLang() {   // the static markup: <html lang>, the texts and attribute values it names, the switch
   document.documentElement.lang = ui.lang;
   for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
@@ -532,7 +630,7 @@ function setLang(lang) {   // repaint in place: the filters, the sort and the op
   saveLang(lang);
   applyLang();
   if (ui.failed) showLoadError();
-  if (ui.data) { renderHeader(); renderPlaces(); render(); renderVenues(); }
+  if (ui.data) { renderHeader(); renderPlaces(); render(); renderVenues(); renderFilters(); }
   const url = new URL(location.href);   // a shared ?lang= link follows the switch, so a reload keeps the choice
   if (url.searchParams.has("lang")) { url.searchParams.set("lang", lang); history.replaceState(null, "", url); }
 }
@@ -689,12 +787,30 @@ function cmpDesc(a, b) {  // descending, empty values last
 function inSection(r) {   // the "all" tab searches bars and shops together
   return ui.section === "all" || r.section === ui.section;
 }
+function containerSet(r) {   // every way this row is known to be served, as the three serving facets
+  const set = new Set();
+  for (const raw of [r.container, r.serving, ...(r.servings || []).map((s) => s.container)]) {
+    const bucket = SERVE_FACET[raw];
+    if (bucket) set.add(bucket);
+  }
+  return set;
+}
+function matchesServe(r) {
+  return !ui.filters.serve.size || [...ui.filters.serve].some((c) => containerSet(r).has(c));
+}
+function matchesStyle(r) {
+  return !ui.filters.style.size || ui.filters.style.has(r.style_group);
+}
+function matchesCountry(r) {
+  return !ui.filters.country.size || ui.filters.country.has(r.country);
+}
 function filteredRows() {
   const q = $("search").value.trim().toLowerCase();
   const onlyNew = $("only-new").checked;
   return ui.data.rows.filter((r) => inSection(r)
     && (!onlyNew || r.new)
     && (!ui.place || r.place_id === ui.place)
+    && matchesServe(r) && matchesStyle(r) && matchesCountry(r)
     && (!q || [r.name, r.style_inferred ? null : r.style, r.brewery].some((s) => s && String(s).toLowerCase().includes(q))));
 }
 function bestOf(rows, field) {   // highest non-null value, for sorting/display of a beer group
@@ -714,7 +830,8 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     const r0 = group.find((r) => r.beer_key && r.beer_key.startsWith("u:")) || group[0];
     return {
       rows: group,
-      name: r0.name, brewery: r0.brewery, style: r0.style, style_inferred: r0.style_inferred, ibu: r0.ibu, url: r0.url,
+      name: r0.name, brewery: r0.brewery, style: r0.style, style_inferred: r0.style_inferred, style_group: r0.style_group,
+      ibu: r0.ibu, url: r0.url,
       // Untappd's own logo first, then a matched row's, then any row's
       beer_logo: [(r) => r.beer_key && r.beer_key.startsWith("u:"), (r) => r.match_via, () => true]
         .map((pick) => group.filter(pick).map((r) => r.beer_logo).find(Boolean)).find(Boolean),
@@ -726,9 +843,15 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     };
   });
 }
+function tabGroups() {   // every beer of the open tab, before any filter -- what the total count and the facet counts are drawn from
+  return groupBeers(ui.data.rows.filter(inSection));
+}
+function matchesRating(g) {   // the group's own best rating, same value its rating chip shows
+  return ui.filters.rating == null || (g.rating != null && g.rating >= Number(ui.filters.rating));
+}
 function visibleGroups() {
   const key = $("sort").value === "since" ? "since_at" : $("sort").value;   // newest first down to the minute
-  return groupBeers(filteredRows())
+  return groupBeers(filteredRows()).filter(matchesRating)
     .sort((a, b) => cmpDesc(a[key], b[key]) || cmpDesc(a.since_at, b.since_at)
       || String(a.name).localeCompare(String(b.name), "ru"));
 }
@@ -805,13 +928,89 @@ const cards = (groups) => el("ul", { class: "cards" }, ...groups.map(cardNode));
 function render() {
   if (!ui.data) return;
   const groups = visibleGroups();
-  const total = groupBeers(ui.data.rows.filter(inSection)).length;
+  const total = tabGroups().length;
   $("count").textContent = groups.length === total ? t("count.all", { total }) : t("count.some", { shown: groups.length, total });
   if (!groups.length) {
     $("rows").replaceChildren(el("p", { class: "empty" }, total ? t("empty.filtered") : t("empty.none")));
     return;
   }
   $("rows").replaceChildren(wide.matches ? table(groups) : cards(groups));
+}
+
+function sortedCounts(groups, field) {   // [[value, count], ...] most common first, ties broken by name
+  const counts = new Map();
+  for (const g of groups) { const v = g[field]; if (v) counts.set(v, (counts.get(v) || 0) + 1); }
+  return [...counts].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), "ru"));
+}
+function filterChip(pressed, label, onClick) {
+  const button = el("button", { type: "button", class: "chip filter-chip", "aria-pressed": String(pressed) }, label);
+  button.addEventListener("click", onClick);
+  return button;
+}
+function styleMoreChip(n) {   // reveals the rest of the style facet; an action, not a toggle, so no aria-pressed
+  const button = el("button", { type: "button", class: "chip filter-chip" }, t("filters.style.more", { n }));
+  button.addEventListener("click", () => { ui.styleExpanded = true; onFilterChange(); });
+  return button;
+}
+function setRating(value) {   // single choice: picking the pressed one again (or "any") clears it
+  ui.filters.rating = ui.filters.rating === value ? null : value;
+  onFilterChange();
+}
+function toggleSetFilter(group, value) {   // multi-select within serve / style / country: OR inside the group
+  const set = ui.filters[group];
+  if (set.has(value)) set.delete(value); else set.add(value);
+  onFilterChange();
+}
+function removeFilter(group, value) {
+  if (group === "rating") ui.filters.rating = null; else ui.filters[group].delete(value);
+  onFilterChange();
+}
+function activeFilterEntries() {   // [{group, value, label}] in panel order: the badge count and the removable chips
+  const entries = [];
+  if (ui.filters.rating != null) entries.push({ group: "rating", value: ui.filters.rating, label: t("filters.rating.from", { rating: ui.filters.rating }) });
+  for (const c of ui.filters.serve) entries.push({ group: "serve", value: c, label: containerText(c) });
+  for (const s of ui.filters.style) entries.push({ group: "style", value: s, label: s });
+  for (const c of ui.filters.country) entries.push({ group: "country", value: c, label: countryText({ country: c }) });
+  return entries;
+}
+function activeChip(entry) {   // a removable summary chip: its accessible name says what it removes
+  const button = el("button", { type: "button", class: "chip filter-chip", "aria-pressed": "true",
+    "aria-label": t("filters.remove", { name: entry.label }) }, entry.label, " ✕");
+  button.addEventListener("click", () => removeFilter(entry.group, entry.value));
+  return button;
+}
+function renderFilterPanel() {
+  const groups = tabGroups();
+  $("filter-rating").replaceChildren(
+    filterChip(ui.filters.rating == null, t("filters.rating.any"), () => setRating(null)),
+    ...RATING_OPTIONS.map((v) => filterChip(ui.filters.rating === v, t("filters.rating.from", { rating: v }), () => setRating(v))));
+  $("filter-serve").replaceChildren(
+    ...SERVE_OPTIONS.map((c) => filterChip(ui.filters.serve.has(c), containerText(c), () => toggleSetFilter("serve", c))));
+  const styleCounts = sortedCounts(groups, "style_group");
+  const shownStyles = ui.styleExpanded ? styleCounts : styleCounts.slice(0, FILTER_STYLE_MAX);
+  const styleChips = shownStyles.map(([name, n]) => filterChip(ui.filters.style.has(name), dot([name, String(n)]), () => toggleSetFilter("style", name)));
+  if (!ui.styleExpanded && styleCounts.length > FILTER_STYLE_MAX) styleChips.push(styleMoreChip(styleCounts.length - FILTER_STYLE_MAX));
+  $("filter-style").replaceChildren(...styleChips);
+  $("filter-country").replaceChildren(
+    ...sortedCounts(groups, "country").map(([name, n]) =>
+      filterChip(ui.filters.country.has(name), dot([countryText({ country: name }), String(n)]), () => toggleSetFilter("country", name))));
+}
+function renderFilters() {
+  if (!ui.data) return;
+  renderFilterPanel();
+  const isVenues = ui.section === "venues";
+  const entries = activeFilterEntries();
+  $("filters-toggle").setAttribute("aria-expanded", String(ui.filtersOpen));
+  $("filters-badge").hidden = !entries.length;
+  $("filters-badge").textContent = String(entries.length);
+  $("filters-panel").hidden = isVenues || !ui.filtersOpen;
+  $("active-filters-wrap").hidden = isVenues || ui.filtersOpen || !entries.length;
+  $("active-filters").replaceChildren(...entries.map(activeChip));
+  writeFiltersToUrl();
+}
+function onFilterChange() {   // any filter changed: repaint the filter UI and the beer list together
+  renderFilters();
+  render();
 }
 
 function placeStatus(p, now) {
@@ -905,6 +1104,7 @@ function setSection(section) {
   $("count").hidden = isVenues;
   $("rows").hidden = isVenues;
   $("venues-section").hidden = !isVenues;
+  renderFilters();
   if (isVenues) renderVenues();
   else { renderPlaces(); render(); }
 }
@@ -917,6 +1117,11 @@ async function load() {
     if (!data || !Array.isArray(data.rows) || !Array.isArray(data.places)) throw new Error("bad data.json");
     ui.data = data;
     ui.places = new Map(data.places.map((p) => [p.id, p]));
+    // ?style=/?country= may name values that turned out not to exist in the data; drop them now that we know
+    const styles = new Set(data.rows.map((r) => r.style_group).filter(Boolean));
+    const countries = new Set(data.rows.map((r) => r.country).filter(Boolean));
+    ui.filters.style = new Set([...ui.filters.style].filter((s) => styles.has(s)));
+    ui.filters.country = new Set([...ui.filters.country].filter((c) => countries.has(c)));
   } catch (err) {
     console.error(err);
     ui.failed = true;
@@ -930,6 +1135,7 @@ async function load() {
 }
 
 ui.lang = initialLang();
+ui.filters = initialFilters();
 applyLang();
 for (const b of document.querySelectorAll(".lang button")) b.addEventListener("click", () => setLang(b.dataset.lang));
 for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => setSection(b.dataset.section));
@@ -939,6 +1145,11 @@ toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smoot
 $("search").addEventListener("input", render);
 $("sort").addEventListener("change", render);
 $("only-new").addEventListener("change", render);
+$("filters-toggle").addEventListener("click", () => { ui.filtersOpen = !ui.filtersOpen; renderFilters(); });
+$("filters-reset").addEventListener("click", () => {
+  ui.filters = { rating: null, serve: new Set(), style: new Set(), country: new Set() };
+  onFilterChange();
+});
 wide.addEventListener("change", render);
 load();
 </script>

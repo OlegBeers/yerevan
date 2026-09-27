@@ -110,6 +110,14 @@ def test_russian_dictionary_keeps_the_wording_the_page_has_always_had():
     assert ru["unit.checkin"] == {"one": "чекин", "few": "чекина", "many": "чекинов"}
 
 
+def test_filters_wording_is_short_enough_for_a_chip():
+    ru, en = _dictionaries()["ru"], _dictionaries()["en"]
+    assert (ru["filters.button"], en["filters.button"]) == ("Фильтры", "Filters")
+    assert (ru["filters.rating.any"], en["filters.rating.any"]) == ("любой", "any")
+    assert (ru["filters.rating.from"], en["filters.rating.from"]) == ("от {rating}", "{rating}+")
+    assert (ru["filters.style.more"], en["filters.style.more"]) == ("ещё {n}", "{n} more")
+
+
 def test_a_checkin_has_a_source_badge_of_its_own_in_both_languages():
     """The seen-when note (👀 ..., видели вчера) is a second thing: this is the word for where the row comes from."""
     dictionaries = _dictionaries()

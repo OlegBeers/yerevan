@@ -7,7 +7,7 @@ PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
               "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
-              "beer_logo", "shop_url", "beer_key", "shop_name", "servings", "country", "style_inferred")
+              "beer_logo", "shop_url", "beer_key", "shop_name", "servings", "country", "style_inferred", "style_group")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url", "address", "map_url")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked", "address", "map_url")
@@ -206,6 +206,92 @@ def test_filters_and_badges_are_chips():
     assert "border-radius: 999px" in chip and "font-variant-numeric: tabular-nums" in chip
     assert 'class: "place chip"' in js and 'class: "chip tracked-badge"' in js
     assert re.search(r"\.place\s*\{[^}]*min-height:\s*var\(--hit\)", css)
+
+
+def test_filters_toggle_sits_next_to_sort_and_names_its_panel():
+    soup = _soup()
+    controls = soup.find(id="controls")
+    toggle = controls.find(id="filters-toggle")
+    assert toggle.name == "button" and toggle["type"] == "button"
+    assert toggle["aria-expanded"] == "false" and toggle["aria-controls"] == "filters-panel"
+    children = controls.find_all(recursive=False)
+    assert children.index(toggle) == children.index(controls.find(class_="sort")) + 1
+    assert children.index(toggle) < children.index(controls.find(class_="toggle"))
+    badge = toggle.find(id="filters-badge")
+    assert badge is not None and badge.has_attr("hidden")
+
+
+def test_filters_panel_has_four_labelled_chip_groups_and_starts_hidden():
+    soup = _soup()
+    panel = soup.find(id="filters-panel")
+    assert panel.has_attr("hidden")
+    for group_id, label_id, key in (
+        ("filter-rating", "filter-label-rating", "filters.rating"),
+        ("filter-serve", "filter-label-serve", "filters.serving"),
+        ("filter-style", "filter-label-style", "filters.style"),
+        ("filter-country", "filter-label-country", "filters.country"),
+    ):
+        group = panel.find(id=group_id)
+        assert group["role"] == "group" and group["aria-labelledby"] == label_id
+        assert panel.find(id=label_id)["data-i18n"] == key
+
+
+def test_active_filters_row_starts_hidden_with_reset_above_the_chips():
+    soup = _soup()
+    wrap = soup.find(id="active-filters-wrap")
+    assert wrap.has_attr("hidden")
+    reset, chips = wrap.find(id="filters-reset"), wrap.find(id="active-filters")
+    assert reset.name == "button" and reset["data-i18n"] == "filters.reset"
+    children = wrap.find_all(recursive=False)
+    assert children.index(reset) < children.index(chips)
+
+
+def test_serve_filter_normalises_container_servings_and_checkin_serving_to_three_facets():
+    """Step 2's shared facet table: container/servings[].container use the lowercase names, a check-in's own
+    `serving` uses Untappd's capitalised ones; both land on the same three buckets the "Подача" filter offers."""
+    js = _js(_soup())
+    facet_fn = re.search(r"function containerSet\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "r.container" in facet_fn and "r.serving" in facet_fn and "r.servings" in facet_fn
+    table = re.search(r"const SERVE_FACET = \{(.*?)\};", js, re.S).group(1)
+    for raw, bucket in (("draft", "draft"), ("keg", "draft"), ("bottle", "bottle"), ("can", "can"),
+                        ("Draft", "draft"), ("Taster", "draft"), ("Cask", "draft"), ("Bottle", "bottle"), ("Can", "can")):
+        assert re.search(rf'\b{raw}: "{bucket}"', table), (raw, bucket)
+
+
+def test_style_and_serve_and_country_filters_apply_to_rows_rating_applies_to_the_group():
+    """Style/serve/country narrow the raw rows before grouping, exactly like the place filter already does;
+    rating instead reads the group's own best rating (bestOf), so it is applied once groups exist."""
+    js = _js(_soup())
+    filter_fn = re.search(r"function filteredRows\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "matchesServe(r)" in filter_fn and "matchesStyle(r)" in filter_fn and "matchesCountry(r)" in filter_fn
+    assert "r.style_group" in re.search(r"function matchesStyle\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "g.rating" in re.search(r"function matchesRating\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "groupBeers(filteredRows()).filter(matchesRating)" in js
+
+
+def test_filters_are_read_from_and_written_back_to_the_url_as_comma_lists():
+    js = _js(_soup())
+    read_fn = re.search(r"function initialFilters\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for key in ("style", "country", "serve", "rating"):
+        assert f'"{key}"' in read_fn
+    assert 'split(",")' in read_fn
+    write_fn = re.search(r"function writeFiltersToUrl\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'join(",")' in write_fn and "history.replaceState(" in write_fn
+
+
+def test_style_facet_shows_twelve_then_a_more_chip():
+    js = _js(_soup())
+    assert 'const RATING_OPTIONS = ["3.5", "3.75", "4.0"];' in js
+    assert "const FILTER_STYLE_MAX = 12;" in js
+    panel_fn = re.search(r"function renderFilterPanel\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "styleCounts.slice(0, FILTER_STYLE_MAX)" in panel_fn and "styleMoreChip(" in panel_fn
+
+
+def test_reset_clears_every_filter_group():
+    js = _js(_soup())
+    handler = re.search(r'"filters-reset"\)\.addEventListener\("click", \(\) => \{(.*?)\}\);', js, re.S).group(1)
+    assert "rating: null" in handler and "serve: new Set()" in handler
+    assert "style: new Set()" in handler and "country: new Set()" in handler
 
 
 def test_tabs_dont_wrap_on_narrow_screens():
