@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import requests
 
 from taps.state import empty_state
-from taps.telegram import API, Alerter, SendOutcome, send_message
+from taps.telegram import API, EDIT_API, Alerter, SendOutcome, edit_message, send_message
 
 NOW = datetime(2026, 9, 24, 13, 0, tzinfo=timezone.utc)
 
@@ -80,7 +80,17 @@ def test_payload_has_url_button_and_custom_timeout_and_loud_mode():
 
 
 def test_ok_is_sent():
-    assert send(FakePost(OK)) == SendOutcome("sent")
+    assert send(FakePost(OK)) == SendOutcome("sent", message_id=7)
+
+
+def test_ok_without_a_result_message_id_leaves_it_none():
+    ok_no_id = FakeResponse(200, {"ok": True, "result": {}})
+    assert send(FakePost(ok_no_id)).message_id is None
+
+
+def test_ok_with_a_non_int_message_id_leaves_it_none():
+    ok_bad_id = FakeResponse(200, {"ok": True, "result": {"message_id": True}})
+    assert send(FakePost(ok_bad_id)).message_id is None
 
 
 def test_429_sleeps_retry_after_and_retries_once():
@@ -171,6 +181,78 @@ def test_json_without_ok_flag_is_unknown():
 
 def test_timeout_on_retry_after_429_is_unknown():
     assert send(FakePost(too_many(1), requests.Timeout())).status == "unknown"
+
+
+# ---- edit_message ----
+
+def edit(post, sleep=None, **kwargs):
+    return edit_message("TOKEN", "-100123", 555, "<b>Новое</b>", post=post, sleep=sleep or FakeSleep(), **kwargs)
+
+
+def test_edit_payload_has_message_id_and_button_reply_markup():
+    post = FakePost(OK)
+    edit(post, button=("Открыть список", "https://example.github.io/yerevan-taps/"))
+    [(url, kwargs)] = post.calls
+    assert url == EDIT_API.format(token="TOKEN") == "https://api.telegram.org/botTOKEN/editMessageText"
+    assert kwargs["timeout"] == 30
+    assert kwargs["json"] == {
+        "chat_id": "-100123",
+        "message_id": 555,
+        "text": "<b>Новое</b>",
+        "parse_mode": "HTML",
+        "link_preview_options": {"is_disabled": True},
+        "reply_markup": {"inline_keyboard": [[{"text": "Открыть список",
+                                               "url": "https://example.github.io/yerevan-taps/"}]]},
+    }
+
+
+def test_edit_without_a_button_omits_reply_markup():
+    post = FakePost(OK)
+    edit(post)
+    assert "reply_markup" not in post.calls[0][1]["json"]
+
+
+def test_edit_ok_is_sent():
+    assert edit(FakePost(OK)).status == "sent"
+
+
+def test_edit_429_sleeps_retry_after_and_retries_once():
+    post, sleep = FakePost(too_many(3), OK), FakeSleep()
+    assert edit(post, sleep).status == "sent"
+    assert sleep.calls == [3]
+    assert len(post.calls) == 2
+
+
+def test_edit_message_is_not_modified_counts_as_sent():
+    body = {"ok": False, "error_code": 400, "description": "Bad Request: message is not modified"}
+    assert edit(FakePost(FakeResponse(400, body))).status == "sent"
+
+
+def test_edit_other_400_is_rejected_with_description():
+    post = FakePost(FakeResponse(400, {"ok": False, "error_code": 400, "description": "Bad Request: message to edit not found"}))
+    outcome = edit(post)
+    assert outcome.status == "rejected"
+    assert outcome.description == "Bad Request: message to edit not found"
+
+
+def test_edit_502_is_unknown():
+    post = FakePost(FakeResponse(502, {"ok": False, "error_code": 502, "description": "Bad Gateway"}))
+    assert edit(post).status == "unknown"
+
+
+def test_edit_exception_text_with_the_bot_token_never_reaches_the_outcome():
+    leaky = requests.ConnectionError("HTTPSConnectionPool: Max retries with url: /bot123456:SECRET/editMessageText")
+    outcome = edit(FakePost(leaky))
+    assert outcome.status == "unknown"
+    assert "SECRET" not in outcome.description and "123456" not in outcome.description
+
+
+def test_edit_migrate_to_chat_id_is_rejected_and_carries_new_id():
+    body = {"ok": False, "error_code": 400, "description": "Bad Request: group chat was upgraded to a supergroup chat",
+            "parameters": {"migrate_to_chat_id": -1001234567890}}
+    outcome = edit(FakePost(FakeResponse(400, body)))
+    assert outcome.status == "rejected"
+    assert outcome.migrate_to_chat_id == -1001234567890
 
 
 # ---- Alerter ----

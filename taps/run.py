@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import html
 import json
@@ -15,7 +16,7 @@ from typing import Callable, Mapping, Sequence
 
 from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
-from taps.digest import build_digest, drop_stale_events, is_due, mark_sent, rollback
+from taps.digest import Digest, build_digest, drop_stale_events, is_due, mark_sent, rollback
 from taps.fetch import (
     FetchError, Http, PageFetcher, UntappdClient, dump_debug_html, playwright_fetcher, untappd_due,
 )
@@ -40,7 +41,7 @@ from taps.state import (
     VENUE_KEEP_DAYS, BeerRec, ShopMatchRec, State, apply_aliases, load_state, merge_places, prune, record_venues,
     save_state,
 )
-from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
+from taps.telegram import MAX_TEXT, Alerter, SendOutcome, edit_message, send_message
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
 STATE_FILE = "state.json"
@@ -921,6 +922,9 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
             if not _save_push(repo, state, deps, f"state {iso(now)}: сводка не принята, отметка отменена"):
                 return 1
             pushed = state.to_dict()
+        elif sent.status == "sent":   # remembered so `edit-last-digest` can find and edit this message later
+            state.digest.last_message_id = sent.message_id
+            state.digest.last_to_admin = digest.to_admin
         digest_alerts(alerter, sent)
         # the marks are settled now: rebuild so the rows just announced carry 🆕/⭐
         write_site_data(repo / SITE_DATA, build_site_data(state, config, now))
@@ -932,6 +936,69 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     return 1 if alert_outcome is not None and alert_outcome.status != "sent" else 0
 
 
+# --- edit-last-digest: edit an already-sent digest message in place, no new message -----------
+
+def _rebuild_last_digest(state: State, config: Config, last_sent_at: str) -> Digest | None:
+    """Rebuild the digest last sent at `last_sent_at`: on a copy of state, exactly the pairs and
+    brewery_new records notified at that moment become pending again (notified_at None), and every
+    other currently-pending record (a real event from a later run) is suppressed so it cannot leak
+    into the rebuild. `now=parse_iso(last_sent_at)` keeps the header's date the original send day."""
+    copy_state = copy.deepcopy(state)
+    for pairs in copy_state.pairs.values():
+        for rec in pairs.values():
+            if rec.notified_at == last_sent_at:
+                rec.notified_at = None
+            elif rec.notified_at is None:
+                rec.notified_at = "suppressed"
+    for rec in copy_state.brewery_new.values():
+        if rec.notified_at == last_sent_at:
+            rec.notified_at = None
+        elif rec.notified_at is None:
+            rec.notified_at = "suppressed"
+    return build_digest(copy_state, config, config.settings, now=parse_iso(last_sent_at))
+
+
+def edit_last_digest(repo: Path, message_id: int | None, env: Mapping[str, str],
+                     edit: Callable[..., SendOutcome] = edit_message) -> int:
+    """CLI: edit today's already-sent digest message in place to the current text format -- no new
+    message, no notification. Read-only: never writes state.json, never commits.
+    0 done (edit accepted); 1 the edit was rejected or its outcome is unknown; 2 cannot run."""
+    missing = [k for k in ENV_KEYS if not env.get(k)]
+    if missing:
+        print(f"не заданы переменные окружения: {', '.join(missing)}", file=sys.stderr)
+        return 2
+    try:
+        config = load_config(repo / "places.yaml")
+    except ConfigError as e:
+        print(str(e), file=sys.stderr)
+        return 2
+    try:
+        state = load_state(repo / STATE_FILE, utcnow())
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 2
+
+    if message_id is not None and message_id <= 0:
+        print("--message-id должен быть положительным числом", file=sys.stderr)
+        return 2
+    msg_id = message_id if message_id is not None else state.digest.last_message_id
+    if msg_id is None:
+        print("нет номера сообщения: укажите --message-id или дождитесь новой сводки", file=sys.stderr)
+        return 2
+
+    last_sent_at = state.digest.last_sent_at
+    digest = _rebuild_last_digest(state, config, last_sent_at) if last_sent_at else None
+    if digest is None:
+        print("нет последней сводки для правки", file=sys.stderr)
+        return 2
+
+    chat = env["TELEGRAM_ADMIN_CHAT_ID"] if state.digest.last_to_admin else env["TELEGRAM_CHAT_ID"]
+    outcome = edit(env["TELEGRAM_BOT_TOKEN"], chat, msg_id, digest.html, button=(BUTTON_TEXT, env["SITE_URL"]))
+    status = f"правка сводки: {outcome.status}"
+    print(f"{status} ({outcome.description})" if outcome.description else status)
+    return 0 if outcome.status == "sent" else 1
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m taps")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -939,5 +1006,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     cmd.add_argument("--dry-run", action="store_true", help="ничего не отправлять и не коммитить")
     cmd.add_argument("--no-digest", action="store_true", help="не слать сводку")
     cmd.add_argument("--repo", type=Path, default=Path("."), help="папка репозитория")
+    edit_cmd = commands.add_parser("edit-last-digest", help="править в чате последнюю уже отправленную сводку")
+    edit_cmd.add_argument("--message-id", type=int, default=None,
+                          help="номер сообщения (иначе последнее отправленное)")
+    edit_cmd.add_argument("--repo", type=Path, default=Path("."), help="папка репозитория")
     args = parser.parse_args(argv)
-    return run(args.repo, utcnow(), os.environ, Deps(), dry_run=args.dry_run, no_digest=args.no_digest)
+    if args.command == "run":
+        return run(args.repo, utcnow(), os.environ, Deps(), dry_run=args.dry_run, no_digest=args.no_digest)
+    return edit_last_digest(args.repo, args.message_id, os.environ)

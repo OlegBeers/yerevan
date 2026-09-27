@@ -41,7 +41,8 @@ def full_state() -> State:
         last_error="network", trip_streak=2, last_trip_keys=["u:1", "u:2"], seen_menu_ids=["101", "102"],
         max_beer_id=6000001, menu_updated_at=ago(1))}
     s.untappd = UntappdRec(last_attempt=ago(1), pages_today=12, pages_date="2026-09-22", brewery_list_cursor=3)
-    s.digest = DigestRec(last_sent_date="2026-09-22", last_sent_at=ago(1), sent_count=2)
+    s.digest = DigestRec(last_sent_date="2026-09-22", last_sent_at=ago(1), sent_count=2,
+                        last_message_id=555, last_to_admin=True)
     s.alerts = {"failed:parma:parma": "0123456789ab"}
     s.corrections_snapshot = {"sightings": [{"place": "tap-station", "by": "Аня"}], "not_craft": ["Kilikia"]}
     s.announced_manual = ["tap-station|2026-09-22|Аня"]
@@ -87,6 +88,7 @@ def test_to_dict_is_plain_json_data():
     assert d["sources"]["untappd_menu:gargoyle"]["last_trip_keys"] == ["u:1", "u:2"]
     assert d["untappd"]["pages_today"] == 12
     assert d["digest"]["sent_count"] == 2
+    assert d["digest"]["last_message_id"] == 555 and d["digest"]["last_to_admin"] is True
     assert d["shop_items"] == {"yerevan-city": {"8811": "n:kilikia"}}
     assert d["venues"]["12252462"]["verified"] is True
     assert d["discovery"]["reported"] == [13968261]
@@ -130,6 +132,16 @@ def test_shop_match_rec_weak_defaults_to_false_and_survives_a_json_round_trip():
     s.shop_matches["n:kilikia"].weak = True
     back = State.from_dict(json.loads(json.dumps(s.to_dict())))
     assert back.shop_matches["n:kilikia"].weak is True
+
+
+def test_from_dict_loads_an_older_state_whose_digest_lacks_message_id_and_admin_flag():
+    """state.json files written before edit-last-digest existed must still load with the new fields
+    defaulted, so an old state carries no stale message id or admin flag."""
+    d = full_state().to_dict()
+    del d["digest"]["last_message_id"]
+    del d["digest"]["last_to_admin"]
+    back = State.from_dict(d)
+    assert back.digest.last_message_id is None and back.digest.last_to_admin is False
 
 
 def test_from_dict_loads_an_older_state_whose_shop_matches_lack_weak():

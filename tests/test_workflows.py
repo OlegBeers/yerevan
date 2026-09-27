@@ -159,6 +159,77 @@ def test_tests_workflow_runs_pytest_on_push_and_pr_without_browser():
     assert not any("playwright install" in s.get("run", "") for s in steps)
 
 
+def test_edit_digest_only_manual_trigger_with_message_id_input():
+    wf = load("edit-digest.yml")
+    assert wf["name"] == "edit-digest"
+    on = triggers(wf)
+    assert set(on) == {"workflow_dispatch"}
+    inputs = on["workflow_dispatch"]["inputs"]
+    assert set(inputs) == {"message_id"}
+    message_id = inputs["message_id"]
+    assert message_id["type"] == "string"
+    assert message_id["required"] is False
+    assert "последнее число" in message_id["description"]
+
+
+def test_edit_digest_never_overlaps_a_run_and_never_cancels_it():
+    wf = load("edit-digest.yml")
+    assert wf["concurrency"] == {"group": "taps", "cancel-in-progress": False}
+
+
+def test_edit_digest_permissions_are_read_only():
+    wf = load("edit-digest.yml")
+    assert wf["permissions"] == {"contents": "read"}
+
+
+def test_edit_digest_job_runs_on_ubuntu_with_a_timeout():
+    job = only_job(load("edit-digest.yml"))
+    assert job["runs-on"] == "ubuntu-latest"
+    assert 0 < job["timeout-minutes"] <= 30
+
+
+def test_edit_digest_installs_python_deps_without_playwright_browsers():
+    steps = only_job(load("edit-digest.yml"))["steps"]
+    step_index(steps, uses="actions/checkout@v4")
+    setup = steps[step_index(steps, uses="actions/setup-python@v5")]
+    assert str(setup["with"]["python-version"]) == "3.12"
+    assert setup["with"]["cache"] == "pip"
+    step_index(steps, run="pip install -r requirements.txt")
+    assert not any("playwright install" in s.get("run", "") for s in steps)
+
+
+def test_edit_digest_passes_message_id_only_via_env_never_interpolated_into_the_script():
+    steps = only_job(load("edit-digest.yml"))["steps"]
+    step = steps[step_index(steps, run="edit-last-digest")]
+    assert "${{ inputs" not in step["run"]
+    assert step["env"]["MESSAGE_ID"] == "${{ inputs.message_id }}"
+    assert "$MESSAGE_ID" in step["run"]
+    assert 'python -m taps edit-last-digest --message-id "$MESSAGE_ID"' in step["run"]
+    assert "python -m taps edit-last-digest" in step["run"]
+
+
+def test_edit_digest_step_env_has_the_telegram_secrets_and_site_url():
+    steps = only_job(load("edit-digest.yml"))["steps"]
+    step = steps[step_index(steps, run="edit-last-digest")]
+    env = step["env"]
+    for name in TELEGRAM_SECRETS:
+        assert env[name] == f"${{{{ secrets.{name} }}}}"
+    assert env["SITE_URL"] == "${{ vars.SITE_URL }}"
+
+
+def test_edit_digest_never_pushes_or_touches_pages():
+    steps = only_job(load("edit-digest.yml"))["steps"]
+    assert not any("push" in s.get("run", "") for s in steps)
+    assert not any("pages" in s.get("uses", "").lower() for s in steps)
+
+
+def test_readme_explains_how_to_edit_the_last_digest():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "edit-digest" in readme
+    assert "Run workflow" in readme
+    assert "Копировать ссылку" in readme
+
+
 def test_readme_lists_every_setting_the_run_workflow_reads():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for name in (*TELEGRAM_SECRETS, "SITE_URL"):

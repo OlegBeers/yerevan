@@ -1,0 +1,40 @@
+name: edit-digest
+
+on:
+  workflow_dispatch:
+    inputs:
+      message_id:
+        description: "номер сообщения — последнее число в ссылке на сообщение; пусто = последнее отправленное"
+        required: false
+        type: string
+
+# Shares the taps concurrency group with run.yml: an edit never overlaps or races a scheduled run.
+concurrency:
+  group: taps
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - run: |
+          if [ -n "$MESSAGE_ID" ]; then python -m taps edit-last-digest --message-id "$MESSAGE_ID"; else python -m taps edit-last-digest; fi
+        env:
+          MESSAGE_ID: ${{ inputs.message_id }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
+          SITE_URL: ${{ vars.SITE_URL }}

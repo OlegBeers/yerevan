@@ -12,6 +12,7 @@ import requests
 from taps.state import State
 
 API = "https://api.telegram.org/bot{token}/sendMessage"
+EDIT_API = "https://api.telegram.org/bot{token}/editMessageText"
 MAX_RETRY_AFTER = 60      # never stall a run longer than this on a 429
 DEFAULT_RETRY_AFTER = 1
 MAX_TEXT = 4096           # Telegram message length limit
@@ -22,6 +23,7 @@ class SendOutcome:
     status: str                       # "sent" | "rejected" | "unknown"
     description: str = ""
     migrate_to_chat_id: int | None = None
+    message_id: int | None = None
 
 
 def _retry_after(body: dict) -> int:
@@ -71,11 +73,48 @@ def send_message(token: str, chat_id: str, html: str, button: tuple[str, str] | 
     if isinstance(body, SendOutcome):
         return body
     if body["ok"]:
-        return SendOutcome("sent")
+        result = body.get("result")
+        message_id = result.get("message_id") if isinstance(result, dict) else None
+        if isinstance(message_id, bool) or not isinstance(message_id, int):
+            message_id = None
+        return SendOutcome("sent", message_id=message_id)
     migrate = (body.get("parameters") or {}).get("migrate_to_chat_id")
     if isinstance(migrate, bool) or not isinstance(migrate, int):
         migrate = None
     return SendOutcome("rejected", str(body.get("description", "")), migrate)
+
+
+def edit_message(token: str, chat_id: str, message_id: int, html: str, button: tuple[str, str] | None = None,
+                 post: Callable[..., Any] = requests.post, sleep: Callable[[float], None] = time.sleep,
+                 timeout: float = 30) -> SendOutcome:
+    """Edit a previously sent message in place (editMessageText): no new message, no notification.
+    reply_markup must be resent even when the text alone changed, or Telegram drops the existing button."""
+    payload: dict[str, Any] = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "text": html,
+        "parse_mode": "HTML",
+        "link_preview_options": {"is_disabled": True},
+    }
+    if button:
+        payload["reply_markup"] = {"inline_keyboard": [[{"text": button[0], "url": button[1]}]]}
+    url = EDIT_API.format(token=token)
+
+    body = _post_once(post, url, payload, timeout)
+    if isinstance(body, dict) and not body["ok"] and body["error_code"] == 429:
+        sleep(_retry_after(body))
+        body = _post_once(post, url, payload, timeout)
+    if isinstance(body, SendOutcome):
+        return body
+    if body["ok"]:
+        return SendOutcome("sent")
+    description = str(body.get("description", ""))
+    if body["error_code"] == 400 and "message is not modified" in description:
+        return SendOutcome("sent")
+    migrate = (body.get("parameters") or {}).get("migrate_to_chat_id")
+    if isinstance(migrate, bool) or not isinstance(migrate, int):
+        migrate = None
+    return SendOutcome("rejected", description, migrate)
 
 
 def _hash(text: str) -> str:

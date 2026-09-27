@@ -15,10 +15,12 @@ from taps.fetch import FetchError, HttpResponse, UntappdClient
 from taps.gitsync import CheckoutError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome
-from taps.run import Deps, main, run, update_alerts
+from taps.run import Deps, edit_last_digest, main, run, update_alerts
 from taps.sources.local_match import KnownBeer
 from taps.sources.parma import fetch_parma as real_fetch_parma
-from taps.state import BeerRec, PairRec, ShopMatchRec, UntappdRec, VenueRec, empty_state, load_state, save_state
+from taps.state import (
+    BeerRec, BreweryNewRec, PairRec, ShopMatchRec, UntappdRec, VenueRec, empty_state, load_state, save_state,
+)
 from taps.telegram import MAX_TEXT, Alerter, SendOutcome, send_message
 from taps.timeutil import iso
 from tests.helpers import fixture_json, fixture_text
@@ -1854,9 +1856,44 @@ def test_next_evening_new_beer_goes_to_admin_as_preview(world):
     assert state.digest.sent_count == 1
     assert state.digest.last_sent_at == iso(NEXT_EVENING) and state.digest.last_sent_date == "2026-09-25"
     assert state.pairs["beatles"]["u:999001"].notified_at == iso(NEXT_EVENING)
-    # the mark was pushed before sending
+    # the mark was pushed before sending; last_to_admin is only known once the send outcome is in, so
+    # it needs a second push
     assert world.pushes[0]["state"]["digest"]["sent_count"] == 1
-    assert len(world.pushes) == 1
+    assert len(world.pushes) == 2
+    assert world.pushes[1]["state"]["digest"]["last_to_admin"] is True
+
+
+def test_sent_digest_stores_its_message_id_and_that_it_went_to_the_admin(world):
+    """So a later `edit-last-digest` knows which Telegram message to edit and which chat it is in."""
+    first_run(world)
+    world.send_outcomes = [SendOutcome("sent", message_id=4242)]
+
+    assert world.run(NEXT_EVENING) == 0
+
+    state = world.state()
+    assert state.digest.last_message_id == 4242
+    assert state.digest.last_to_admin is True   # the first two digests are previews to the admin
+
+
+def test_third_digest_to_the_chat_stores_last_to_admin_false(world):
+    first_run(world)
+    world.edit_state(lambda s: setattr(s.digest, "sent_count", 2))
+    world.send_outcomes = [SendOutcome("sent", message_id=555)]
+
+    assert world.run(NEXT_EVENING) == 0
+
+    state = world.state()
+    assert state.digest.last_message_id == 555
+    assert state.digest.last_to_admin is False
+
+
+def test_rejected_digest_does_not_store_a_message_id(world):
+    first_run(world)
+    world.send_outcomes = [SendOutcome("rejected", "Bad Request: chat not found")]
+
+    assert world.run(NEXT_EVENING) == 0
+
+    assert world.state().digest.last_message_id is None
 
 
 def test_site_data_marks_the_beer_the_digest_just_announced_as_new_and_star(world):
@@ -2466,3 +2503,146 @@ def test_a_beer_fixed_after_its_entries_were_announced_together_is_not_announced
     assert world.run(NEXT_EVENING + timedelta(days=1)) == 0
     assert world.sends == []
     assert world.state().pairs["craft-story"]["u:1715345"].notified_at == "suppressed"
+
+
+# --- edit-last-digest: edit an already-sent digest message in place --------------------------------
+
+def _digest_config():
+    return Config(places={"gargoyle": Place(id="gargoyle", name="Gargoyle Bar", kind="bar", sources={})},
+                 breweries=(), settings=Settings())
+
+
+def test_rebuild_last_digest_includes_only_pairs_marked_at_that_exact_moment():
+    state = empty_state(NOW)
+    sent_at = iso(NOW - timedelta(hours=1))
+    state.pairs = {"gargoyle": {
+        "u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), event_at=iso(NOW - timedelta(hours=2)),
+                      notified_at=sent_at, info={"name": "Announced Beer"}),
+        "u:2": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), event_at=iso(NOW),
+                      notified_at=None, info={"name": "Newer Pending Beer"}),   # pending from a later run
+        "u:3": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), event_at=iso(NOW - timedelta(days=1)),
+                      notified_at="baseline", info={"name": "Old Baseline Beer"}),
+    }}
+    digest = run_mod._rebuild_last_digest(state, _digest_config(), sent_at)
+    assert digest is not None
+    assert "Announced Beer" in digest.html
+    assert "Newer Pending Beer" not in digest.html
+    assert "Old Baseline Beer" not in digest.html
+    # read-only: the original state is untouched
+    assert state.pairs["gargoyle"]["u:2"].notified_at is None
+    assert state.pairs["gargoyle"]["u:1"].notified_at == sent_at
+
+
+def test_rebuild_last_digest_includes_brewery_new_marked_at_that_moment():
+    state = empty_state(NOW)
+    sent_at = iso(NOW - timedelta(hours=1))
+    state.brewery_new = {
+        "u:100": BreweryNewRec(brewery_id=1, found_at=iso(NOW - timedelta(hours=2)), notified_at=sent_at,
+                               info={"name": "New Brewery Beer", "brewery": "Some Brewery"}),
+        "u:200": BreweryNewRec(brewery_id=1, found_at=iso(NOW), notified_at=None,
+                               info={"name": "Later Brewery Beer", "brewery": "Some Brewery"}),
+    }
+    digest = run_mod._rebuild_last_digest(state, _digest_config(), sent_at)
+    assert digest is not None
+    assert "New Brewery Beer" in digest.html
+    assert "Later Brewery Beer" not in digest.html
+
+
+def test_rebuild_last_digest_returns_none_when_nothing_was_sent_at_that_moment():
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), notified_at="baseline")}}
+    assert run_mod._rebuild_last_digest(state, _digest_config(), iso(NOW)) is None
+
+
+def test_rebuild_last_digest_dates_the_header_by_the_original_send_time():
+    state = empty_state(NOW)
+    sent_at = iso(NOW - timedelta(days=3))   # Mon 21 Sep 2026, not today's Thursday
+    state.pairs = {"gargoyle": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                               event_at=iso(NOW - timedelta(days=3, hours=1)),
+                                               notified_at=sent_at, info={"name": "X"})}}
+    digest = run_mod._rebuild_last_digest(state, _digest_config(), sent_at)
+    assert "пн, 21 сен" in digest.html
+
+
+def test_edit_last_digest_uses_the_stored_message_id_chat_and_button(world):
+    first_run(world)
+    world.send_outcomes = [SendOutcome("sent", message_id=4242)]
+    assert world.run(NEXT_EVENING) == 0
+    before = (world.repo / "state.json").read_bytes()
+    calls = []
+
+    def fake_edit(token, chat_id, message_id, html, button=None):
+        calls.append((token, chat_id, message_id, html, button))
+        return SendOutcome("sent")
+
+    assert edit_last_digest(world.repo, None, ENV, edit=fake_edit) == 0
+
+    assert len(calls) == 1
+    token, chat_id, message_id, html, button = calls[0]
+    assert (token, chat_id, message_id) == ("tok", ENV["TELEGRAM_ADMIN_CHAT_ID"], 4242)
+    assert button == (run_mod.BUTTON_TEXT, ENV["SITE_URL"])
+    assert "Black Sails" in html
+    assert (world.repo / "state.json").read_bytes() == before   # read-only: nothing written
+
+
+def test_edit_last_digest_message_id_flag_overrides_the_stored_one(world):
+    first_run(world)
+    world.send_outcomes = [SendOutcome("sent", message_id=4242)]
+    assert world.run(NEXT_EVENING) == 0
+    calls = []
+
+    def fake_edit(token, chat_id, message_id, html, button=None):
+        calls.append(message_id)
+        return SendOutcome("sent")
+
+    assert edit_last_digest(world.repo, 999, ENV, edit=fake_edit) == 0
+    assert calls == [999]
+
+
+@pytest.mark.parametrize("bad_id", [0, -5])
+def test_edit_last_digest_rejects_a_non_positive_message_id(world, bad_id, capsys):
+    first_run(world)
+    assert edit_last_digest(world.repo, bad_id, ENV) == 2
+    assert capsys.readouterr().err.strip() != ""
+
+
+def test_edit_last_digest_exits_2_when_no_message_id_is_available(world):
+    first_run(world)   # a digest was never sent: no stored message id
+    assert edit_last_digest(world.repo, None, ENV) == 2
+
+
+def test_edit_last_digest_exits_2_when_a_digest_was_never_sent(world):
+    first_run(world)   # message id supplied, but nothing to rebuild: no digest was ever sent
+    assert edit_last_digest(world.repo, 123, ENV) == 2
+
+
+def test_edit_last_digest_missing_env_exits_2(world):
+    first_run(world)
+    assert edit_last_digest(world.repo, 123, {"TELEGRAM_BOT_TOKEN": "tok"}) == 2
+
+
+@pytest.mark.parametrize("status, code", [("sent", 0), ("rejected", 1), ("unknown", 1)])
+def test_edit_last_digest_exit_code_follows_the_edit_outcome(world, status, code):
+    first_run(world)
+    world.send_outcomes = [SendOutcome("sent", message_id=4242)]
+    assert world.run(NEXT_EVENING) == 0
+
+    def fake_edit(token, chat_id, message_id, html, button=None):
+        return SendOutcome(status, "подробности")
+
+    assert edit_last_digest(world.repo, None, ENV, edit=fake_edit) == code
+
+
+def test_main_parses_edit_last_digest_args(monkeypatch, tmp_path):
+    calls = []
+    monkeypatch.setattr(run_mod, "edit_last_digest",
+                        lambda repo, message_id, env: calls.append((repo, message_id, env)) or 5)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "tok")
+
+    assert main(["edit-last-digest", "--message-id", "42", "--repo", str(tmp_path)]) == 5
+    repo, message_id, env = calls[0]
+    assert (repo, message_id) == (tmp_path, 42)
+    assert env["TELEGRAM_BOT_TOKEN"] == "tok"
+
+    assert main(["edit-last-digest"]) == 5
+    assert calls[1][:2] == (Path("."), None)

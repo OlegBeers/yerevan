@@ -100,6 +100,8 @@ class DigestRec:
     last_sent_date: str | None = None   # Yerevan date "YYYY-MM-DD"
     last_sent_at: str | None = None
     sent_count: int = 0
+    last_message_id: int | None = None   # Telegram message id of the last sent digest, for editing it in place
+    last_to_admin: bool = False          # whether that digest went to TELEGRAM_ADMIN_CHAT_ID instead of the group
 
 
 @dataclass
