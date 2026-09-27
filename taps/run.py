@@ -64,8 +64,10 @@ DISCOVERY_MAX_VENUES = 20    # cap on lines in the weekly report, besides the MA
 LOCATION_CANDIDATES_PER_RUN = 3   # v1.1 city check (§4): at most this many untracked venue pages per run
 LOCATION_MIN_CHECKINS = 2         # below this, not worth spending a page on
 LOCATION_RECHECK_DAYS = 90        # a failed/unknown check is retried after this many days
-BEER_RATING_CANDIDATES_PER_RUN = 5   # v1.1 §2: beer pages fetched per run for check-in-only ratings
 BEER_RATING_MAX_AGE_DAYS = 30        # a cached rating older than this is refreshed
+BAR_BEER_PAGES_PER_RUN = 30          # v1.3 owner priority: bar/brewpub beers missing label/rating/style
+SHOP_BEER_PAGES_PER_RUN = 10         # v1.3: shop-matched beers with no name, shop check-ins missing details
+COUNTRY_PAGES_PER_RUN = 8            # v1.3: one beer per brewery of unknown country, read last
 SHOP_SEARCH_CANDIDATES_PER_RUN = 8   # v1.1 §3: shop beers searched on Untappd per run
 SHOP_MATCH_RETRY_DAYS = 30           # a failed search ("no_match") is retried after this many days
 SHOP_MATCH_REFRESH_PER_RUN = 3       # matched shop beers whose cached rating is refreshed per run
@@ -104,7 +106,9 @@ def _maybe_dump_debug(result: SourceResult, client: UntappdClient) -> None:
 def collect_untappd(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
                     alerter: Alerter) -> tuple[list[SourceResult], UntappdClient | None]:
     """Menus -> brewery check-ins -> venue check-ins -> 1-2 brewery lists -> city check for a few
-    discovered venues (v1.1, §4); at most once per 20 h."""
+    discovered venues (v1.1, §4) -> bar beer pages -> shop beer pages -> shop search -> shop
+    refresh -> country beer pages (v1.3 owner priority: bars, then shops, then countries, within the
+    limited daily page budget); at most once per 20 h."""
     if not untappd_due(state.untappd, now):
         return [], None
     ba = corrections.brewery_aliases
@@ -139,10 +143,13 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
             _maybe_dump_debug(result, client)   # client.last_html/url still belong to this job
             results.append(result)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
-        fetch_beer_ratings(state, client, now)                 # v1.1 §2: check-in-only beer ratings
+        # v1.3 owner priority: bars, then shops, then search, then countries (limited daily page budget)
+        sampled = fetch_bar_beer_pages(state, config, client, now)      # tier A: bar/brewpub beers
+        sampled = fetch_shop_beer_pages(state, config, client, now, sampled)   # tier B: shop-matched/checkin beers
         search_limit = config.settings.effective_search_per_run(yerevan_date(now), SHOP_SEARCH_CANDIDATES_PER_RUN)
         match_shop_beers(state, client, now, search_limit)     # v1.1 §3: search shop beers on Untappd
         refresh_shop_matches(state, client, now)               # v1.1 §3: refresh matched shop ratings
+        fetch_country_beer_pages(state, client, now, sampled)  # tier D: one beer per brewery of unknown country
     finally:
         close()
     if client.responded:
@@ -237,34 +244,41 @@ def discover_venue_locations(state: State, config: Config, client: UntappdClient
         rec.location_checked_at = iso(now)
 
 
-# --- v1.1 §2: beer ratings for beers seen only in check-ins ------------------
+# --- v1.3 owner priority: bars before shops before countries ----------------
 
-def _beer_rating_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
-    """(key, url) of check-in-only beers (no menu pair anywhere) visible on the site in the last
-    CHECKIN_KEEP_DAYS days whose cached rating is missing or older than BEER_RATING_MAX_AGE_DAYS,
-    most recently seen first, capped at BEER_RATING_CANDIDATES_PER_RUN. Candidates come from state as
-    it stood before this run's merge, same as the venue-location candidates above."""
-    menu_keys = {key for pairs in state.pairs.values() for key, rec in pairs.items()
-                if rec.info.get("kind") == "menu"}
-    best: dict[str, tuple[str, str]] = {}   # key -> (checkin_at, url)
-    for pairs in state.pairs.values():
+def _needs_beer_detail(info: dict, beer: BeerRec | None) -> bool:
+    """True while the pair's own info, together with the cached BeerRec (if any), still lacks a
+    label, a rating or a style -- any one missing is enough to justify a beer page read."""
+    def has(field: str) -> bool:
+        return bool(info.get(field) or (beer and getattr(beer, field)))
+    return not (has("logo") and has("rating") and has("style"))
+
+
+def _bar_beer_candidates(state: State, config: Config, now: datetime) -> list[tuple[str, str]]:
+    """(key, url) of "u:"-keyed pairs at non-shop places (bar/brewpub) shown on the site --
+    hand-entered, or from a check-in within CHECKIN_KEEP_DAYS -- whose beer still lacks a label, a
+    rating or a style, and whose beer page was not read within BEER_RATING_MAX_AGE_DAYS; most
+    recently seen first, deduped by key, capped at BAR_BEER_PAGES_PER_RUN (v1.3: with the owner's
+    limited daily page budget, bars come first)."""
+    best: dict[str, tuple[str, str]] = {}   # key -> (last_seen, url)
+    for place_id, pairs in state.pairs.items():
+        place = config.places.get(place_id)
+        if place is not None and place.kind == "shop":
+            continue
         for key, rec in pairs.items():
-            if not key.startswith("u:") or key in menu_keys or rec.info.get("kind") != "checkin":
+            info = rec.info
+            if not key.startswith("u:") or info.get("kind") not in ("manual", "checkin") or not rec.last_in_result:
                 continue
-            checkin_at, url = rec.info.get("checkin_at"), rec.info.get("url")
-            if not checkin_at or not url or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
+            if info.get("kind") == "checkin":
+                checkin_at = info.get("checkin_at")
+                if not checkin_at or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
+                    continue
+            if _fetched_recently(state, key, now) or not _needs_beer_detail(info, state.beers.get(key)):
                 continue
-            beer = state.beers.get(key)
-            if (beer and beer.rating is not None and beer.rating_at
-                    and age_days(parse_iso(beer.rating_at), now) <= BEER_RATING_MAX_AGE_DAYS):
-                continue
-            if key not in best or checkin_at > best[key][0]:
-                best[key] = (checkin_at, url)
+            if key not in best or rec.last_seen > best[key][0]:
+                best[key] = (rec.last_seen, _beer_url(key, info))
     ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
-    return [(key, url) for key, (_, url) in ordered[:BEER_RATING_CANDIDATES_PER_RUN]]
-
-
-BEER_PAGE_CANDIDATES_PER_RUN = 8   # all tiers together; the daily page budget still decides how many really run
+    return [(key, url) for key, (_, url) in ordered[:BAR_BEER_PAGES_PER_RUN]]
 
 
 def _fetched_recently(state: State, key: str, now: datetime) -> bool:
@@ -274,20 +288,6 @@ def _fetched_recently(state: State, key: str, now: datetime) -> bool:
 
 def _beer_url(key: str, info: dict) -> str:
     return info.get("url") or f"https://untappd.com/beer/{key[2:]}"
-
-
-def _label_less_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
-    """Hand-entered and check-in Untappd beers shown without any label image (a menu pair brings its
-    own): one beer page gives the label, the rating and the country."""
-    out: dict[str, str] = {}
-    for pairs in state.pairs.values():
-        for key, rec in pairs.items():
-            info = rec.info
-            if (key.startswith("u:") and info.get("kind") in ("manual", "checkin") and key not in out
-                    and not info.get("logo") and not (state.beers.get(key) and state.beers[key].logo)
-                    and not _fetched_recently(state, key, now)):
-                out[key] = _beer_url(key, info)
-    return list(out.items())
 
 
 def _matched_name_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
@@ -301,6 +301,40 @@ def _matched_name_candidates(state: State, now: datetime) -> list[tuple[str, str
                 and not _fetched_recently(state, key, now)):
             out.setdefault(key, f"https://untappd.com/beer/{match.untappd_beer_id}")
     return list(out.items())
+
+
+def _shop_checkin_candidates(state: State, config: Config, now: datetime) -> list[tuple[str, str]]:
+    """(key, url) of "u:"-keyed check-in pairs at shop places (a shop that is also an Untappd
+    check-in venue, e.g. Houl) within CHECKIN_KEEP_DAYS, shown on the site, whose beer still lacks a
+    label, a rating or a style, and whose beer page was not read within BEER_RATING_MAX_AGE_DAYS;
+    most recently seen first, deduped by key."""
+    best: dict[str, tuple[str, str]] = {}   # key -> (last_seen, url)
+    for place_id, pairs in state.pairs.items():
+        place = config.places.get(place_id)
+        if place is None or place.kind != "shop":
+            continue
+        for key, rec in pairs.items():
+            info = rec.info
+            if not key.startswith("u:") or info.get("kind") != "checkin" or not rec.last_in_result:
+                continue
+            checkin_at = info.get("checkin_at")
+            if not checkin_at or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
+                continue
+            if _fetched_recently(state, key, now) or not _needs_beer_detail(info, state.beers.get(key)):
+                continue
+            if key not in best or rec.last_seen > best[key][0]:
+                best[key] = (rec.last_seen, _beer_url(key, info))
+    ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
+    return [(key, url) for key, (_, url) in ordered]
+
+
+def _shop_beer_page_candidates(state: State, config: Config, now: datetime) -> list[tuple[str, str]]:
+    """Tier B: the existing matched-name candidates (shop matches lacking a canonical name) plus
+    shop-place check-in beers lacking details; deduplicated and capped at SHOP_BEER_PAGES_PER_RUN."""
+    out: dict[str, str] = {}
+    for key, url in _matched_name_candidates(state, now) + _shop_checkin_candidates(state, config, now):
+        out.setdefault(key, url)
+    return list(out.items())[:SHOP_BEER_PAGES_PER_RUN]
 
 
 def _country_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
@@ -323,25 +357,20 @@ def _country_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
     return [first[b] for b in sorted(first, key=lambda b: -count[b])]
 
 
-def _beer_page_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
-    """Beer pages to fetch this run: label-less beers first, then matched beers with no known name, then
-    the check-in-only ratings, then one beer per brewery of unknown country; deduplicated and capped."""
-    out: dict[str, str] = {}
-    for key, url in (_label_less_candidates(state, now) + _matched_name_candidates(state, now)
-                     + _beer_rating_candidates(state, now)
-                     + _country_candidates(state, now)):
-        out.setdefault(key, url)
-    return list(out.items())[:BEER_PAGE_CANDIDATES_PER_RUN]
+def _country_beer_page_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """Tier D (last): the existing _country_candidates, capped at COUNTRY_PAGES_PER_RUN."""
+    return _country_candidates(state, now)[:COUNTRY_PAGES_PER_RUN]
 
 
-def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> None:
-    """Fetch up to BEER_RATING_CANDIDATES_PER_RUN beer pages to fill state.beers rating/style/abv/ibu
-    for beers seen only in check-ins (v1.1 §2), so rules._backfill_checkin can use them; a budget or
-    Cloudflare error stops this step only, same client/pauses as the other Untappd sources. A page
-    that doesn't come back parseable as a beer page is dumped for debugging (TAPS_DEBUG_DIR) --
-    the cache is still stamped as checked, so it isn't refetched every run."""
-    sampled = False
-    for key, url in _beer_page_candidates(state, now):
+def _fetch_beer_pages(state: State, client: UntappdClient, now: datetime, candidates: list[tuple[str, str]],
+                      sampled: bool) -> bool:
+    """Fetch each (key, url) beer page, filling state.beers rating/style/abv/ibu/logo/country/name/
+    brewery; a budget or Cloudflare error stops this tier only, same client/pauses as the other
+    Untappd sources. A page that doesn't come back parseable as a beer page is dumped for debugging
+    (TAPS_DEBUG_DIR) -- the cache is still stamped as checked, so it isn't refetched every run. One
+    parsed page per run, across all tiers, is dumped too as a sample of real production markup --
+    `sampled` threads that "already have one" flag between tiers, returned for the next tier's call."""
+    for key, url in candidates:
         try:
             html = client.get(url)
         except FetchError:
@@ -352,7 +381,7 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
             data = None
         if not data or all(v is None for v in data.values()):
             dump_debug_html(f"untappd_beer_{key.removeprefix('u:')}", client)
-        elif not sampled:   # one parsed page per run: real markup to check parsers against, no extra page
+        elif not sampled:
             dump_debug_html(f"untappd_beer_sample_{key.removeprefix('u:')}", client)
             sampled = True
         beer = state.beers.setdefault(key, BeerRec(first_seen_city=iso(now)))
@@ -361,6 +390,27 @@ def fetch_beer_ratings(state: State, client: UntappdClient, now: datetime) -> No
                 if data[field] is not None:
                     setattr(beer, field, data[field])
         beer.rating_at = iso(now)
+    return sampled
+
+
+def fetch_bar_beer_pages(state: State, config: Config, client: UntappdClient, now: datetime,
+                         sampled: bool = False) -> bool:
+    """Tier A (v1.3 owner priority, first): up to BAR_BEER_PAGES_PER_RUN beer pages for bar/brewpub
+    beers still missing a label, rating or style."""
+    return _fetch_beer_pages(state, client, now, _bar_beer_candidates(state, config, now), sampled)
+
+
+def fetch_shop_beer_pages(state: State, config: Config, client: UntappdClient, now: datetime,
+                          sampled: bool = False) -> bool:
+    """Tier B (v1.3, second): up to SHOP_BEER_PAGES_PER_RUN beer pages for shop-matched beers with no
+    canonical name and shop-place check-in beers still missing a label, rating or style."""
+    return _fetch_beer_pages(state, client, now, _shop_beer_page_candidates(state, config, now), sampled)
+
+
+def fetch_country_beer_pages(state: State, client: UntappdClient, now: datetime, sampled: bool = False) -> bool:
+    """Tier D (v1.3, last): up to COUNTRY_PAGES_PER_RUN beer pages, one per brewery whose country is
+    still unknown."""
+    return _fetch_beer_pages(state, client, now, _country_beer_page_candidates(state, now), sampled)
 
 
 # --- v1.2 beer identity: match shop/menu/manual beers to Untappd, zero pages or search --------
@@ -433,8 +483,9 @@ def match_shop_beers_locally(state: State, now: datetime) -> None:
 def _shop_match_candidates(state: State, now: datetime,
                            limit: int | None = SHOP_SEARCH_CANDIDATES_PER_RUN) -> list[tuple[str, str, str, float | None]]:
     """(key, brand, name, abv) of shop/menu/manual beers with no successful match yet -- never
-    searched, or a failed search ("no_match") old enough to retry -- most recently seen first,
-    capped at SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a
+    searched, or a failed search ("no_match") old enough to retry. Priority (v1.3, по приоритетам):
+    never-searched items before retries of an old "no_match", most recently seen first within each
+    group; capped at SHOP_SEARCH_CANDIDATES_PER_RUN. A key already resolved to an Untappd id via a
     corrections.yaml alias starts with "u:", not "n:", so it needs no search (apply_aliases runs
     before collect_untappd). "menu"/"manual" (v1.2 beer identity: Dargett Brewpub via buyam, a
     friend's manual sighting) are candidates too -- an Untappd-native "u:"-keyed menu pair is
@@ -443,7 +494,7 @@ def _shop_match_candidates(state: State, now: datetime,
     search's own throttle -- but a corrections.yaml same_as untappd_id: null override (via="manual")
     still blocks it, same as search. abv is the shop's own (possibly unknown) scraped value, for
     local_match's parenthetical/ABV guard (code review round 2, finding C) -- search never uses it."""
-    best: dict[str, tuple[str, str, str, float | None]] = {}   # key -> (last_seen, brand, name, abv)
+    best: dict[str, tuple[str, str, str, float | None, bool]] = {}   # key -> (last_seen, brand, name, abv, never_searched)
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
             if not key.startswith("n:") or rec.info.get("kind") not in ("shop", "menu", "manual"):
@@ -463,9 +514,10 @@ def _shop_match_candidates(state: State, now: datetime,
             if not brand or not name:
                 continue
             if key not in best or rec.last_seen > best[key][0]:
-                best[key] = (rec.last_seen, brand, name, rec.info.get("abv"))
-    ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)
-    return [(key, brand, name, abv) for key, (_, brand, name, abv) in ordered[:limit]]
+                best[key] = (rec.last_seen, brand, name, rec.info.get("abv"), match is None)
+    ordered = sorted(best.items(), key=lambda kv: kv[1][0], reverse=True)         # most recently seen first
+    ordered.sort(key=lambda kv: kv[1][4], reverse=True)                          # never-searched first (stable)
+    return [(key, brand, name, abv) for key, (_, brand, name, abv, _never) in ordered[:limit]]
 
 
 def match_shop_beers(state: State, client: UntappdClient, now: datetime,

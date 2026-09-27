@@ -368,8 +368,8 @@ def test_weekly_discovery_report_skips_a_venue_already_reported(world):
 
 # --- v1.1 discovery_daily_until: owner's temporary daily cadence for the discovery report --------
 
-def _config(**settings_kw):
-    return Config(places={}, breweries=(), settings=Settings(**settings_kw))
+def _config(places=None, **settings_kw):
+    return Config(places=places or {}, breweries=(), settings=Settings(**settings_kw))
 
 
 def test_discovery_due_daily_the_first_time_that_day():
@@ -661,8 +661,8 @@ BEER_URL = "https://untappd.com/b/dargett-brewery-cherry-ale-morello/1559917"
 BEER_PAGE_HTML = fixture_text("untappd/beer_page.html")
 
 
-def _checkin_pair(checkin_at, url="https://untappd.com/b/x/1", **extra):
-    return PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+def _checkin_pair(checkin_at, url="https://untappd.com/b/x/1", last_seen=None, **extra):
+    return PairRec(first_seen=iso(NOW), last_seen=last_seen or iso(NOW),
                    info={"kind": "checkin", "checkin_at": checkin_at, "url": url, **extra})
 
 
@@ -680,51 +680,135 @@ def _manual_pair(**info):
     return PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "manual", "name": "X", **info})
 
 
-def test_fetch_beer_ratings_caches_label_and_country_from_a_real_page():
+def test_fetch_bar_beer_pages_caches_label_and_country_from_a_real_page():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1715344": _checkin_pair(iso(NOW - timedelta(days=1)), url=REAL_BEER_URL)}}
-    run_mod.fetch_beer_ratings(state, _untappd_client({REAL_BEER_URL: REAL_BEER_PAGE}), NOW)
+    run_mod.fetch_bar_beer_pages(state, _config(), _untappd_client({REAL_BEER_URL: REAL_BEER_PAGE}), NOW)
     beer = state.beers["u:1715344"]
     assert (beer.rating, beer.country) == (3.48902, "Belgium")
     assert beer.logo == "https://assets.untappd.com/site/beer_logos/beer-1715344_b8fec_sm.jpeg"
     assert (beer.name, beer.brewery) == ("Rodenbach Fruitage", "Brouwerij Rodenbach")
 
 
-def test_beer_page_candidates_put_label_less_hand_entered_beers_first():
+def test_bar_beer_candidates_picks_a_checkin_lacking_style():
     state = empty_state(NOW)
-    state.pairs = {
-        "ferment": {"u:1715344": _manual_pair(brewery="Rodenbach"),
-                    "u:5": _manual_pair(brewery="Jever", logo="https://assets.untappd.com/x.jpg")},   # has a label
-        "t": {"u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/b/2")},
-    }
-    keys = [key for key, _ in run_mod._beer_page_candidates(state, NOW)]
-    assert keys[:2] == ["u:1715344", "u:2"] and "u:5" not in keys[:2]
-    assert dict(run_mod._beer_page_candidates(state, NOW))["u:1715344"] == "https://untappd.com/beer/1715344"
+    state.pairs = {"gargoyle": {
+        "u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1",
+                             logo="https://assets.untappd.com/a.jpg", rating=4.0),   # style still missing
+    }}
+    config = _config(places={"gargoyle": Place(id="gargoyle", name="Gargoyle Bar", kind="bar", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == [("u:1", "https://untappd.com/b/x/1")]
 
 
-def test_beer_page_candidates_skip_a_beer_fetched_recently_even_without_a_label():
+def test_bar_beer_candidates_skips_a_beer_with_label_rating_and_style():
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {
+        "u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1",
+                             logo="https://assets.untappd.com/a.jpg", rating=4.0, style="Stout"),
+    }}
+    config = _config(places={"gargoyle": Place(id="gargoyle", name="Gargoyle Bar", kind="bar", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == []
+
+
+def test_bar_beer_candidates_skips_a_beer_page_read_recently():
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating_at=iso(NOW - timedelta(days=2)))
+    config = _config(places={"gargoyle": Place(id="gargoyle", name="Gargoyle Bar", kind="bar", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == []
+
+
+def test_bar_beer_candidates_excludes_a_shop_places_checkin():
+    """A shop that is also an Untappd check-in venue (e.g. Houl) belongs to tier B, not tier A."""
+    state = empty_state(NOW)
+    state.pairs = {"houl": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")}}
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == []
+
+
+def test_bar_beer_candidates_includes_a_manual_pair_missing_a_label():
     state = empty_state(NOW)
     state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}
-    state.beers["u:1715344"] = BeerRec(first_seen_city=iso(NOW), rating_at=iso(NOW - timedelta(days=2)))
-    assert run_mod._beer_page_candidates(state, NOW) == []
+    config = _config(places={"ferment": Place(id="ferment", name="Ferment", kind="bar", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == [
+        ("u:1715344", "https://untappd.com/beer/1715344")]
+
+
+def test_bar_beer_candidates_most_recently_seen_first_capped_at_thirty():
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {
+        f"u:{i}": _checkin_pair(iso(NOW - timedelta(days=1)), url=f"https://untappd.com/b/x/{i}",
+                                last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 32)
+    }}
+    config = _config(places={"gargoyle": Place(id="gargoyle", name="Gargoyle Bar", kind="bar", sources={})})
+    candidates = run_mod._bar_beer_candidates(state, config, NOW)
+    assert len(candidates) == 30
+    assert [key for key, _ in candidates][:3] == ["u:1", "u:2", "u:3"]
+
+
+def test_shop_beer_page_candidates_picks_a_shop_places_checkin_lacking_details():
+    """v1.3: a shop that is also an Untappd check-in venue (e.g. Houl) is tier B, not tier A."""
+    state = empty_state(NOW)
+    state.pairs = {"houl": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")}}
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={})})
+    assert run_mod._shop_beer_page_candidates(state, config, NOW) == [("u:1", "https://untappd.com/b/x/1")]
+
+
+def test_shop_beer_page_candidates_skips_a_shop_checkin_with_full_details():
+    state = empty_state(NOW)
+    state.pairs = {"houl": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1",
+                                                 logo="https://assets.untappd.com/a.jpg", rating=4.0, style="Stout")}}
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={})})
+    assert run_mod._shop_beer_page_candidates(state, config, NOW) == []
+
+
+def test_shop_beer_page_candidates_excludes_a_stale_shop_checkin():
+    state = empty_state(NOW)
+    state.pairs = {"houl": {"u:1": _checkin_pair(iso(NOW - timedelta(days=22)))}}
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={})})
+    assert run_mod._shop_beer_page_candidates(state, config, NOW) == []
+
+
+def test_shop_beer_page_candidates_combines_matched_names_and_shop_checkins():
+    state = empty_state(NOW)
+    state.pairs = {
+        "houl": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")},
+        "beer-city": {"n:rodenbach": _shop_pair("Rodenbach", "Rodenbach fruitage")},
+    }
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={}),
+                             "beer-city": Place(id="beer-city", name="Beer City", kind="shop", sources={})})
+    state.shop_matches["n:rodenbach"] = _nameless_match()
+    got = run_mod._shop_beer_page_candidates(state, config, NOW)
+    assert got == [("u:1715344", "https://untappd.com/beer/1715344"), ("u:1", "https://untappd.com/b/x/1")]
+
+
+def test_shop_beer_page_candidates_capped_at_ten():
+    state = empty_state(NOW)
+    state.pairs = {"houl": {
+        f"u:{i}": _checkin_pair(iso(NOW - timedelta(days=1)), url=f"https://untappd.com/b/x/{i}",
+                                last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 12)
+    }}
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={})})
+    got = run_mod._shop_beer_page_candidates(state, config, NOW)
+    assert len(got) == 10
+    assert [key for key, _ in got][:2] == ["u:1", "u:2"]
+
+
+def test_country_beer_page_candidates_capped_at_eight():
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {
+        f"u:{i}": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
+                         info={"kind": "menu", "brewery": f"Brewery{i}", "url": f"https://untappd.com/b/z/{i}"})
+        for i in range(1, 10)
+    }}
+    assert len(run_mod._country_beer_page_candidates(state, NOW)) == 8
 
 
 def _nameless_match(**kw):
     return ShopMatchRec(untappd_beer_id=1715344, url="https://untappd.com/beer/1715344", via="manual",
                         matched_at=iso(NOW), **kw)
-
-
-def test_beer_page_candidates_fetch_the_page_of_a_matched_beer_with_no_canonical_name():
-    state = empty_state(NOW)
-    state.pairs = {
-        "ferment": {"u:9": _manual_pair(brewery="Jever")},          # label-less manual pair: first
-        "t": {"u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/b/2",
-                                   logo="https://assets.untappd.com/x.jpg")},   # has a label: a rating candidate only
-        "beer-city": {"n:rodenbach": _shop_pair("Rodenbach", "Rodenbach fruitage")}}
-    state.shop_matches["n:rodenbach"] = _nameless_match()
-    got = run_mod._beer_page_candidates(state, NOW)
-    assert got[:3] == [("u:9", "https://untappd.com/beer/9"), ("u:1715344", "https://untappd.com/beer/1715344"),
-                       ("u:2", "https://untappd.com/b/b/2")]      # manual pairs, then matches, then ratings
 
 
 @pytest.mark.parametrize("match, beer", [
@@ -733,15 +817,15 @@ def test_beer_page_candidates_fetch_the_page_of_a_matched_beer_with_no_canonical
     (_nameless_match(), BeerRec(first_seen_city="x", rating_at=iso(NOW - timedelta(days=2)))),   # fetched recently
     (ShopMatchRec(untappd_beer_id=None, matched_at=iso(NOW)), None),                           # no_match / blocked
 ])
-def test_beer_page_candidates_skip_matches_that_need_no_page(match, beer):
+def test_matched_name_candidates_skip_matches_that_need_no_page(match, beer):
     state = empty_state(NOW)
     state.shop_matches["n:x"] = match
     if beer:
         state.beers["u:1715344"] = beer
-    assert run_mod._beer_page_candidates(state, NOW) == []
+    assert run_mod._matched_name_candidates(state, NOW) == []
 
 
-def test_beer_page_candidates_ask_for_a_country_once_per_brewery():
+def test_country_candidates_ask_for_a_country_once_per_brewery():
     state = empty_state(NOW)
     state.pairs = {"gargoyle": {
         "u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
@@ -751,7 +835,7 @@ def test_beer_page_candidates_ask_for_a_country_once_per_brewery():
         "u:3": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
                        info={"kind": "menu", "brewery": "Konix", "logo": "https://assets.untappd.com/c.jpg", "url": "https://untappd.com/b/k/3"})}}
     state.beers["u:3"] = BeerRec(first_seen_city=iso(NOW), country="Armenia", rating_at=iso(NOW - timedelta(days=40)))
-    keys = [key for key, _ in run_mod._beer_page_candidates(state, NOW)]
+    keys = [key for key, _ in run_mod._country_candidates(state, NOW)]
     assert keys == ["u:1"]          # Konix is known, and one Zagovor beer is enough
 
 
@@ -797,76 +881,54 @@ def test_apply_known_beer_info_uses_the_cached_label_of_a_beer_page():
     assert state.pairs["ferment"]["u:1715344"].info["logo"] == "https://assets.untappd.com/l.jpg"
 
 
-def test_beer_rating_candidates_excludes_beers_also_seen_on_a_menu():
-    state = empty_state(NOW)
-    state.pairs = {
-        "tap-station": {"u:1": _checkin_pair(iso(NOW - timedelta(days=5)), url="https://untappd.com/b/a/1"),
-                        "u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/b/2")},
-        "gargoyle": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu"})},
-    }
-    assert run_mod._beer_rating_candidates(state, NOW) == [("u:2", "https://untappd.com/b/b/2")]
-
-
-def test_beer_rating_candidates_most_recently_seen_first_capped_at_five():
-    state = empty_state(NOW)
-    state.pairs = {"t": {f"u:{i}": _checkin_pair(iso(NOW - timedelta(days=i)), url=f"https://untappd.com/b/x/{i}")
-                        for i in range(1, 8)}}
-    candidates = run_mod._beer_rating_candidates(state, NOW)
-    assert [key for key, _ in candidates] == ["u:1", "u:2", "u:3", "u:4", "u:5"]
-
-
-def test_beer_rating_candidates_excludes_checkins_older_than_21_days():
+def test_bar_beer_candidates_excludes_checkins_older_than_21_days():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=22)))}}
-    assert run_mod._beer_rating_candidates(state, NOW) == []
+    assert run_mod._bar_beer_candidates(state, _config(), NOW) == []
 
 
-def test_beer_rating_candidates_skips_a_fresh_cached_rating():
+def test_bar_beer_candidates_skips_a_fresh_cached_rating_missing_only_style_but_not_stale():
+    """rating and logo are cached, but style is still missing, so a fresh rating alone is not enough
+    to skip -- only _fetched_recently (the beer page's own read date) gates a refetch."""
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)))}}
     state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=10)))
-    assert run_mod._beer_rating_candidates(state, NOW) == []
+    assert run_mod._bar_beer_candidates(state, _config(), NOW) == []
 
 
-def test_beer_rating_candidates_refetches_a_stale_cached_rating():
+def test_bar_beer_candidates_refetches_a_stale_cached_rating():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")}}
     state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=31)))
-    assert run_mod._beer_rating_candidates(state, NOW) == [("u:1", "https://untappd.com/b/x/1")]
+    assert run_mod._bar_beer_candidates(state, _config(), NOW) == [("u:1", "https://untappd.com/b/x/1")]
 
 
-def test_beer_rating_candidates_skips_pairs_without_a_url():
-    state = empty_state(NOW)
-    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url=None)}}
-    assert run_mod._beer_rating_candidates(state, NOW) == []
-
-
-def test_fetch_beer_ratings_caches_parsed_fields():
+def test_fetch_bar_beer_pages_caches_parsed_fields():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
     client = _untappd_client({BEER_URL: BEER_PAGE_HTML})
-    run_mod.fetch_beer_ratings(state, client, NOW)
+    run_mod.fetch_bar_beer_pages(state, _config(), client, NOW)
     beer = state.beers["u:1559917"]
     assert (beer.rating, beer.style, beer.abv, beer.ibu, beer.rating_at) == (3.82, "Fruit Beer", 6.2, 18, iso(NOW))
 
 
-def test_fetch_beer_ratings_stops_on_budget_error_without_consuming_the_others():
+def test_fetch_bar_beer_pages_stops_on_budget_error_without_consuming_the_others():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1"),
                         "u:2": _checkin_pair(iso(NOW - timedelta(days=2)), url="https://untappd.com/b/y/2")}}
     client = _untappd_client({}, daily_pages=0)   # no budget at all
-    run_mod.fetch_beer_ratings(state, client, NOW)
+    run_mod.fetch_bar_beer_pages(state, _config(), client, NOW)
     assert state.beers == {}
 
 
-def test_fetch_beer_ratings_dumps_debug_html_on_a_page_that_does_not_parse(monkeypatch, tmp_path):
+def test_fetch_bar_beer_pages_dumps_debug_html_on_a_page_that_does_not_parse(monkeypatch, tmp_path):
     debug_dir = tmp_path / "debug"
     monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
     client = _untappd_client({BEER_URL: "<html><body>login wall</body></html>"})
 
-    run_mod.fetch_beer_ratings(state, client, NOW)
+    run_mod.fetch_bar_beer_pages(state, _config(), client, NOW)
 
     written = (debug_dir / "untappd_beer_1559917.html").read_text(encoding="utf-8")
     assert written.splitlines()[0] == f"<!-- {BEER_URL} -->"
@@ -874,7 +936,7 @@ def test_fetch_beer_ratings_dumps_debug_html_on_a_page_that_does_not_parse(monke
     assert beer.rating is None and beer.rating_at == iso(NOW)   # stamped, so it isn't retried every run
 
 
-def test_fetch_beer_ratings_dumps_one_parsed_page_as_a_sample(monkeypatch, tmp_path):
+def test_fetch_bar_beer_pages_dumps_one_parsed_page_as_a_sample(monkeypatch, tmp_path):
     """One real beer page per run reaches the debug artifact even when it parses, so a parser (e.g. the
     label image) can be verified against production markup without spending extra pages."""
     debug_dir = tmp_path / "debug"
@@ -883,13 +945,30 @@ def test_fetch_beer_ratings_dumps_one_parsed_page_as_a_sample(monkeypatch, tmp_p
     state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
     client = _untappd_client({BEER_URL: BEER_PAGE_HTML})
 
-    run_mod.fetch_beer_ratings(state, client, NOW)
+    run_mod.fetch_bar_beer_pages(state, _config(), client, NOW)
 
     assert (debug_dir / "untappd_beer_sample_1559917.html").exists()
     assert not (debug_dir / "untappd_beer_1559917.html").exists()   # that name is for pages that failed
 
 
-def test_fetch_beer_ratings_survives_a_parse_crash_and_continues(monkeypatch):
+def test_fetch_beer_pages_dumps_only_one_sample_across_tiers_per_run(monkeypatch, tmp_path):
+    """The "one parsed sample page per run" dump is shared across tiers: `sampled` threads from the
+    bar tier's call into the shop tier's, so a second parsed page in the same run isn't dumped too."""
+    debug_dir = tmp_path / "debug"
+    monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1559917": _checkin_pair(iso(NOW - timedelta(days=1)), url=BEER_URL)}}
+    client = _untappd_client({BEER_URL: BEER_PAGE_HTML, REAL_BEER_URL: REAL_BEER_PAGE})
+
+    sampled = run_mod.fetch_bar_beer_pages(state, _config(), client, NOW)
+    assert sampled is True
+    run_mod._fetch_beer_pages(state, client, NOW, [("u:1715344", REAL_BEER_URL)], sampled)
+
+    assert (debug_dir / "untappd_beer_sample_1559917.html").exists()
+    assert not (debug_dir / "untappd_beer_sample_1715344.html").exists()   # already had a sample this run
+
+
+def test_fetch_bar_beer_pages_survives_a_parse_crash_and_continues(monkeypatch):
     """I-1, unit-level: a parse error must fail only that beer -- it is stamped checked, and the loop
     continues to the next candidate instead of crashing the run."""
     state = empty_state(NOW)
@@ -900,7 +979,7 @@ def test_fetch_beer_ratings_survives_a_parse_crash_and_continues(monkeypatch):
     client = _untappd_client({"https://untappd.com/b/a/1": "<html></html>", "https://untappd.com/b/b/2": "<html></html>"})
     monkeypatch.setattr(run_mod, "parse_beer_page", lambda html: (_ for _ in ()).throw(ValueError("boom")))
 
-    run_mod.fetch_beer_ratings(state, client, NOW)
+    run_mod.fetch_bar_beer_pages(state, _config(), client, NOW)
 
     assert state.beers["u:1"].rating_at == iso(NOW) and state.beers["u:2"].rating_at == iso(NOW)
 
@@ -940,6 +1019,19 @@ def test_shop_match_candidates_excludes_already_matched_and_untappd_keyed():
     }
     state.shop_matches["n:kilikia"] = ShopMatchRec(untappd_beer_id=1, matched_at=iso(NOW))
     assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def test_shop_match_candidates_prioritizes_never_searched_over_a_stale_no_match_retry():
+    """v1.3 (по приоритетам): a never-searched beer comes before a retry of an old "no_match", even
+    when the retry was seen more recently."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        "n:kilikia": _shop_pair("Kilikia", "Kilikia", last_seen=iso(NOW)),           # retry, seen more recently
+        "n:a": _shop_pair("Brand", "A", last_seen=iso(NOW - timedelta(days=1))),      # never searched
+    }}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=31)))
+    keys = [key for key, *_ in run_mod._shop_match_candidates(state, NOW)]
+    assert keys == ["n:a", "n:kilikia"]
 
 
 def test_shop_match_candidates_retries_a_stale_no_match():
@@ -1314,6 +1406,43 @@ def test_match_shop_beers_respects_a_custom_limit():
     })
     run_mod.match_shop_beers(state, client, NOW, limit=1)
     assert list(state.shop_matches) == ["n:a"]                 # only the most recently seen one
+
+
+# --- v1.3 owner priority: bars before shops before countries ----------------
+
+def test_collect_untappd_fetches_tiers_in_priority_order():
+    """Bar beer pages, then shop beer pages, then shop search, then country beer pages."""
+    state = empty_state(NOW)
+    state.pairs = {
+        "gargoyle": {
+            "u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/bar/1"),
+            "u:3": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
+                          info={"kind": "menu", "brewery": "Zagovor", "url": "https://untappd.com/b/zagovor/3"}),
+        },
+        "houl": {"u:2": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/shop/2")},
+        "beer-city": {"n:x": _shop_pair("Brand", "Name")},
+    }
+    config = Config(places={
+        "gargoyle": Place(id="gargoyle", name="Gargoyle", kind="bar", sources={}),
+        "houl": Place(id="houl", name="Houl", kind="shop", sources={}),
+        "beer-city": Place(id="beer-city", name="Beer City", kind="shop", sources={}),
+    }, breweries=(), settings=Settings())
+    urls = []
+
+    def fetch_page(url):
+        urls.append(url)
+        return HttpResponse(200, {}, "<html><body>Nothing found.</body></html>")
+
+    deps = Deps(untappd_fetcher=lambda: (fetch_page, lambda: None), sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    bar_i = urls.index("https://untappd.com/b/bar/1")
+    shop_i = urls.index("https://untappd.com/b/shop/2")
+    search_i = next(i for i, u in enumerate(urls) if u.startswith("https://untappd.com/search?q="))
+    country_i = urls.index("https://untappd.com/b/zagovor/3")
+    assert bar_i < shop_i < search_i < country_i
 
 
 # --- v1.1 boost settings: temporary Untappd budget increase ------------------

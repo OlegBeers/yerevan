@@ -231,8 +231,8 @@ class _Merger:
 
     def _backfill_checkin(self, rec: PairRec, key: str) -> None:
         """A check-in poured without menu details borrows style/abv/ibu/rating from a menu pair of the
-        same beer, else (v1.1 §2) from the state.beers cache filled by fetch_beer_ratings for beers
-        seen only in check-ins."""
+        same beer, else (v1.1 §2) from the state.beers cache filled by run.fetch_bar_beer_pages (or
+        run.fetch_shop_beer_pages for a shop-place check-in) for beers seen only in check-ins."""
         missing = [f for f in CHECKIN_BACKFILL_FIELDS if rec.info.get(f) is None]
         if not missing:
             return

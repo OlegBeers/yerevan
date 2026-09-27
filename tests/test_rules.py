@@ -493,7 +493,7 @@ def test_checkin_backfills_style_and_abv_from_a_menu_pair_with_the_same_key():
 
 def test_checkin_backfills_from_the_beers_cache_when_no_menu_pair_exists():
     """v1.1 §2: a beer seen only in check-ins borrows rating/style/abv/ibu from state.beers, filled by
-    run.fetch_beer_ratings from the beer's own Untappd page -- no menu pair to borrow from here."""
+    run.fetch_bar_beer_pages from the beer's own Untappd page -- no menu pair to borrow from here."""
     state = ready("untappd_checkins:tap-station")
     state.beers["u:9"] = BeerRec(first_seen_city=iso(NOW - DAY), rating=3.82, style="Fruit Beer", abv=6.2, ibu=18,
                                  rating_at=iso(NOW))
