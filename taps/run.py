@@ -326,8 +326,11 @@ def _shop_checkin_candidates(state: State, config: Config, now: datetime) -> lis
             continue
         for key, rec in pairs.items():
             info = rec.info
-            if not key.startswith("u:") or info.get("kind") != "checkin" or not rec.last_in_result:
+            if not key.startswith("u:") or info.get("kind") != "checkin":
                 continue
+            # site_data._visible shows a check-in by checkin_at age alone, never last_in_result: a
+            # venue's own check-in page lists only its most recent check-ins, so last_in_result can
+            # go stale for an older but still-shown beer -- it must not hide it here either.
             checkin_at = info.get("checkin_at")
             if not checkin_at or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
                 continue

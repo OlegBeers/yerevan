@@ -780,6 +780,19 @@ def test_shop_beer_page_candidates_picks_a_shop_places_checkin_lacking_details()
     assert run_mod._shop_beer_page_candidates(state, config, NOW) == [("u:1", "https://untappd.com/b/x/1")]
 
 
+def test_shop_beer_page_candidates_includes_a_checkin_whose_last_in_result_went_stale():
+    """Same bug as _bar_beer_candidates: a shop-place venue's own check-in page lists only its most
+    recent check-ins, so last_in_result can go stale for an older but still-shown check-in even
+    though site_data._visible shows it by checkin_at age alone."""
+    state = empty_state(NOW)
+    pair = _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")
+    pair.last_in_result = False
+    state.pairs = {"houl": {"u:1": pair}}
+    config = _config(places={"houl": Place(id="houl", name="Houl", kind="shop", sources={})})
+    assert run_mod._shop_checkin_candidates(state, config, NOW) == [("u:1", "https://untappd.com/b/x/1")]
+    assert run_mod._shop_beer_page_candidates(state, config, NOW) == [("u:1", "https://untappd.com/b/x/1")]
+
+
 def test_shop_beer_page_candidates_skips_a_shop_checkin_with_full_details():
     state = empty_state(NOW)
     state.pairs = {"houl": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1",
