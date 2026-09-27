@@ -91,6 +91,9 @@
     .tab .ico { display: none; }   /* four tabs must fit 375px in both languages without scrolling */
     .head { flex-wrap: nowrap; align-items: flex-start; }   /* the switch stays top right on the title's line, a long title wraps under itself */
     h1 { min-width: 0; font-size: 1.5rem; }   /* the Russian title fits beside the switch at 375px */
+    /* the word "Сортировка"/"Sort by" is dropped so the select and the Filters button fit one row;
+       the label stays in the DOM (same clip technique as .sr-only) so the select keeps its accessible name */
+    .sort-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   }
   .controls { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: center; margin-bottom: var(--s4); }
   #search, select {
@@ -243,7 +246,7 @@
       <label for="search" class="sr-only" data-i18n="search.label">Поиск по названию, стилю и пивоварне</label>
       <input type="search" id="search" placeholder="Название, стиль или пивоварня" data-i18n-placeholder="search.placeholder" autocomplete="off">
       <span class="sort">
-        <label for="sort" data-i18n="sort.label">Сортировка</label>
+        <label for="sort" class="sort-label" data-i18n="sort.label">Сортировка</label>
         <select id="sort">
           <option value="since" selected data-i18n="sort.since">по новизне</option>
           <option value="rating" data-i18n="sort.rating">по рейтингу</option>

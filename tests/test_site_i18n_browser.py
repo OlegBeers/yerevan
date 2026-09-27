@@ -506,6 +506,20 @@ def test_every_control_is_at_least_44px_tall(open_page, width):
     assert problems == []
 
 
+def test_the_sort_label_hides_on_a_phone_so_sort_and_filters_share_a_row_but_keeps_naming_the_select(open_page):
+    page, problems = open_page(width=375)
+    label_box = box(page, 'label[for="sort"]')
+    assert label_box["width"] <= 1 and label_box["height"] <= 1   # visually hidden, not removed
+    assert page.eval_on_selector("#sort", "e => e.labels[0].textContent.trim()") == "Sort by"
+    sort_box, filters_box = box(page, "#sort"), box(page, "#filters-toggle")
+    assert abs(sort_box["top"] - filters_box["top"]) <= 2   # same row, no label pushing them apart
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert problems == []
+    wide_page, wide_problems = open_page(width=700)   # above the 560px breakpoint: the label is back
+    assert box(wide_page, 'label[for="sort"]')["width"] > 1
+    assert wide_problems == []
+
+
 def test_the_place_chips_fade_out_at_the_right_edge_and_the_last_chip_clears_the_fade(open_page):
     page, problems = open_page(width=375)
     mask = page.eval_on_selector("#places", "e => getComputedStyle(e).maskImage || getComputedStyle(e).webkitMaskImage")

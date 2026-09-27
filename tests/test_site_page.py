@@ -303,6 +303,21 @@ def test_tabs_dont_wrap_on_narrow_screens():
     assert "white-space: nowrap" in block
 
 
+def test_sort_label_hides_on_a_phone_so_the_select_and_filters_button_share_a_row():
+    """The word "Сортировка"/"Sort by" is dropped only under the 560px breakpoint (same technique as .sr-only,
+    so the <select> keeps its accessible name); above it the label stays visible, as test_every_form_control_
+    has_an_accessible_name already requires for every viewport."""
+    soup = _soup()
+    label = soup.find("label", attrs={"for": "sort"})
+    assert "sort-label" in label.get("class", [])
+    css = _css(soup)
+    phone = css[css.index("max-width: 560px"):]
+    rule = re.search(r"\.sort-label\s*\{([^}]*)\}", phone).group(1)
+    for prop in ("position: absolute", "width: 1px", "height: 1px", "clip: rect(0 0 0 0)"):
+        assert prop in rule
+    assert not re.search(r"\.sort-label\s*\{[^}]*\}", css[:css.index("max-width: 560px")])
+
+
 def test_colours_are_custom_properties_with_dark_variant():
     css = _css(_soup())
     root = re.search(r":root\s*\{([^}]*)\}", css).group(1)
