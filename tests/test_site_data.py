@@ -156,7 +156,7 @@ def test_row_carries_display_fields():
     st = state({"gargoyle": {"u:4280": pair("untappd_menu", first_seen="2026-09-24T21:30:00+00:00", info=info)}})
     assert build(st)["rows"] == [{
         "place_id": "gargoyle", "section": "bars", "beer_key": "u:4280", "group_key": "u:4280", "name": "Celebrator",
-        "brewery": "Ayinger", "style": "Doppelbock", "abv": 6.7, "ibu": 24, "rating": 3.76,
+        "brewery": "Ayinger", "style": "Doppelbock", "style_group": "Doppelbock", "abv": 6.7, "ibu": 24, "rating": 3.76,
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
         "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
         "country": None,
@@ -165,6 +165,23 @@ def test_row_carries_display_fields():
         "seen_days_ago": None, "new": False, "star": False, "by": None, "match_weak": False,
         "shop_name": None, "shop_brewery": None, "match_via": None,
     }]
+
+
+def test_row_style_group_is_the_family_of_its_style():
+    info = {"name": "X", "style": "IPA - Imperial / Double"}
+    st = state({"gargoyle": {"u:1": pair("untappd_menu", info=info)}})
+    assert build(st)["rows"][0]["style_group"] == "DIPA"
+
+
+def test_row_style_group_is_none_without_a_style():
+    st = state({"gargoyle": {"u:1": pair("untappd_menu", info={"name": "X"})}})
+    assert build(st)["rows"][0]["style_group"] is None
+
+
+def test_row_style_group_follows_the_inferred_style_when_that_is_what_is_shown():
+    st = state({"beer-city": {"n:a": pair("beercity", in_stock=True, info={"name": "Bever pilsner"})}})
+    row = build(st)["rows"][0]
+    assert (row["style"], row["style_inferred"], row["style_group"]) == ("Pilsner", True, "Pilsner")
 
 
 def test_row_carries_the_country_the_shop_states():

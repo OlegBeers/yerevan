@@ -6,7 +6,7 @@ from pathlib import Path
 from urllib.parse import quote, urlencode
 
 from taps.config import Config, Place
-from taps.model import SOURCE_KINDS
+from taps.model import SOURCE_KINDS, style_family
 from taps.sources.manual import MANUAL_KEEP_DAYS
 from taps.sources.untappd_checkins import is_yerevan_city
 from taps.state import MARKERS, VENUE_KEEP_DAYS, PairRec, ShopMatchRec, State
@@ -162,6 +162,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: 
         row["style"] = guess_style(_shop_name(info, key))
         if row["style"]:
             row["style_inferred"] = True
+    row["style_group"] = style_family(row["style"]) if row["style"] else None
     if info.get("servings"):   # only a beer with several servings: the fields above are its first one
         row["servings"] = info["servings"]
     row["brewery"] = info.get("u_brewery") or info.get("brewery")

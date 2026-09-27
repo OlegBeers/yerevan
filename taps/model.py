@@ -180,3 +180,20 @@ def untappd_n_key(brewery: str | None, name: str, brewery_aliases: Mapping[str, 
 def strip_color(key: str) -> str:
     prefix, sep, body = key.partition(":")
     return prefix + sep + " ".join(t for t in body.split() if t not in COLOR_WORDS)
+
+
+# Untappd style strings are "Category - Subcategory[- ...]"; a few well-known subcategories get a short
+# familiar name instead of the bare category, checked first (longest/most specific prefix wins).
+STYLE_PREFIX_MAP = (
+    ("IPA - Imperial / Double", "DIPA"),
+    ("IPA - Triple", "TIPA"),
+    ("IPA - New England / Hazy", "NEIPA"),
+    ("Stout - Imperial / Double", "Imperial Stout"),
+)
+
+
+def style_family(style: str) -> str:
+    for prefix, mapped in STYLE_PREFIX_MAP:
+        if style.startswith(prefix):
+            return mapped
+    return style.split(" - ", 1)[0]

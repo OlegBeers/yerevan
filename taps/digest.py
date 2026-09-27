@@ -5,7 +5,7 @@ from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 
 from taps.config import Config, Settings
-from taps.model import SOURCE_KINDS
+from taps.model import SOURCE_KINDS, style_family
 from taps.state import DigestRec, PairRec, State
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, yerevan_date
 
@@ -18,15 +18,6 @@ BLOCK_RULE = "──────────"
 MANUAL_LIST_MAX = 5   # more manual entries from one place: one "list updated" line instead of every beer
 MAX_PER_PLACE = 5     # more beer lines in one group: the rest collapse into an inline "…и ещё N" tail
 BREWERY_NEW_HEADER = "<b>Новые сорта пивоварен</b> · где наливают — пока неизвестно"
-
-# Untappd style strings are "Category - Subcategory[- ...]"; a few well-known subcategories get a short
-# familiar name instead of the bare category, checked first (longest/most specific prefix wins).
-STYLE_PREFIX_MAP = (
-    ("IPA - Imperial / Double", "DIPA"),
-    ("IPA - Triple", "TIPA"),
-    ("IPA - New England / Hazy", "NEIPA"),
-    ("Stout - Imperial / Double", "Imperial Stout"),
-)
 
 _PAREN_WITH_COMMA = re.compile(r"\s*\([^()]*,[^()]*\)")
 _PAREN_ANY = re.compile(r"\s*\([^()]*\)")
@@ -99,13 +90,6 @@ class Digest:
     to_admin: bool
 
 
-def _style_family(style: str) -> str:
-    for prefix, mapped in STYLE_PREFIX_MAP:
-        if style.startswith(prefix):
-            return mapped
-    return style.split(" - ", 1)[0]
-
-
 def _shorten_name(name: str) -> str:
     """A parenthesised aside is dropped only when it lists several things (a comma inside) --
     a single-word aside like "(Seven Sins)" is part of the beer's name and stays."""
@@ -131,7 +115,7 @@ def _beer_line(info: dict, place_short: str | None, also: list[str]) -> str:
         if place_short and brewery.casefold() == place_short.casefold():
             brewery = None
     style = info.get("style")
-    family = esc(_style_family(style)) if style else None
+    family = esc(style_family(style)) if style else None
     if brewery:
         tail = " · ".join(filter(None, (esc(brewery), family))).replace(" ", " ")
         line = f"• {name} — {tail}"

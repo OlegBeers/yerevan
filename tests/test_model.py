@@ -15,6 +15,7 @@ from taps.model import (
     normalize_base,
     normalize_title,
     strip_color,
+    style_family,
     u_key,
     untappd_n_key,
     with_servings,
@@ -101,6 +102,25 @@ def test_strip_color():
     assert strip_color("n:dark side light lager") == "n:side lager"
     assert strip_color("n:dahook") == "n:dahook"
     assert strip_color("u:12345") == "u:12345"
+
+
+@pytest.mark.parametrize(
+    "style, expected",
+    [
+        ("IPA - Imperial / Double", "DIPA"),
+        ("IPA - Imperial / Double - New England / Hazy", "DIPA"),
+        ("IPA - Imperial / Double - Black", "DIPA"),
+        ("IPA - Triple", "TIPA"),
+        ("IPA - New England / Hazy", "NEIPA"),
+        ("Stout - Imperial / Double", "Imperial Stout"),
+        ("Wheat Beer - Hefeweizen", "Wheat Beer"),
+        ("Sour - Fruited", "Sour"),
+        ("Pale Ale - American", "Pale Ale"),
+        ("Mead", "Mead"),
+    ],
+)
+def test_style_family(style, expected):
+    assert style_family(style) == expected
 
 
 def _sighting(source: str) -> Sighting:
