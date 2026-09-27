@@ -4,7 +4,7 @@ import base64
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -33,11 +33,11 @@ def make_data(*, generated_ago=timedelta(hours=5), rows=None):
 
     def row(place_id, name, badge, hours=10, **kw):
         return {"place_id": place_id, "section": "shops" if place_id in SHOP_IDS else "bars", "beer_key": f"n:{name.lower()}",
-                "name": name, "brewery": "Test Brewery", "style": None, "abv": None, "ibu": None, "rating": None,
-                "price_amd": None, "volume_ml": None, "container": None, "url": None, "serving": None, "shop_url": None,
-                "country": None, "servings": None, "style_inferred": False, "badge": badge, "since": now.date().isoformat(),
-                "since_at": ago(hours=hours), "seen_days_ago": None, "new": False, "star": False, "by": None,
-                "beer_logo": None, "shop_name": None, "match_via": None, **kw}
+                "name": name, "brewery": "Test Brewery", "style": None, "style_group": None, "abv": None, "ibu": None,
+                "rating": None, "price_amd": None, "volume_ml": None, "container": None, "url": None, "serving": None,
+                "shop_url": None, "country": None, "servings": None, "style_inferred": False, "badge": badge,
+                "since": now.date().isoformat(), "since_at": ago(hours=hours), "seen_days_ago": None, "new": False,
+                "star": False, "by": None, "beer_logo": None, "shop_name": None, "match_via": None, **kw}
 
     map_url = "https://yandex.com/maps/?text=Test"
     places = [
@@ -51,16 +51,18 @@ def make_data(*, generated_ago=timedelta(hours=5), rows=None):
         place("parma", "Parma", "shops", last_ok=ago(days=5)),
     ]
     rows = rows if rows is not None else [
-        row("gargoyle", "Test IPA", "menu", hours=3, style="IPA", abv=6.5, ibu=60, rating=4.25, price_amd=2800,
-            volume_ml=400, container="draft", url="https://untappd.com/b/test-ipa/1", new=True, star=True, country="Armenia"),
-        row("beatles", "Dark Stout", "checkin", hours=30, style="Stout", abv=8.0, rating=3.9, serving="Draft", seen_days_ago=0),
+        row("gargoyle", "Test IPA", "menu", hours=3, style="IPA", style_group="IPA", abv=6.5, ibu=60, rating=4.25,
+            price_amd=2800, volume_ml=400, container="draft", url="https://untappd.com/b/test-ipa/1", new=True,
+            star=True, country="Armenia"),
+        row("beatles", "Dark Stout", "checkin", hours=30, style="Stout", style_group="Stout", abv=8.0, rating=3.9,
+            serving="Draft", seen_days_ago=0),
         row("beatles", "Tiny Ale", "checkin", hours=31, serving="Taster", seen_days_ago=1),
         row("beatles", "Cask Ale", "checkin", hours=32, serving="Cask", seen_days_ago=5),
         row("beatles", "Mystery Ale", "checkin", hours=33),
         row("ferment", "Friend Sour", "manual", hours=40, by="Ivan"),
         row("ferment", "Anon Gose", "manual", hours=41),
-        row("beercity", "Shop Pils", "shop", hours=50, style="Pilsner", style_inferred=True, container="can", volume_ml=500,
-            price_amd=900, country="Czech Republic", shop_url="https://shop.test/pils"),
+        row("beercity", "Shop Pils", "shop", hours=50, style="Pilsner", style_group="Pilsner", style_inferred=True,
+            container="can", volume_ml=500, price_amd=900, country="Czech Republic", shop_url="https://shop.test/pils"),
         row("parma", "Odd Lager", "shop", hours=51, container="tin", price_amd=700, country="Freedonia"),
         # one beer at a bar (two servings) and at a shop (called something else there): one card, two place lines
         row("gargoyle", "Multi Beer", "menu", hours=60, group_key="u:99", beer_key="u:99", abv=5.0, price_amd=2800,
@@ -820,4 +822,78 @@ def test_a_phone_needs_no_sideways_scrolling_in_either_language(open_page, lang)
     for tab in TABS:
         page.click(f"#{tab}")
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), tab
+    assert problems == []
+
+
+def filters_data():
+    """A small set of beers spanning distinct styles, countries and ways of serving, so the rating/serving/
+    style/country filters each have more than one real value to click between."""
+    data = make_data()
+    base = data["rows"][0]   # Test IPA: already a complete row shape to spread the rest from
+    when = lambda hours: (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat(timespec="seconds")
+    data["rows"] = [
+        {**base, "name": "Hoppy IPA", "beer_key": "n:hoppy", "place_id": "gargoyle", "section": "bars",
+         "style": "IPA", "style_group": "IPA", "country": "Armenia", "container": "draft",
+         "rating": 4.25, "since_at": when(1), "new": False, "star": False},
+        {**base, "name": "Silent Stout", "beer_key": "n:silent", "place_id": "beatles", "section": "bars",
+         "style": "Stout", "style_group": "Stout", "country": "Georgia", "container": "bottle",
+         "rating": None, "since_at": when(2), "new": False, "star": False},
+        {**base, "name": "Crisp Pilsner", "beer_key": "n:crisp", "place_id": "parma", "section": "shops",
+         "style": "Pilsner", "style_group": "Pilsner", "country": "Czech Republic", "container": "can",
+         "rating": 4.0, "since_at": when(3), "new": False, "star": False},
+        {**base, "name": "Amber IPA", "beer_key": "n:amber", "place_id": "beercity", "section": "shops",
+         "style": "IPA", "style_group": "IPA", "country": "Georgia", "container": "bottle",
+         "rating": 3.6, "since_at": when(4), "new": False, "star": False},
+        {**base, "name": "Farmhouse Sour", "beer_key": "n:farmhouse", "place_id": "gargoyle", "section": "bars",
+         "style": "Sour", "style_group": "Sour", "country": "Armenia", "container": None,
+         "servings": [{"container": "draft", "price_amd": 2500, "volume_ml": None},
+                      {"container": "can", "price_amd": 1800, "volume_ml": 330}],
+         "rating": None, "since_at": when(5), "new": False, "star": False},
+    ]
+    return data
+
+
+def test_filters_narrow_the_list_and_round_trip_through_the_url(open_page):
+    page, problems = open_page(filters_data(), width=375)
+    assert text(page, "#count") == "Beers: 5"
+    page.click("#filters-toggle")
+    assert page.get_attribute("#filters-toggle", "aria-expanded") == "true"
+    page.click('#filter-style button:has-text("IPA")')
+    assert text(page, "#count") == "Showing 2 of 5"          # Hoppy IPA and Amber IPA
+    page.click('#filter-country button:has-text("Armenia")')  # Amber IPA is Georgia: drops out
+    page.click('#filter-serve button:has-text("draft")')
+    page.click('#filter-rating button:has-text("4.0+")')
+    assert text(page, "#count") == "Showing 1 of 5"
+    assert page.eval_on_selector_all(".card .card-name", "els => els.map((e) => e.textContent.trim())") == ["Hoppy IPA"]
+    assert parse_qs(urlsplit(page.url).query) == {
+        "style": ["IPA"], "country": ["Armenia"], "serve": ["draft"], "rating": ["4.0"]}
+    assert page.get_attribute("#filters-badge", "hidden") is None
+    assert text(page, "#filters-badge") == "4"
+    # a phone still gets 44px touch targets for every filter control, panel open
+    for selector in ("#filters-toggle", "#filter-rating button", "#filter-serve button",
+                      "#filter-style button", "#filter-country button"):
+        heights = page.eval_on_selector_all(selector, "els => els.map((e) => e.getBoundingClientRect().height)")
+        assert heights and min(heights) >= 44, (selector, heights)
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+
+    page.click("#filters-toggle")   # close it: the removable summary row takes over
+    assert page.is_hidden("#filters-panel") and page.is_visible("#active-filters-wrap")
+    removable = page.eval_on_selector_all("#active-filters button", "els => els.map((e) => e.getBoundingClientRect().height)")
+    assert len(removable) == 4 and min(removable) >= 44
+
+    shared_query = urlsplit(page.url).query
+    page.reload()
+    page.wait_for_selector("#rows > *")
+    assert urlsplit(page.url).query == shared_query
+    assert text(page, "#count") == "Showing 1 of 5"
+    assert page.eval_on_selector_all(".card .card-name", "els => els.map((e) => e.textContent.trim())") == ["Hoppy IPA"]
+    page.click("#filters-toggle")   # the panel itself reopens closed; the filters it restored from the URL do not
+    for selector in ('#filter-style button:has-text("IPA")', '#filter-country button:has-text("Armenia")',
+                      '#filter-serve button:has-text("draft")', '#filter-rating button:has-text("4.0+")'):
+        assert page.get_attribute(selector, "aria-pressed") == "true", selector
+
+    page.click("#filters-toggle")   # close again: reset lives in the closed-panel summary row
+    page.click("#filters-reset")
+    assert text(page, "#count") == "Beers: 5"
+    assert urlsplit(page.url).query == ""
     assert problems == []
