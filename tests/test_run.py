@@ -1754,7 +1754,7 @@ def test_digest_line_for_a_matched_shop_pair_uses_the_untappd_name_and_brewery()
                                                sources={"beercity": {}})},
                     breweries=(), settings=Settings())
     digest = build_digest(state, config, config.settings, NOW)
-    assert "Chimay Grande Réserve (Blue) · Bières de Chimay" in digest.html
+    assert "Chimay Grande Réserve (Blue) — Bières de Chimay" in digest.html
     assert "Chimay peres trappistes blue" not in digest.html
 
 
@@ -2427,7 +2427,7 @@ def test_hand_entered_servings_are_announced_as_one_beer_and_a_later_serving_is_
 
     [sent] = world.sends
     assert sent["text"].count("Fruitage") == 1                            # one line for the pair, not one per serving
-    assert "Fruitage · Rodenbach · Craft Story (от Аня)" in sent["text"]
+    assert "<b>Craft Story</b> · со слов: Аня\n• Fruitage — Rodenbach" in sent["text"]
     assert world.state().announced_manual == ["craft-story|2026-09-24|Аня"]
     assert [s["container"] for s in _site_row(world, "craft-story", "u:1715344")["servings"]] == ["draft", "bottle"]
 

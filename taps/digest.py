@@ -1,5 +1,6 @@
 """Daily Telegram digest: when it is due, what it says, and the sent mark with rollback."""
 import html
+import re
 from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 
@@ -13,12 +14,23 @@ WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
 MONTHS = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
 DAY_START, DAY_END = time(9, 0), time(23, 0)
 MIN_GAP_HOURS = 20
-CONTAINER_RU = {"can": "банка", "bottle": "бутылка", "keg": "кег", "draft": "розлив"}
-SERVING_RU = {"Draft": "розлив", "Bottle": "бутылка", "Can": "банка", "Taster": "дегустационный",
-             "Cask": "из бочки"}
-BREWERY_NEW_NOTE = "новый сорт в Untappd, где наливают — пока неизвестно"
 BLOCK_RULE = "──────────"
 MANUAL_LIST_MAX = 5   # more manual entries from one place: one "list updated" line instead of every beer
+MAX_PER_PLACE = 5     # more beer lines in one group: the rest collapse into an inline "…и ещё N" tail
+BREWERY_NEW_HEADER = "<b>Новые сорта пивоварен</b> · где наливают — пока неизвестно"
+
+# Untappd style strings are "Category - Subcategory[- ...]"; a few well-known subcategories get a short
+# familiar name instead of the bare category, checked first (longest/most specific prefix wins).
+STYLE_PREFIX_MAP = (
+    ("IPA - Imperial / Double", "DIPA"),
+    ("IPA - Triple", "TIPA"),
+    ("IPA - New England / Hazy", "NEIPA"),
+    ("Stout - Imperial / Double", "Imperial Stout"),
+)
+
+_PAREN_WITH_COMMA = re.compile(r"\s*\([^()]*,[^()]*\)")
+_PAREN_ANY = re.compile(r"\s*\([^()]*\)")
+_TRAILING_BREWERY_WORD = re.compile(r"\s+(?:Brewery|Пивоварня)$", re.IGNORECASE)
 
 esc = html.escape
 
@@ -87,43 +99,47 @@ class Digest:
     to_admin: bool
 
 
-def _style_abv(info: dict) -> str | None:
-    abv = info.get("abv")
-    text = " ".join(filter(None, (info.get("style"), f"{abv:g}%" if abv is not None else None)))
-    return esc(text) or None
+def _style_family(style: str) -> str:
+    for prefix, mapped in STYLE_PREFIX_MAP:
+        if style.startswith(prefix):
+            return mapped
+    return style.split(" - ", 1)[0]
 
 
-def _line(info: dict, rating: str | None, details: list[str | None], also: list[str], place: str | None = None) -> str:
-    """rating, name, brewery, then the details; a shop pair matched to Untappd shows Untappd's name/brewery.
-    A brewery that is the place itself (Dors at Dors) is dropped: the line already ends with the place."""
+def _shorten_name(name: str) -> str:
+    """A parenthesised aside is dropped only when it lists several things (a comma inside) --
+    a single-word aside like "(Seven Sins)" is part of the beer's name and stays."""
+    return _PAREN_WITH_COMMA.sub("", name).strip()
+
+
+def _shorten_brewery(brewery: str) -> str:
+    """Drop any parenthesised aside, then a lone trailing "Brewery"/"Пивоварня" word once at least
+    one other word remains ("Plan B Brewery" -> "Plan B"; "Moscow Brewing Company" unchanged)."""
+    text = _PAREN_ANY.sub("", brewery).strip()
+    return _TRAILING_BREWERY_WORD.sub("", text)
+
+
+def _beer_line(info: dict, place_short: str | None, also: list[str]) -> str:
+    """`name — brewery · style`; a shop pair matched to Untappd shows Untappd's own name/brewery.
+    A brewery that is the place itself (Dors at Dors) is dropped, and the line becomes `name · style`.
+    The tail after the dash (brewery + style) never wraps -- its spaces are bound with U+00A0."""
     name = info.get("u_name") or info.get("name") or info.get("title")
+    name = esc(_shorten_name(name))
     brewery = info.get("u_brewery") or info.get("brewery")
-    if brewery and place and brewery.casefold() == place.casefold():
-        brewery = None
-    text = " · ".join(filter(None, (esc(name) if name else None, esc(brewery) if brewery else None, *details)))
-    if rating:
-        text = f"{rating} {text}"
+    if brewery:
+        brewery = _shorten_brewery(brewery)
+        if place_short and brewery.casefold() == place_short.casefold():
+            brewery = None
+    style = info.get("style")
+    family = esc(_style_family(style)) if style else None
+    if brewery:
+        tail = " · ".join(filter(None, (esc(brewery), family))).replace(" ", " ")
+        line = f"• {name} — {tail}"
+    else:
+        line = f"• {name}" + (f" · {family}" if family else "")
     if also:
-        text += " + ещё в " + ", ".join(esc(a) for a in also)
-    return text
-
-
-def _rating(info: dict, settings: Settings) -> str | None:
-    r = info.get("rating")
-    if r is None:
-        return None
-    return f"<b>{r:.2f}</b>" if r >= settings.hot_rating else f"{r:.2f}"
-
-
-def _price(info: dict) -> str | None:
-    return f"{info['price_amd']} ֏" if info.get("price_amd") is not None else None
-
-
-def _pack(info: dict) -> str | None:
-    vol, cont = info.get("volume_ml"), info.get("container")
-    text = " ".join(filter(None, (f"{vol / 1000:g} л" if vol is not None else None,
-                                  CONTAINER_RU.get(cont, cont) if cont else None)))
-    return esc(text) or None
+        line += " · ещё в " + ", ".join(esc(a) for a in also)
+    return line
 
 
 def _positions_word(n: int) -> str:
@@ -134,25 +150,18 @@ def _positions_word(n: int) -> str:
     return "позиций"
 
 
-def _days_word(n: int) -> str:
-    if n % 10 == 1 and n % 100 != 11:
-        return "день"
-    if 2 <= n % 10 <= 4 and not 11 <= n % 100 <= 14:
-        return "дня"
-    return "дней"
-
-
-def _seen(info: dict, rec: PairRec, now: datetime) -> str:
-    seen = info.get("checkin_at") or rec.last_seen
-    n = (to_yerevan(now).date() - to_yerevan(parse_iso(seen)).date()).days
-    return "видели сегодня" if n <= 0 else f"видели {n} {_days_word(n)} назад"
-
-
 def _section(rec: PairRec, place_kind: str) -> str:
     kind = rec.info.get("kind") or SOURCE_KINDS.get(rec.info.get("source"))
     if kind in ("checkin", "manual"):
         return kind
     return "shop" if place_kind == "shop" else "menu"
+
+
+def _cap_lines(lines: list[str]) -> list[str]:
+    if len(lines) <= MAX_PER_PLACE:
+        return lines
+    hidden = len(lines) - MAX_PER_PLACE
+    return lines[:MAX_PER_PLACE] + [f"…и ещё {hidden} — на сайте"]
 
 
 def build_digest(state: State, config: Config, settings: Settings, now: datetime) -> Digest | None:
@@ -169,76 +178,89 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
     for found in groups["manual"].values():
         for place, _ in found:
             per_place[place.id] = per_place.get(place.id, 0) + 1
-    listed = [pid for pid in config.places if per_place.get(pid, 0) > MANUAL_LIST_MAX]
-    if listed:
-        groups["manual"] = {k: kept for k, found in groups["manual"].items()
-                            if (kept := [(p, r) for p, r in found if p.id not in listed])}
+    listed = {pid for pid in config.places if per_place.get(pid, 0) > MANUAL_LIST_MAX}
+    manual_kept = {k: kept for k, found in groups["manual"].items()
+                  if (kept := [(p, r) for p, r in found if p.id not in listed])}
 
-    def sort_key(item):   # config order of the first place, then ⭐ first, then oldest event
-        found = item[1]
-        place, rec = found[0]
-        return (order[place.id], not any(r.star for _, r in found), rec.event_at, rec.info.get("name") or "")
+    def sort_key(item):   # order within a group: rating descending (None last), then name
+        _, found = item
+        info = found[0][1].info
+        rating = info.get("rating")
+        name = info.get("u_name") or info.get("name") or info.get("title") or ""
+        return ((0, -rating) if rating is not None else (1, 0), name)
 
-    def details(section: str, place, rec: PairRec) -> list[str | None]:
-        info = rec.info
-        if section == "menu":
-            return [_style_abv(info), _price(info)]
-        if section == "shop":
-            return [_style_abv(info), _pack(info), _price(info)]
-        if section == "checkin":
-            serving = info.get("serving")
-            how = esc(SERVING_RU.get(serving, serving)) if serving else None   # an unknown serving is simply left out
-            return [_style_abv(info), ", ".join(filter(None, [esc(place.short), how, _seen(info, rec, now)]))]
-        return [_style_abv(info), f"{esc(place.short)} (от {esc(info.get('manual_by') or '?')})"]
+    # (block, header, lines); header is None for a self-contained single line (the manual list line)
+    groups_list: list[tuple[str, str | None, list[str]]] = []
 
-    group_header = {"checkin": "<i>Похоже, появилось</i>", "manual": "<i>Со слов</i>"}
-    entries: list[tuple[str, str, str]] = []   # (block, group header, line)
-    for section in ("menu", "brewery", "checkin", "manual", "shop"):
-        if section == "brewery":
-            for key in sorted(brewery_keys, key=lambda k: (not state.brewery_new[k].star, state.brewery_new[k].found_at)):
-                rec = state.brewery_new[key]
-                line = _line(rec.info, None, [_style_abv(rec.info)], []) + f" ({BREWERY_NEW_NOTE})"
-                entries.append(("bars", "<i>Новые сорта пивоварен</i>", line))
-            continue
-        if section == "manual":
-            for pid in listed:
-                by = sorted({r.info.get("manual_by") or "?" for p, k in pairs if p == pid
-                             for r in [state.pairs[p][k]] if (r.info.get("kind") or r.info.get("source")) == "manual"})
-                line = (f"<b>{esc(config.places[pid].short)}</b>: обновился список, "
-                        f"{per_place[pid]} {_positions_word(per_place[pid])} (от {esc(', '.join(by))}) — на сайте")
-                block = "shops" if config.places[pid].kind == "shop" else "bars"
-                entries.append((block, group_header["manual"], line))
-        for key, found in sorted(groups[section].items(), key=sort_key):
-            place, rec = found[0]
-            line = _line(rec.info, _rating(rec.info, settings), details(section, place, rec),
-                         [p.short for p, _ in found[1:]], place.short)
-            header = group_header.get(section) or f"<b>{esc(place.short)}</b>"
+    for section in ("menu", "shop", "checkin"):
+        by_place: dict[str, list] = {}
+        for key, found in groups[section].items():
+            by_place.setdefault(found[0][0].id, []).append((key, found))
+        for pid in sorted(by_place, key=lambda p: order[p]):
+            place = config.places[pid]
+            items = sorted(by_place[pid], key=sort_key)
+            lines = [_beer_line(found[0][1].info, place.short, [p.short for p, _ in found[1:]])
+                    for _, found in items]
             # v1.1: a shop's own check-ins (e.g. Houl) belong in the shops block, not bars
             block = "shops" if section == "shop" or (section == "checkin" and place.kind == "shop") else "bars"
-            entries.append((block, header, line))
+            header = f"<b>{esc(place.short)}</b>" + (" · по чекинам" if section == "checkin" else "")
+            groups_list.append((block, header, _cap_lines(lines)))
 
-    if not entries:
+    manual_by_place: dict[str, list] = {}
+    for key, found in manual_kept.items():
+        manual_by_place.setdefault(found[0][0].id, []).append((key, found))
+    for pid in sorted(set(manual_by_place) | listed, key=lambda p: order[p]):
+        place = config.places[pid]
+        block = "shops" if place.kind == "shop" else "bars"
+        if pid in listed:
+            n = per_place[pid]
+            line = f"<b>{esc(place.short)}</b> · обновился список, {n} {_positions_word(n)} — на сайте"
+            groups_list.append((block, None, [line]))
+        else:
+            items = sorted(manual_by_place[pid], key=sort_key)
+            by = sorted({found[0][1].info.get("manual_by") or "?" for _, found in items})
+            header = f"<b>{esc(place.short)}</b> · со слов: {esc(', '.join(by))}"
+            lines = [_beer_line(found[0][1].info, place.short, [p.short for p, _ in found[1:]])
+                    for _, found in items]
+            groups_list.append((block, header, _cap_lines(lines)))
+
+    if brewery_keys:
+        ordered = sorted(brewery_keys, key=lambda k: (not state.brewery_new[k].star, state.brewery_new[k].found_at))
+        lines = [_beer_line(state.brewery_new[k].info, None, []) for k in ordered]
+        groups_list.append(("bars", BREWERY_NEW_HEADER, _cap_lines(lines)))
+
+    if not groups_list:
         return None
     # v1.1: bars and shops can interleave within a section (e.g. a shop's own check-ins, §I-2) --
     # stable-sort so all bars come first, then all shops, before capping and building headers.
-    entries.sort(key=lambda e: e[0] != "bars")
-    shown = entries[:settings.digest_max_lines]
-    hidden = len(entries) - len(shown)
+    groups_list.sort(key=lambda g: g[0] != "bars")
+
+    lines_total = sum(len(lines) for _, _, lines in groups_list)
+    budget = settings.digest_max_lines
+    shown_groups: list[tuple[str, str | None, list[str]]] = []
+    for block, header, lines in groups_list:
+        if budget <= 0:
+            break
+        take = lines[:budget]
+        if not take:
+            continue
+        shown_groups.append((block, header, take))
+        budget -= len(take)
+    lines_shown = sum(len(lines) for _, _, lines in shown_groups)
+    hidden = lines_total - lines_shown
+
+    block_order: list[str] = []
+    block_chunks: dict[str, list[str]] = {}
+    for block, header, lines in shown_groups:
+        if block not in block_chunks:
+            block_chunks[block] = ["🍻 <b>Бары</b>" if block == "bars" else "🛒 <b>Магазины</b>"]
+            block_order.append(block)
+        block_chunks[block].append(f"{header}\n" + "\n".join(lines) if header is not None else lines[0])
+    body = f"\n\n{BLOCK_RULE}\n\n".join("\n\n".join(block_chunks[b]) for b in block_order)   # a rule between bars and shops
 
     local = to_yerevan(now)
-    blocks: list[list[str]] = []
-    last_block = last_group = None
-    for block, group, line in shown:
-        if block != last_block:
-            blocks.append(["🍻 <b>Бары</b>" if block == "bars" else "🛒 <b>Магазины</b>"])
-            last_block, last_group = block, None
-        if group != last_group:
-            blocks[-1].append(group)
-            last_group = group
-        blocks[-1].append(line)
-    tail = f"…и ещё {hidden} — на сайте" if hidden else None
     header = f"🍺 <b>Новое в Ереване</b> · {WEEKDAYS[local.weekday()]}, {local.day} {MONTHS[local.month - 1]}"
-    body = f"\n\n{BLOCK_RULE}\n\n".join("\n".join(b) for b in blocks)   # a rule between bars and shops
+    tail = f"…и ещё {hidden} — на сайте" if hidden else None
     text = "\n\n".join(filter(None, [header, body, tail]))
 
     manual_ids = []
@@ -247,7 +269,7 @@ def build_digest(state: State, config: Config, settings: Settings, now: datetime
         for mid in info.get("manual_ids") or [info.get("manual_id")]:   # every entry merged into the pair
             if mid and mid not in manual_ids:
                 manual_ids.append(mid)
-    return Digest(html=text, lines_total=len(entries), lines_shown=len(shown), pairs=pairs,
+    return Digest(html=text, lines_total=lines_total, lines_shown=lines_shown, pairs=pairs,
                   brewery_keys=brewery_keys, manual_ids=manual_ids,
                   to_admin=state.digest.sent_count < settings.preview_digests)
 
