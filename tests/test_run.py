@@ -734,6 +734,31 @@ def test_bar_beer_candidates_includes_a_manual_pair_missing_a_label():
         ("u:1715344", "https://untappd.com/beer/1715344")]
 
 
+def test_bar_beer_candidates_includes_a_checkin_whose_last_in_result_went_stale():
+    """Bug B: a venue's own check-in page lists only its most recent check-ins, so
+    rules._sightings' full-result reconciliation can reset last_in_result to False for an older
+    check-in that Untappd no longer shows on that page -- yet site_data._visible still shows it by
+    checkin_at age alone (kind == "checkin" never looks at last_in_result). The candidate tier must
+    use the same rule, or such a beer is never read at all."""
+    state = empty_state(NOW)
+    pair = _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")
+    pair.last_in_result = False
+    state.pairs = {"ferment": {"u:1": pair}}
+    config = _config(places={"ferment": Place(id="ferment", name="Ferment", kind="bar", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == [("u:1", "https://untappd.com/b/x/1")]
+
+
+def test_bar_beer_candidates_excludes_a_manual_pair_no_longer_in_the_boards_result():
+    """Unlike check-ins, a manual pair's visibility genuinely depends on last_in_result
+    (site_data._visible checks it for kind == "manual"), so it must still gate here."""
+    state = empty_state(NOW)
+    pair = _manual_pair(brewery="Rodenbach")
+    pair.last_in_result = False
+    state.pairs = {"ferment": {"u:1715344": pair}}
+    config = _config(places={"ferment": Place(id="ferment", name="Ferment", kind="bar", sources={})})
+    assert run_mod._bar_beer_candidates(state, config, NOW) == []
+
+
 def test_bar_beer_candidates_most_recently_seen_first_capped_at_thirty():
     state = empty_state(NOW)
     state.pairs = {"gargoyle": {
@@ -881,18 +906,73 @@ def test_apply_known_beer_info_uses_the_cached_label_of_a_beer_page():
     assert state.pairs["ferment"]["u:1715344"].info["logo"] == "https://assets.untappd.com/l.jpg"
 
 
+def test_apply_known_beer_info_fills_a_checkin_pair_never_resighted_since_its_page_was_read():
+    """Bug A: a check-in pair's own sighting never carries style/rating; rules._backfill_checkin only
+    fills it when the pair is re-sighted the same run. A beer whose page was read (state.beers filled)
+    on a run where it was NOT re-sighted must still pick up the details -- not only manual boards."""
+    state = empty_state(NOW)
+    state.pairs = {"ferment": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                              info={"kind": "checkin", "checkin_at": iso(NOW)})}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), style="Lager - Dark", rating=3.6, rating_at=iso(NOW))
+    run_mod.apply_known_beer_info(state)
+    info = state.pairs["ferment"]["u:1"].info
+    assert (info["style"], info["rating"]) == ("Lager - Dark", 3.6)
+
+
+def test_apply_known_beer_info_keeps_a_checkins_own_style_and_only_fills_the_missing_rating():
+    """Never overwrite a value the check-in's own source (the check-in page) already provided."""
+    state = empty_state(NOW)
+    state.pairs = {"dors": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                           info={"kind": "checkin", "checkin_at": iso(NOW),
+                                                 "style": "Pale Ale - Other"})}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), style="should not overwrite", rating=4.1)
+    run_mod.apply_known_beer_info(state)
+    info = state.pairs["dors"]["u:1"].info
+    assert (info["style"], info["rating"]) == ("Pale Ale - Other", 4.1)
+
+
+def test_apply_known_beer_info_fills_a_checkin_pair_from_a_menu_pair_of_the_same_beer():
+    state = empty_state(NOW)
+    state.pairs = {
+        "beatles": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                   info={"kind": "menu", "style": "Belgian Dubbel", "rating": 3.9})},
+        "ferment": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                   info={"kind": "checkin", "checkin_at": iso(NOW)})},
+    }
+    run_mod.apply_known_beer_info(state)
+    info = state.pairs["ferment"]["u:1"].info
+    assert (info["style"], info["rating"]) == ("Belgian Dubbel", 3.9)
+
+
+def test_apply_known_beer_info_does_not_fill_a_menu_pair():
+    """Only check-in and manual pairs are fill targets; a menu pair keeps reading its own source."""
+    state = empty_state(NOW)
+    state.pairs = {"beatles": {"u:1": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), info={"kind": "menu"})}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), style="X", rating=4.0)
+    run_mod.apply_known_beer_info(state)
+    assert "style" not in state.pairs["beatles"]["u:1"].info
+
+
 def test_bar_beer_candidates_excludes_checkins_older_than_21_days():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=22)))}}
     assert run_mod._bar_beer_candidates(state, _config(), NOW) == []
 
 
-def test_bar_beer_candidates_skips_a_fresh_cached_rating_missing_only_style_but_not_stale():
-    """rating and logo are cached, but style is still missing, so a fresh rating alone is not enough
-    to skip -- only _fetched_recently (the beer page's own read date) gates a refetch."""
+def test_bar_beer_candidates_retries_a_ten_day_old_read_still_missing_a_style():
+    """Bug C: rating is cached but style is still missing, so the page counts as incomplete -- it gets
+    the short BEER_RATING_RETRY_DAYS (3) retry window, not the full BEER_RATING_MAX_AGE_DAYS (30)
+    reserved for a page that came back complete."""
+    state = empty_state(NOW)
+    state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)), url="https://untappd.com/b/x/1")}}
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=10)))
+    assert run_mod._bar_beer_candidates(state, _config(), NOW) == [("u:1", "https://untappd.com/b/x/1")]
+
+
+def test_bar_beer_candidates_does_not_retry_an_incomplete_read_within_3_days():
     state = empty_state(NOW)
     state.pairs = {"t": {"u:1": _checkin_pair(iso(NOW - timedelta(days=1)))}}
-    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=10)))
+    state.beers["u:1"] = BeerRec(first_seen_city=iso(NOW), rating=4.0, rating_at=iso(NOW - timedelta(days=2)))
     assert run_mod._bar_beer_candidates(state, _config(), NOW) == []
 
 

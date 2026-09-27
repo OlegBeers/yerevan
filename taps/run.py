@@ -65,6 +65,7 @@ LOCATION_CANDIDATES_PER_RUN = 3   # v1.1 city check (§4): at most this many unt
 LOCATION_MIN_CHECKINS = 2         # below this, not worth spending a page on
 LOCATION_RECHECK_DAYS = 90        # a failed/unknown check is retried after this many days
 BEER_RATING_MAX_AGE_DAYS = 30        # a cached rating older than this is refreshed
+BEER_RATING_RETRY_DAYS = 3           # a read that still lacks a detail is retried sooner than a full record
 BAR_BEER_PAGES_PER_RUN = 30          # v1.3 owner priority: bar/brewpub beers missing label/rating/style
 SHOP_BEER_PAGES_PER_RUN = 10         # v1.3: shop-matched beers with no name, shop check-ins missing details
 COUNTRY_PAGES_PER_RUN = 8            # v1.3: one beer per brewery of unknown country, read last
@@ -267,13 +268,17 @@ def _bar_beer_candidates(state: State, config: Config, now: datetime) -> list[tu
             continue
         for key, rec in pairs.items():
             info = rec.info
-            if not key.startswith("u:") or info.get("kind") not in ("manual", "checkin") or not rec.last_in_result:
+            kind = info.get("kind")
+            if not key.startswith("u:") or kind not in ("manual", "checkin"):
                 continue
-            if info.get("kind") == "checkin":
-                checkin_at = info.get("checkin_at")
+            if kind == "manual":
+                if not rec.last_in_result:   # site_data._visible checks it for manual pairs too
+                    continue
+            else:   # site_data._visible shows a check-in by checkin_at age alone, never last_in_result:
+                checkin_at = info.get("checkin_at")   # a stale last_in_result must not hide it here either
                 if not checkin_at or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
                     continue
-            if _fetched_recently(state, key, now) or not _needs_beer_detail(info, state.beers.get(key)):
+            if _fetched_recently(state, key, now, info) or not _needs_beer_detail(info, state.beers.get(key)):
                 continue
             if key not in best or rec.last_seen > best[key][0]:
                 best[key] = (rec.last_seen, _beer_url(key, info))
@@ -281,9 +286,15 @@ def _bar_beer_candidates(state: State, config: Config, now: datetime) -> list[tu
     return [(key, url) for key, (_, url) in ordered[:BAR_BEER_PAGES_PER_RUN]]
 
 
-def _fetched_recently(state: State, key: str, now: datetime) -> bool:
+def _fetched_recently(state: State, key: str, now: datetime, info: dict | None = None) -> bool:
+    """Within BEER_RATING_MAX_AGE_DAYS of the last read -- or, when info is given and that read still
+    left a detail missing (_needs_beer_detail), only within the shorter BEER_RATING_RETRY_DAYS: an
+    incomplete page (e.g. no rating yet) deserves a quicker retry than a page that came back full."""
     beer = state.beers.get(key)
-    return bool(beer and beer.rating_at and age_days(parse_iso(beer.rating_at), now) <= BEER_RATING_MAX_AGE_DAYS)
+    if not (beer and beer.rating_at):
+        return False
+    max_age = BEER_RATING_RETRY_DAYS if info is not None and _needs_beer_detail(info, beer) else BEER_RATING_MAX_AGE_DAYS
+    return age_days(parse_iso(beer.rating_at), now) <= max_age
 
 
 def _beer_url(key: str, info: dict) -> str:
@@ -320,7 +331,7 @@ def _shop_checkin_candidates(state: State, config: Config, now: datetime) -> lis
             checkin_at = info.get("checkin_at")
             if not checkin_at or age_days(parse_iso(checkin_at), now) > CHECKIN_KEEP_DAYS:
                 continue
-            if _fetched_recently(state, key, now) or not _needs_beer_detail(info, state.beers.get(key)):
+            if _fetched_recently(state, key, now, info) or not _needs_beer_detail(info, state.beers.get(key)):
                 continue
             if key not in best or rec.last_seen > best[key][0]:
                 best[key] = (rec.last_seen, _beer_url(key, info))
@@ -692,10 +703,14 @@ def apply_untappd_country(state: State) -> None:
 BOARD_FIELDS = ("style", "abv", "ibu")   # what a hand-entered board may state itself
 
 
+FILLABLE_KINDS = ("manual", "checkin")   # a check-in's own sighting never carries style/ABV/rating either
+
+
 def apply_known_beer_info(state: State) -> None:
-    """A hand-entered Untappd beer borrows its label and rating from the same beer seen elsewhere
-    (a menu, a check-in, a matched shop item) or from the cached beer page: nothing is fetched for
-    manual entries themselves. Style/ABV/IBU fill only what the board left out; its own stay."""
+    """A hand-entered or check-in Untappd beer borrows its label and rating from the same beer seen
+    elsewhere (a menu, a check-in, a matched shop item) or from the cached beer page: nothing is
+    fetched for manual entries themselves, and rules._backfill_checkin only reaches a check-in
+    re-sighted the same run. Every field fills only what that pair's own source left out; its own stay."""
     fields = ("logo", "rating") + BOARD_FIELDS
     known: dict[str, dict] = {}
     for pairs in state.pairs.values():
@@ -707,7 +722,7 @@ def apply_known_beer_info(state: State) -> None:
                         got[field] = rec.info[field]
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
-            if rec.info.get("kind") != "manual" or not key.startswith("u:"):
+            if rec.info.get("kind") not in FILLABLE_KINDS or not key.startswith("u:"):
                 continue
             got = dict(known.get(key, {}))
             beer = state.beers.get(key)
@@ -715,7 +730,7 @@ def apply_known_beer_info(state: State) -> None:
                 if got.get(field) is None and beer is not None and getattr(beer, field) is not None:
                     got[field] = getattr(beer, field)
             for field, value in got.items():
-                if value is not None and not (field in BOARD_FIELDS and rec.info.get(field) is not None):
+                if value is not None and rec.info.get(field) is None:
                     rec.info[field] = value
 
 
