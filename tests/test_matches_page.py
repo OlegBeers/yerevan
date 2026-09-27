@@ -255,3 +255,120 @@ def test_the_last_link_is_kept_in_local_storage_guarded_by_try_catch_and_a_reset
     fn = re.search(r"function resetMerge\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "ui.picked.clear()" in fn and "localStorage" not in fn and "marked" not in fn
     assert re.search(r"async function load\(\).*?\$\(\"untappd-link\"\)\.value = loadLink\(\);.*?renderMerge\(\);", js, re.S)
+
+
+# --- «Найти на Untappd»: the to-do list of shop/menu beers with no Untappd link -------------------
+
+def test_a_third_mode_switches_to_the_to_do_panel_and_hides_the_other_two():
+    soup = _soup()
+    todo_tab = soup.find(id="mode-todo")
+    assert todo_tab.name == "button" and todo_tab["type"] == "button" and todo_tab["aria-pressed"] == "false"
+    assert todo_tab.get_text(strip=True) == "Найти на Untappd"
+    todo = soup.find(id="todo")
+    assert todo.has_attr("hidden")
+    js = _js(soup)
+    fn = re.search(r"function setMode\(mode\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert '$("todo").hidden' in fn
+    assert '$("mode-todo").addEventListener("click"' in js
+
+
+def test_the_to_do_panel_has_its_own_search_count_list_and_place_chips():
+    soup = _soup()
+    todo = soup.find(id="todo")
+    for element_id in ("todo-search", "todo-places", "todo-count", "todo-list"):
+        assert todo.find(id=element_id) is not None, element_id
+    search = todo.find(id="todo-search")
+    assert search["type"] == "search" and search["autocomplete"] == "off"
+    label = soup.find("label", attrs={"for": "todo-search"})
+    assert label is not None and label.get_text(strip=True)
+    for element_id in ("search", "only-weak", "show-ok", "count", "list", "pick-search", "pick-list"):
+        assert todo.find(id=element_id) is None, element_id   # the to-do panel is its own, not shared with review/merge
+
+
+def test_to_do_items_are_unlinked_shop_beers_ordered_bars_first_then_shops_in_place_order():
+    js = _js(_soup())
+    fn = re.search(r"function todoItems\(data\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'startsWith("n:")' in fn and "match_via" in fn and "untappd_blocked" in fn
+    assert "data.places" in fn and "data.rows" in fn
+    assert '"bars"' in fn   # bars/brewpub before shops
+
+
+def test_each_to_do_card_shows_photo_name_brewery_place_abv_shop_link_and_a_search_link():
+    js = _js(_soup())
+    fn = re.search(r"function todoCardNode\(it\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "thumb(it.photo)" in fn
+    assert "nameNode(it.name, it.shop_url)" in fn
+    assert "it.brewery" in fn and "it.abv" in fn and "it.place" in fn
+    assert "untappdSearchUrl(it)" in fn and 'target: "_blank"' in fn and "noopener" in fn and "noreferrer" in fn
+    search_fn = re.search(r"function untappdSearchUrl\(it\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "untappd.com/search?q=" in search_fn and "encodeURIComponent" in search_fn
+
+
+def test_each_to_do_card_has_one_link_field_with_inline_validation_reusing_parse_beer_link():
+    soup = _soup()
+    js = _js(soup)
+    fn = re.search(r"function todoCardNode\(it\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert 'type: "url"' in fn and 'inputmode: "url"' in fn
+    assert "field-label" in fn and "Ссылка на пиво в Untappd" in fn
+    assert "parseBeerLink(" in fn   # the same untappd id regex as the merge mode, not a second one
+    assert js.count("BEER_URL_RE") == 2   # one definition, one use inside parseBeerLink -- shared by both modes
+
+
+def test_each_to_do_card_has_two_mutually_exclusive_buttons_that_clear_the_link():
+    js = _js(_soup())
+    fn = re.search(r"function todoCardNode\(it\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "Нет на Untappd" in fn and "Не пиво" in fn
+    assert "aria-pressed" in fn
+    assert fn.count('input.value = ""') >= 2   # both buttons clear whatever was typed
+
+
+def test_to_do_progress_counter_reports_remaining_and_filled():
+    js = _js(_soup())
+    fn = re.search(r"function renderTodoCount\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "Осталось" in fn and "заполнено" in fn
+
+
+def test_to_do_progress_is_kept_in_its_own_local_storage_key_guarded_by_try_catch():
+    js = _js(_soup())
+    assert '"matches-todo"' in js
+    for call in ("getItem", "setItem"):
+        idx = js.index(f"localStorage.{call}(TODO_KEY")
+        before = js[:idx]
+        assert before.rfind("try {") > before.rfind("catch"), call
+
+
+def test_to_do_progress_rides_along_in_the_existing_transfer_link():
+    js = _js(_soup())
+    fn = re.search(r"function transferLink\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "todo" in fn
+    import_fn = re.search(r"function importFromHash\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "payload.todo" in import_fn
+
+
+def test_the_to_do_bottom_bar_is_sticky_with_a_done_count_and_two_copy_buttons():
+    soup = _soup()
+    css = _css(soup)
+    rule = re.search(r"([^{}]*#todo-bar[^{}]*)\{([^}]*)\}", css)
+    assert rule and re.search(r"position:\s*sticky", rule.group(2)) and re.search(r"bottom:\s*0", rule.group(2))
+    bar = soup.find(id="todo-bar")
+    assert "Готово:" in bar.get_text()
+    yaml_btn, text_btn = soup.find(id="todo-copy-yaml"), soup.find(id="todo-copy-text")
+    assert yaml_btn.get_text(strip=True) == "Скопировать для corrections.yaml"
+    assert text_btn.get_text(strip=True) == "Скопировать для Claude"
+    for btn in (yaml_btn, text_btn):
+        assert btn.name == "button" and btn["type"] == "button" and btn.has_attr("disabled")
+
+
+def test_to_do_yaml_output_groups_same_as_and_hide_entries_under_labelled_sections():
+    js = _js(_soup())
+    fn = re.search(r"function todoYaml\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "# same_as:" in fn and "# hide:" in fn
+    assert "yamlQuote(" in fn   # the same safe YAML quoting as the merge mode, not a second one
+    assert js.count("const yamlQuote =") == 1
+
+
+def test_to_do_claude_text_has_one_line_per_filled_item():
+    js = _js(_soup())
+    fn = re.search(r"function todoText\(\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r"\$\{it\.place_id\} \| \$\{it\.key\} \| \$\{it\.name\} →", fn)
+    assert "нет на Untappd" in fn and "не пиво" in fn

@@ -68,7 +68,7 @@
   }
   .mode[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 12px; }
-  #search {
+  #search, #todo-search {
     flex: 1 1 240px; min-width: 0; font: inherit; color: var(--text); background: var(--surface);
     border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px;
   }
@@ -105,17 +105,17 @@
   .verdict .bad input { accent-color: var(--danger); }
   .card.confirmed { opacity: .6; }
   #confirm-visible, #transfer { font: inherit; font-size: .85rem; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; }
-  #sheet, #bar {
+  #sheet, #todo-bar, #bar {
     position: sticky; bottom: 0; z-index: 5; margin: 16px -20px 0; padding: 10px 20px;
     background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0, 0, 0, .12);
   }
-  #bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  #bar, #todo-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
   #copy {
     font: inherit; font-weight: 700; cursor: pointer; padding: 9px 16px;
     border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent); color: var(--on-accent);
   }
   #copy:disabled { opacity: .5; cursor: default; }
-  #copy-status { color: var(--muted); font-size: .85rem; }
+  #copy-status, #todo-copy-status { color: var(--muted); font-size: .85rem; }
   /* «Объединить пиво»: big tap targets, everything at least 44px */
   .step { display: flex; gap: 10px; align-items: center; font-size: 1.05rem; line-height: 1.3; margin: 24px 0 10px; }
   .num {
@@ -138,9 +138,11 @@
   .pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pick input { width: 26px; height: 26px; margin: 0; flex-shrink: 0; accent-color: var(--accent); }
   .act {
+    display: inline-flex; align-items: center; justify-content: center; text-align: center;
     font: inherit; font-weight: 700; min-height: 44px; padding: 9px 16px; cursor: pointer;
     border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text);
   }
+  .act:hover { text-decoration: none; }   /* a[href].act must not look like a plain link */
   .act.main { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
   .field-label { display: block; font-weight: 600; margin: 0 0 6px; }
   .field[aria-invalid="true"] { border-color: var(--danger); }
@@ -171,6 +173,19 @@
     flex-shrink: 0; width: 44px; height: 44px; font: inherit; font-size: 1.1rem; cursor: pointer;
     border: 0; border-radius: var(--radius); background: transparent; color: var(--danger);
   }
+  /* «Найти на Untappd»: one card per unlinked beer */
+  .todo-card { display: flex; flex-direction: column; gap: 10px; }
+  .todo-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .act[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+  .place-filters {
+    list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .place-filters:empty { display: none; }
+  .place-filter {
+    font: inherit; font-size: .85rem; font-weight: 600; min-height: 40px; padding: 6px 14px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text);
+  }
+  .place-filter[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   @media (max-width: 340px) {   /* an old phone: the count and both buttons still share one row */
     .sheet-head { gap: 6px; }
     .sheet-head .act { padding: 9px 8px; font-size: .9rem; }
@@ -190,6 +205,7 @@
     <div class="modes" role="group" aria-label="Режим страницы">
       <button type="button" class="mode" id="mode-review" aria-pressed="true">Проверка</button>
       <button type="button" class="mode" id="mode-merge" aria-pressed="false">Объединить пиво</button>
+      <button type="button" class="mode" id="mode-todo" aria-pressed="false">Найти на Untappd</button>
     </div>
     <div id="review">
       <p class="intro">Слева — как пиво называется в магазине, справа — сорт на Untappd, с которым мы его склеили. Если склейка правильная — отметьте «верно», она уйдёт из списка. Если это разные пивоварни или сорта — отметьте «не то пиво», потом нажмите «Скопировать для Олега» и отправьте текст Олегу.</p>
@@ -237,6 +253,22 @@
         <ul id="picked-list" class="chips"></ul>
       </div>
     </section>
+    <section id="todo" hidden>
+      <p class="intro">Пиво из магазинов и меню без ссылки на Untappd. Найдите его на Untappd и вставьте ссылку, или отметьте, что искать не нужно.</p>
+      <div class="controls">
+        <label for="todo-search" class="sr-only">Поиск по названию, пивоварне или месту</label>
+        <input type="search" id="todo-search" placeholder="Название, пивоварня или место" autocomplete="off">
+      </div>
+      <ul id="todo-places" class="place-filters"></ul>
+      <p id="todo-count" class="count" aria-live="polite"></p>
+      <div id="todo-list"></div>
+      <div id="todo-bar">
+        <span>Готово: <b id="todo-done">0</b></span>
+        <button type="button" id="todo-copy-yaml" class="act main" disabled>Скопировать для corrections.yaml</button>
+        <button type="button" id="todo-copy-text" class="act" disabled>Скопировать для Claude</button>
+        <span id="todo-copy-status" role="status"></span>
+      </div>
+    </section>
   </main>
   <div id="bar">
     <span>Отмечено: <b id="marked">0</b></span>
@@ -248,8 +280,10 @@
 "use strict";
 const STORAGE_KEY = "matches-wrong";
 const OK_KEY = "matches-ok";   // {entry id: the Untappd link it was confirmed against}
+const TODO_KEY = "matches-todo";   // {place_id|key: {type:"link", id} | {type:"none"} | {type:"notbeer"}}
 const VIA_RU = { local: "авто по названию", search: "поиск Untappd", manual: "вручную" };
-const ui = { matches: [], marked: new Set(), ok: {}, note: "", items: [], picked: new Map() };
+const ui = { matches: [], marked: new Set(), ok: {}, note: "", items: [], picked: new Map(),
+            todoItems: [], todo: {}, todoPlaces: new Set() };
 const $ = (id) => document.getElementById(id);
 
 // Every value from data.json goes into the DOM as text, never as HTML.
@@ -282,6 +316,19 @@ function saveOk() {
   try {
     localStorage.setItem(OK_KEY, JSON.stringify(ui.ok));
   } catch (err) { /* private mode or blocked storage: confirmations last until the page is closed */ }
+}
+function loadTodo() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TODO_KEY) || "{}");
+    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  } catch (err) {
+    return {};
+  }
+}
+function saveTodo() {
+  try {
+    localStorage.setItem(TODO_KEY, JSON.stringify(ui.todo));
+  } catch (err) { /* private mode or blocked storage: choices last until the page is closed */ }
 }
 // a confirmation only counts while the entry still points at the Untappd beer it was confirmed against
 function isOk(m) {
@@ -400,7 +447,7 @@ const fromB64 = (b64) => new TextDecoder().decode(Uint8Array.from(atob(b64), (c)
 function transferLink() {
   const ok = {};
   for (const m of ui.matches) if (isOk(m)) ok[idOf(m)] = beerNumber(m.untappd_url);
-  const payload = { ok, bad: markedMatches().map(idOf) };
+  const payload = { ok, bad: markedMatches().map(idOf), todo: ui.todo };
   return `${location.origin}${location.pathname}#marks=${toB64(JSON.stringify(payload))}`;
 }
 function importFromHash() {
@@ -417,6 +464,18 @@ function importFromHash() {
         ui.marked.add(id);
         delete ui.ok[id];
       }
+    }
+    if (payload.todo && typeof payload.todo === "object") {
+      for (const it of ui.todoItems) {
+        const choice = payload.todo[idOf(it)];
+        if (!choice || typeof choice !== "object") continue;
+        if (choice.type === "none" || choice.type === "notbeer") ui.todo[idOf(it)] = { type: choice.type };
+        else if (choice.type === "link") {
+          const raw = String(choice.id || ""), parsed = raw ? parseBeerLink(raw) : null;
+          if (parsed && parsed.id === raw) ui.todo[idOf(it)] = { type: "link", id: raw };
+        }
+      }
+      saveTodo();
     }
     saveOk(); saveMarked();
     ui.note = "Отметки загружены";
@@ -608,6 +667,183 @@ function resetMerge() {
   window.scrollTo(0, 0);   // back to the search box, ready for the next beer
 }
 
+// «Найти на Untappd»: every shop/menu/manual beer with no active match and no manual "не то же" block,
+// bars/brewpub places first, then shops, both in places.yaml order, and by name within a place.
+function todoItems(data) {
+  const places = data.places || [];
+  const placeIndex = new Map(places.map((p, i) => [p.id, i]));
+  const placeName = new Map(places.map((p) => [p.id, p.name]));
+  return (data.rows || [])
+    .filter((r) => String(r.beer_key).startsWith("n:") && !r.match_via && !r.untappd_blocked)
+    .map((r, uid) => {
+      const place = placeName.get(r.place_id) || String(r.place_id);
+      const name = r.name || r.beer_key;
+      return {
+        uid, place_id: r.place_id, key: r.beer_key, place, section: r.section, name,
+        brewery: r.brewery, abv: r.abv, photo: r.beer_logo, shop_url: r.shop_url || r.url,
+        hay: [name, r.brewery, place, r.beer_key.slice(2)].filter(Boolean).join(" ").toLowerCase(),
+      };
+    })
+    .sort((a, b) => (a.section === b.section ? 0 : a.section === "bars" ? -1 : 1)
+      || placeIndex.get(a.place_id) - placeIndex.get(b.place_id)
+      || a.name.localeCompare(b.name, "ru") || a.key.localeCompare(b.key));
+}
+function untappdSearchUrl(it) {
+  const q = [it.brewery, it.name].filter(Boolean).join(" ");
+  return `https://untappd.com/search?q=${encodeURIComponent(q)}`;
+}
+function visibleTodo() {
+  const words = $("todo-search").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  return ui.todoItems.filter((it) => (!ui.todoPlaces.size || ui.todoPlaces.has(it.place_id))
+    && words.every((w) => it.hay.includes(w)));
+}
+function todoDone() {
+  return ui.todoItems.filter((it) => ui.todo[idOf(it)]).length;
+}
+function renderTodoCount() {
+  const total = ui.todoItems.length;
+  const done = todoDone();
+  $("todo-count").textContent = `Осталось: ${total - done} · заполнено: ${done}`;
+}
+function renderTodoBar() {
+  const done = todoDone();
+  $("todo-done").textContent = String(done);
+  $("todo-copy-yaml").disabled = done === 0;
+  $("todo-copy-text").disabled = done === 0;
+  $("todo-copy-status").textContent = "";
+}
+function renderTodoProgress() {   // counters only, called after a single card changes: no list rebuild mid-typing
+  renderTodoCount();
+  renderTodoBar();
+}
+function placeChip(id, name) {
+  const btn = el("button", { type: "button", class: "place-filter", "aria-pressed": String(ui.todoPlaces.has(id)) }, name);
+  btn.addEventListener("click", () => {
+    if (ui.todoPlaces.has(id)) ui.todoPlaces.delete(id); else ui.todoPlaces.add(id);
+    btn.setAttribute("aria-pressed", String(ui.todoPlaces.has(id)));
+    renderTodoList();
+  });
+  return btn;
+}
+function renderTodoChips() {
+  const seen = new Map();
+  for (const it of ui.todoItems) if (!seen.has(it.place_id)) seen.set(it.place_id, it.place);
+  $("todo-places").replaceChildren(...[...seen].map(([id, name]) => placeChip(id, name)));
+}
+function todoStatusNodes(link) {   // «Пиво № N» or the error text -- a per-card twin of renderLink's status line
+  if (!link) return [];
+  return [link.error || `Пиво № ${link.id}`];
+}
+function todoCardNode(it) {
+  const id = idOf(it);
+  const linkId = `todo-link-${it.uid}`, statusId = `todo-status-${it.uid}`;
+  const input = el("input", { type: "url", id: linkId, class: "field", inputmode: "url", autocomplete: "off",
+                              autocapitalize: "off", spellcheck: "false", "aria-describedby": statusId,
+                              placeholder: "https://untappd.com/b/название/1941326" });
+  const status = el("p", { id: statusId, class: "link-status", role: "status" });
+  const noneBtn = el("button", { type: "button", class: "act", "aria-pressed": "false" }, "Нет на Untappd");
+  const notBeerBtn = el("button", { type: "button", class: "act", "aria-pressed": "false" }, "Не пиво");
+  const card = el("li", { class: "card todo-card" },
+    el("div", { class: "side" }, thumb(it.photo),
+      el("div", { class: "text" },
+        el("span", { class: "tag" }, it.place),
+        nameNode(it.name, it.shop_url),
+        it.brewery ? el("span", { class: "small" }, it.brewery) : null,
+        it.abv != null ? el("span", { class: "small" }, `${it.abv}%`) : null)),
+    el("a", { class: "act", href: safeUrl(untappdSearchUrl(it)), target: "_blank", rel: "noopener noreferrer" },
+      "Искать на Untappd"),
+    el("div", null, el("label", { class: "field-label", for: linkId }, "Ссылка на пиво в Untappd"), input, status),
+    el("div", { class: "todo-actions" }, noneBtn, notBeerBtn));
+
+  function setChoice(choice) {   // choice: {type:"link", id} | {type:"none"} | {type:"notbeer"} | null
+    if (choice) ui.todo[id] = choice; else delete ui.todo[id];
+    saveTodo();
+    card.classList.toggle("confirmed", Boolean(choice));
+    noneBtn.setAttribute("aria-pressed", String(choice != null && choice.type === "none"));
+    notBeerBtn.setAttribute("aria-pressed", String(choice != null && choice.type === "notbeer"));
+    renderTodoProgress();
+  }
+  input.addEventListener("input", () => {
+    const link = input.value.trim() ? parseBeerLink(input.value) : null;
+    const bad = Boolean(link && link.error);
+    input.setAttribute("aria-invalid", String(bad));
+    status.classList.toggle("bad", bad);
+    status.replaceChildren(...todoStatusNodes(link));
+    setChoice(link && link.id ? { type: "link", id: link.id } : null);
+  });
+  noneBtn.addEventListener("click", () => {
+    const on = noneBtn.getAttribute("aria-pressed") !== "true";
+    input.value = "";
+    status.replaceChildren();
+    input.setAttribute("aria-invalid", "false");
+    setChoice(on ? { type: "none" } : null);
+  });
+  notBeerBtn.addEventListener("click", () => {
+    const on = notBeerBtn.getAttribute("aria-pressed") !== "true";
+    input.value = "";
+    status.replaceChildren();
+    input.setAttribute("aria-invalid", "false");
+    setChoice(on ? { type: "notbeer" } : null);
+  });
+
+  const existing = ui.todo[id];   // restore a choice made earlier (this session, reload, or a transfer link)
+  if (existing) card.classList.add("confirmed");
+  if (existing && existing.type === "link") {
+    input.value = beerUrl(existing.id);
+    status.replaceChildren(`Пиво № ${existing.id}`);
+  } else if (existing && existing.type === "none") {
+    noneBtn.setAttribute("aria-pressed", "true");
+  } else if (existing && existing.type === "notbeer") {
+    notBeerBtn.setAttribute("aria-pressed", "true");
+  }
+  return card;
+}
+function renderTodoList() {
+  const shown = visibleTodo();
+  const total = ui.todoItems.length;
+  renderTodoProgress();
+  $("todo-list").replaceChildren(shown.length
+    ? el("ul", { class: "cards" }, ...shown.map(todoCardNode))
+    : el("p", { class: "empty" }, !total ? "Всё пиво уже привязано к Untappd."
+      : "Ничего не нашлось — попробуйте другой запрос или фильтр."));
+}
+function renderTodo() {
+  renderTodoChips();
+  renderTodoList();
+}
+// same_as (a link, or untappd_id: null for "Нет на Untappd") and hide ("Не пиво") entries, each block
+// under a comment naming the corrections.yaml section it belongs under -- same_as already has entries,
+// so, like the merge mode, the key itself is never re-emitted, only the bare list items.
+function todoYaml() {
+  const done = ui.todoItems.filter((it) => ui.todo[idOf(it)]);
+  const sameAs = done.filter((it) => ui.todo[idOf(it)].type !== "notbeer");
+  const hide = done.filter((it) => ui.todo[idOf(it)].type === "notbeer");
+  const parts = [];
+  if (sameAs.length) {
+    parts.push("# same_as:\n" + sameAs.map((it) => {
+      const choice = ui.todo[idOf(it)];
+      const untappdId = choice.type === "link" ? choice.id : "null";
+      return `  - place: ${yamlQuote(it.place_id)}\n    beer: ${yamlQuote(it.key)}\n    untappd_id: ${untappdId}`;
+    }).join("\n"));
+  }
+  if (hide.length) {
+    parts.push("# hide:\n" + hide.map((it) =>
+      `  - place: ${yamlQuote(it.place_id)}\n    beer: ${yamlQuote(it.key)}`).join("\n"));
+  }
+  return parts.join("\n\n");
+}
+function todoText() {
+  return ui.todoItems.filter((it) => ui.todo[idOf(it)]).map((it) => {
+    const choice = ui.todo[idOf(it)];
+    const outcome = choice.type === "link" ? beerUrl(choice.id) : choice.type === "none" ? "нет на Untappd" : "не пиво";
+    return `${it.place_id} | ${it.key} | ${it.name} → ${outcome}`;
+  }).join("\n");
+}
+async function copyTodo(block) {   // block: "yaml" or "text"
+  const ok = await clipboardCopy(block === "yaml" ? todoYaml() : todoText());
+  $("todo-copy-status").textContent = ok ? "Скопировано" : "Не удалось скопировать";
+}
+
 const LOAD_FAILED = "Не удалось загрузить данные. Обновите страницу через минуту.";
 async function load() {
   try {
@@ -617,32 +853,38 @@ async function load() {
     if (!data || !Array.isArray(data.matches)) throw new Error("bad data.json");
     ui.matches = data.matches;
     ui.items = shopItems(data);
+    ui.todoItems = todoItems(data);
   } catch (err) {
     console.error(err);
     $("count").textContent = "";
-    for (const id of ["list", "pick-list"]) $(id).replaceChildren(el("p", { class: "empty" }, LOAD_FAILED));
+    for (const id of ["list", "pick-list", "todo-list"]) $(id).replaceChildren(el("p", { class: "empty" }, LOAD_FAILED));
     return;
   }
   ui.marked = loadMarked();
   ui.ok = loadOk();
+  ui.todo = loadTodo();
   importFromHash();
   render();
   $("untappd-link").value = loadLink();
   renderMerge();
+  renderTodo();
   if (ui.note) $("copy-status").textContent = ui.note;   // render() clears the status line, so set it after
 }
 
 function setMode(mode) {
-  const merge = mode === "merge";
-  $("review").hidden = merge;
-  $("merge").hidden = !merge;
-  $("bar").hidden = merge;   // the bar of marks belongs to the review list
-  $("mode-review").setAttribute("aria-pressed", String(!merge));
-  $("mode-merge").setAttribute("aria-pressed", String(merge));
+  $("review").hidden = mode !== "review";
+  $("merge").hidden = mode !== "merge";
+  $("todo").hidden = mode !== "todo";
+  $("bar").hidden = mode !== "review";   // the bar of marks belongs to the review list
+  for (const m of ["review", "merge", "todo"]) $(`mode-${m}`).setAttribute("aria-pressed", String(m === mode));
 }
 
 $("mode-review").addEventListener("click", () => setMode("review"));
 $("mode-merge").addEventListener("click", () => setMode("merge"));
+$("mode-todo").addEventListener("click", () => setMode("todo"));
+$("todo-search").addEventListener("input", renderTodoList);
+$("todo-copy-yaml").addEventListener("click", () => copyTodo("yaml"));
+$("todo-copy-text").addEventListener("click", () => copyTodo("text"));
 $("pick-search").addEventListener("input", renderResults);
 $("untappd-link").addEventListener("input", () => {
   saveLink();
