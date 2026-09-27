@@ -554,6 +554,22 @@ def test_unmatched_and_blocked_rows_have_no_shop_identity_fields():
     assert build(st)["matches"] == []
 
 
+def test_row_flags_a_manual_not_on_untappd_block_so_a_to_do_list_can_exclude_it():
+    """corrections.yaml same_as with untappd_id: null ("не то же") is a permanent decision, unlike a
+    never-tried or a failed search retry (both also untappd_beer_id None, but not via="manual"): the
+    review page's «Найти на Untappd» to-do list must not keep asking about a beer already resolved
+    this way, even though it (like an untried one) has no match_via."""
+    blocked = ShopMatchRec(via="manual", matched_at=ago(1))
+    no_match_yet = ShopMatchRec(matched_at=ago(1))   # a failed search retry: untappd_beer_id None, via None
+    st = match_state({"beer-city": {"n:a": pair("beercity", in_stock=True), "n:b": pair("beercity", in_stock=True),
+                                    "n:c": pair("beercity", in_stock=True)}},
+                     b=blocked, c=no_match_yet)
+    rows = {r["beer_key"]: r for r in build(st)["rows"]}
+    assert "untappd_blocked" not in rows["n:a"]
+    assert rows["n:b"]["untappd_blocked"] is True
+    assert "untappd_blocked" not in rows["n:c"]
+
+
 def test_matches_list_carries_both_sides_of_each_visible_matched_pair():
     st = match_state({"beer-city": {"n:chimay": pair("beercity", in_stock=True, info=CHIMAY_INFO)}}, chimay=CHIMAY)
     assert build(st)["matches"] == [{
