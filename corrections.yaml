@@ -296,7 +296,17 @@ sightings:
     by: Instagram бара
     date: 2026-09-24
 
+  # Ferment: чекин 20.09 отмечен как «Темне» (Мамонт), на деле это Brewmen «Мамонт тёмное» (поправил Олег)
+  - place: ferment
+    brewery: "Brewmen"
+    beer: "Мамонт тёмное"
+    untappd: 6711885
+    by: Олег
+    date: 2026-09-20
 hide:
+  # чекин с неверно выбранным пивом (см. «Мамонт тёмное» в sightings)
+  - place: ferment
+    beer: "u:1702994"
   # пивные коктейли Beer City (Украина, 8%): не пиво, на Untappd нет
   - place: beer-city
     beer: "n:bronx"
