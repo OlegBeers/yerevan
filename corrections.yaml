@@ -336,6 +336,28 @@ same_as:                         # магазинное пиво == пиво с 
   - place: parma
     beer: "n:wolfs ipa light"
     untappd_id: 1941326
+  # Олег, список «Найти на Untappd», 27.09
+  - place: dargett-brewpub
+    beer: "n:dargett imperial ipa"
+    untappd_id: 1570010
+  - place: beer-city
+    beer: "n:379 american wheat ale citrus"
+    untappd_id: 4775604
+  - place: beer-city
+    beer: "n:379 non weizen"
+    untappd_id: 4775562
+  - place: beer-city
+    beer: "n:волковская пиваварня american pale ale apa"
+    untappd_id: 4463971
+  - place: beer-city
+    beer: "n:жигули барное"
+    untappd_id: 26210
+  - place: beer-city
+    beer: "n:alpirsbacher pilsner"
+    untappd_id: 512
+  - place: beer-city
+    beer: "n:alpirsbacher weizen"
+    untappd_id: 85217
 
 aliases:
 
