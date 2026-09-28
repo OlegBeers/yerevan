@@ -173,15 +173,16 @@ class FakeHttp:
 class World:
     """A repo folder plus recording fakes; outcomes are scripted per call."""
 
-    def __init__(self, tmp_path, untappd=None, send=(), push=()):
+    def __init__(self, tmp_path, untappd=None, send=(), push=(), get_updates=(), delete=()):
         self.repo = tmp_path
         (tmp_path / "site").mkdir(exist_ok=True)
         (tmp_path / "places.yaml").write_text(PLACES_YAML, encoding="utf-8")
         shutil.copy(CONFIG_FIXTURES / "corrections.yaml", tmp_path / "corrections.yaml")
         self.untappd = untappd or FakeUntappd()
         self.http = FakeHttp()
-        self.sends, self.pushes, self.pulls = [], [], []
+        self.sends, self.pushes, self.pulls, self.deletes, self.get_updates_calls = [], [], [], [], []
         self.send_outcomes, self.push_results = list(send), list(push)
+        self.get_updates_pages, self.delete_results = list(get_updates), list(delete)
 
     def send(self, token, chat_id, text, button=None):
         self.sends.append({"token": token, "chat": chat_id, "text": text, "button": button})
@@ -192,8 +193,17 @@ class World:
         self.pushes.append({"paths": list(paths), "state": state})
         return self.push_results.pop(0) if self.push_results else True
 
+    def get_updates(self, token, offset):
+        self.get_updates_calls.append({"token": token, "offset": offset})
+        return self.get_updates_pages.pop(0) if self.get_updates_pages else []
+
+    def delete_message(self, token, chat_id, message_id):
+        self.deletes.append({"token": token, "chat": chat_id, "message_id": message_id})
+        return self.delete_results.pop(0) if self.delete_results else SendOutcome("sent")
+
     def deps(self):
         return Deps(http=self.http, untappd_fetcher=self.untappd, send=self.send,
+                    get_updates=self.get_updates, delete_message=self.delete_message,
                     pull=self.pulls.append, push=self.push, sleep=lambda s: None)
 
     def run(self, now, **kw):
@@ -207,12 +217,13 @@ class World:
         change(state)
         save_state(self.repo / "state.json", state)
 
-    def next_run(self, untappd=None, send=(), push=()):
+    def next_run(self, untappd=None, send=(), push=(), get_updates=(), delete=()):
         """Fresh fakes for the next run in the same repo."""
         self.untappd = untappd or FakeUntappd()
         self.http = FakeHttp()
-        self.sends, self.pushes, self.pulls = [], [], []
+        self.sends, self.pushes, self.pulls, self.deletes, self.get_updates_calls = [], [], [], [], []
         self.send_outcomes, self.push_results = list(send), list(push)
+        self.get_updates_pages, self.delete_results = list(get_updates), list(delete)
 
 
 @pytest.fixture
@@ -2304,6 +2315,184 @@ def test_unknown_digest_outcome_keeps_the_mark_and_alerts(world):
     assert len(world.sends) == 2
     assert "сводка, возможно, не дошла (ReadTimeout: timed out)" in world.sends[1]["text"]
     assert world.sends[1]["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]
+
+
+# --- reply tracking (getUpdates) and delete-if-unreplied ---------------------------------------
+
+DELETE_T1 = NEXT_EVENING                        # first real group digest
+DELETE_T2 = NEXT_EVENING + timedelta(days=1)    # a later group digest that may replace it
+
+
+def _add_pending_event(state, when):
+    """A fresh pending event (reusing an existing baseline pair) so a digest is due at `when`."""
+    rec = state.pairs["parma"][next(iter(state.pairs["parma"]))]
+    rec.event_at, rec.notified_at = iso(when), None
+
+
+def _send_first_group_digest(world, message_id):
+    """sent_count=2 skips both admin previews, so this digest goes straight to the group chat --
+    the starting point for the reply/deletion tests below."""
+    first_run(world)
+    world.edit_state(lambda s: setattr(s.digest, "sent_count", 2))
+    world.send_outcomes = [SendOutcome("sent", message_id=message_id)]
+    assert world.run(DELETE_T1) == 0
+    assert (world.state().digest.last_message_id, world.state().digest.last_to_admin) == (message_id, False)
+
+
+def test_is_target_chat_matches_numeric_id_regardless_of_type():
+    assert run_mod._is_target_chat({"id": -100123}, "-100123") is True
+    assert run_mod._is_target_chat({"id": -100123}, "-100999") is False
+
+
+def test_is_target_chat_matches_at_username_case_insensitively():
+    assert run_mod._is_target_chat({"id": 555, "username": "yerevan_beer"}, "@yerevan_beer") is True
+    assert run_mod._is_target_chat({"id": 555, "username": "Yerevan_Beer"}, "@yerevan_beer") is True
+    assert run_mod._is_target_chat({"id": 555, "username": "other"}, "@yerevan_beer") is False
+
+
+def test_track_digest_replies_marks_last_replied_when_a_reply_matches():
+    state = empty_state(NOW)
+    state.digest.last_message_id = 100
+    pages = iter([[{"update_id": 1, "message": {"chat": {"id": ENV["TELEGRAM_CHAT_ID"]},
+                                                "reply_to_message": {"message_id": 100}}}], []])
+
+    ok = run_mod.track_digest_replies(state, ENV, Deps(get_updates=lambda token, offset: next(pages)))
+
+    assert ok is True
+    assert state.digest.last_replied is True
+    assert state.telegram_offset == 2
+
+
+def test_track_digest_replies_ignores_a_reply_to_a_different_message():
+    state = empty_state(NOW)
+    state.digest.last_message_id = 100
+    pages = iter([[{"update_id": 1, "message": {"chat": {"id": ENV["TELEGRAM_CHAT_ID"]},
+                                                "reply_to_message": {"message_id": 999}}}], []])
+
+    run_mod.track_digest_replies(state, ENV, Deps(get_updates=lambda token, offset: next(pages)))
+
+    assert state.digest.last_replied is False
+
+
+def test_track_digest_replies_ignores_a_reply_from_a_different_chat():
+    state = empty_state(NOW)
+    state.digest.last_message_id = 100
+    pages = iter([[{"update_id": 1, "message": {"chat": {"id": "some-other-chat"},
+                                                "reply_to_message": {"message_id": 100}}}], []])
+
+    run_mod.track_digest_replies(state, ENV, Deps(get_updates=lambda token, offset: next(pages)))
+
+    assert state.digest.last_replied is False
+
+
+def test_track_digest_replies_returns_false_on_getupdates_failure():
+    state = empty_state(NOW)
+    assert run_mod.track_digest_replies(state, ENV, Deps(get_updates=lambda token, offset: None)) is False
+
+
+def test_offset_persists_and_is_reused_as_the_next_runs_starting_point(world):
+    first_run(world)
+    world.next_run(get_updates=[[{"update_id": 77, "message": {"chat": {"id": "other"}}}]])
+    assert world.run(NEXT_EVENING) == 0
+    assert world.state().telegram_offset == 78
+
+    world.next_run()
+    assert world.run(NEXT_EVENING + timedelta(hours=21)) == 0
+
+    assert world.get_updates_calls[0]["offset"] == 78
+
+
+def test_reply_tracking_never_stores_message_text_or_usernames(world):
+    first_run(world)
+    chatty_update = {"update_id": 20, "message": {
+        "message_id": 321, "text": "воскресенье наконец никого нет опять?",
+        "from": {"id": 999888777, "username": "some_real_person", "first_name": "Аня"},
+        "chat": {"id": ENV["TELEGRAM_CHAT_ID"]},
+    }}
+    world.next_run(get_updates=[[chatty_update]])
+
+    assert world.run(NEXT_EVENING) == 0
+
+    raw = (world.repo / "state.json").read_text(encoding="utf-8")
+    assert "some_real_person" not in raw and "Аня" not in raw and "воскресенье" not in raw
+
+
+def test_no_reply_deletes_the_previous_group_digest_after_the_new_one_sends(world):
+    _send_first_group_digest(world, message_id=100)
+    world.edit_state(lambda s: _add_pending_event(s, DELETE_T2 - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("sent", message_id=200)])
+
+    assert world.run(DELETE_T2) == 0
+
+    assert world.deletes == [{"token": "tok", "chat": ENV["TELEGRAM_CHAT_ID"], "message_id": 100}]
+    assert world.state().digest.last_message_id == 200
+    assert world.state().digest.last_replied is False
+
+
+def test_reply_to_previous_digest_prevents_its_deletion(world):
+    _send_first_group_digest(world, message_id=100)
+    world.edit_state(lambda s: _add_pending_event(s, DELETE_T2 - timedelta(hours=1)))
+    reply = {"update_id": 5001, "message": {"chat": {"id": ENV["TELEGRAM_CHAT_ID"]},
+                                            "reply_to_message": {"message_id": 100}}}
+    world.next_run(send=[SendOutcome("sent", message_id=200)], get_updates=[[reply]])
+
+    assert world.run(DELETE_T2) == 0
+
+    assert world.deletes == []
+    assert world.state().digest.last_message_id == 200
+
+
+def test_rejected_new_group_digest_does_not_delete_the_previous_one(world):
+    _send_first_group_digest(world, message_id=100)
+    world.edit_state(lambda s: _add_pending_event(s, DELETE_T2 - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("rejected", "Bad Request: chat not found")])
+
+    assert world.run(DELETE_T2) == 0
+
+    assert world.deletes == []
+
+
+def test_getupdates_failure_this_run_skips_deletion(world):
+    _send_first_group_digest(world, message_id=100)
+    world.edit_state(lambda s: _add_pending_event(s, DELETE_T2 - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("sent", message_id=200)], get_updates=[None])
+
+    assert world.run(DELETE_T2) == 0
+
+    assert world.deletes == []
+    assert world.state().digest.last_message_id == 200   # the new digest still sends and is tracked
+
+
+def test_previous_digest_older_than_47_hours_is_not_deleted(world):
+    _send_first_group_digest(world, message_id=100)
+    later = DELETE_T1 + timedelta(hours=48)
+    world.edit_state(lambda s: _add_pending_event(s, later - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("sent", message_id=200)])
+
+    assert world.run(later) == 0
+
+    assert world.deletes == []
+
+
+def test_admin_preview_digests_are_never_deleted_and_never_trigger_deletion(world):
+    first_run(world)
+    world.send_outcomes = [SendOutcome("sent", message_id=11)]
+    assert world.run(NEXT_EVENING) == 0                                   # 1st digest: admin preview
+    assert world.deletes == []
+
+    later1 = NEXT_EVENING + timedelta(days=1)
+    world.edit_state(lambda s: _add_pending_event(s, later1 - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("sent", message_id=22)])
+    assert world.run(later1) == 0                                        # 2nd digest: still a preview
+    assert world.state().digest.last_to_admin is True
+    assert world.deletes == []                                          # sending a preview never deletes
+
+    later2 = later1 + timedelta(days=1)
+    world.edit_state(lambda s: _add_pending_event(s, later2 - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("sent", message_id=33)])
+    assert world.run(later2) == 0                                        # 3rd digest: first real group one
+
+    assert world.deletes == []          # message 22 was a preview: never a deletion target
 
 
 def test_untappd_is_not_fetched_before_20_hours(world):

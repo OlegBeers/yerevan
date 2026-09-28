@@ -102,6 +102,7 @@ class DigestRec:
     sent_count: int = 0
     last_message_id: int | None = None   # Telegram message id of the last sent digest, for editing it in place
     last_to_admin: bool = False          # whether that digest went to TELEGRAM_ADMIN_CHAT_ID instead of the group
+    last_replied: bool = False           # whether last_message_id has any reply (getUpdates); blocks its deletion
 
 
 @dataclass
@@ -142,6 +143,7 @@ class State:
     venues: dict[str, VenueRec] = field(default_factory=dict)
     discovery: DiscoveryRec = field(default_factory=DiscoveryRec)
     shop_matches: dict[str, ShopMatchRec] = field(default_factory=dict)
+    telegram_offset: int | None = None   # getUpdates offset (reply tracking), independent of any one digest
 
     def source(self, key: str) -> SourceRec:
         return self.sources.setdefault(key, SourceRec())
@@ -170,6 +172,7 @@ class State:
             venues={k: VenueRec(**r) for k, r in d.get("venues", {}).items()},
             discovery=DiscoveryRec(**d.get("discovery", {})),
             shop_matches={k: ShopMatchRec(**r) for k, r in d.get("shop_matches", {}).items()},
+            telegram_offset=d.get("telegram_offset"),
         )
 
 

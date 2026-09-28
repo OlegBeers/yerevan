@@ -42,7 +42,8 @@ def full_state() -> State:
         max_beer_id=6000001, menu_updated_at=ago(1))}
     s.untappd = UntappdRec(last_attempt=ago(1), pages_today=12, pages_date="2026-09-22", brewery_list_cursor=3)
     s.digest = DigestRec(last_sent_date="2026-09-22", last_sent_at=ago(1), sent_count=2,
-                        last_message_id=555, last_to_admin=True)
+                        last_message_id=555, last_to_admin=True, last_replied=True)
+    s.telegram_offset = 918273
     s.alerts = {"failed:parma:parma": "0123456789ab"}
     s.corrections_snapshot = {"sightings": [{"place": "tap-station", "by": "Аня"}], "not_craft": ["Kilikia"]}
     s.announced_manual = ["tap-station|2026-09-22|Аня"]
@@ -142,6 +143,17 @@ def test_from_dict_loads_an_older_state_whose_digest_lacks_message_id_and_admin_
     del d["digest"]["last_to_admin"]
     back = State.from_dict(d)
     assert back.digest.last_message_id is None and back.digest.last_to_admin is False
+
+
+def test_from_dict_loads_an_older_state_missing_reply_tracking_fields():
+    """state.json files written before reply tracking existed must still load: no digest was ever
+    marked replied, and no getUpdates offset is known yet."""
+    d = full_state().to_dict()
+    del d["digest"]["last_replied"]
+    del d["telegram_offset"]
+    back = State.from_dict(d)
+    assert back.digest.last_replied is False
+    assert back.telegram_offset is None
 
 
 def test_from_dict_loads_an_older_state_whose_shop_matches_lack_weak():

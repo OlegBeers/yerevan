@@ -41,7 +41,7 @@ from taps.state import (
     VENUE_KEEP_DAYS, BeerRec, ShopMatchRec, State, apply_aliases, load_state, merge_places, prune, record_venues,
     save_state,
 )
-from taps.telegram import MAX_TEXT, Alerter, SendOutcome, edit_message, send_message
+from taps.telegram import MAX_TEXT, Alerter, SendOutcome, delete_message, edit_message, get_updates, send_message
 from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow, yerevan_date
 
 STATE_FILE = "state.json"
@@ -73,6 +73,8 @@ SHOP_SEARCH_CANDIDATES_PER_RUN = 8   # v1.1 §3: shop beers searched on Untappd 
 SHOP_MATCH_RETRY_DAYS = 30           # a failed search ("no_match") is retried after this many days
 SHOP_MATCH_REFRESH_PER_RUN = 3       # matched shop beers whose cached rating is refreshed per run
 SHOP_MATCH_MAX_AGE_DAYS = 30         # a matched beer's cached rating is refreshed after this many days
+REPLY_POLL_MAX_PAGES = 5      # small cap on getUpdates pages per run; one empty page normally ends it
+DELETE_WINDOW_HOURS = 47      # Telegram lets a bot delete its own messages only within 48h; 1h safety margin
 
 
 @dataclass
@@ -80,6 +82,8 @@ class Deps:
     http: Http = field(default_factory=Http)
     untappd_fetcher: Callable[[], tuple[PageFetcher, Callable[[], None]]] = playwright_fetcher
     send: Callable[..., SendOutcome] = send_message
+    get_updates: Callable[..., list[dict] | None] = get_updates
+    delete_message: Callable[..., SendOutcome] = delete_message
     pull: Callable[[Path], None] = pull_ff
     push: Callable[[Path, Sequence[str], str], bool] = commit_and_push
     sleep: Callable[[float], None] = time.sleep     # Untappd pauses; tests pass a no-op
@@ -866,6 +870,44 @@ def discovery_alerts(alerter: Alerter, outcome: SendOutcome) -> None:
         alerter.alert("discovery", f"еженедельный отчёт о новых местах, возможно, не дошёл ({outcome.description})")
 
 
+# --- reply tracking (getUpdates) and delete-if-unreplied ---------------------
+
+def _is_target_chat(chat: Mapping, chat_id_env: str) -> bool:
+    """Match an update's chat against TELEGRAM_CHAT_ID: the documented numeric id (compared as text,
+    since Telegram's JSON int and the env string otherwise never compare equal), or -- the group is
+    public, @yerevan_beer -- an "@username" form, matched against the chat's own username."""
+    if str(chat.get("id")) == str(chat_id_env):
+        return True
+    username = chat.get("username")
+    return bool(username) and str(chat_id_env).lstrip("@").lower() == str(username).lower()
+
+
+def track_digest_replies(state: State, env: Mapping[str, str], deps: Deps) -> bool:
+    """Poll getUpdates for replies to the currently tracked digest message (last_message_id), so a
+    later delete-if-unreplied check knows whether to spare it. No webhook is configured: in privacy
+    mode the bot still receives messages that reply to its own. Returns whether polling succeeded
+    this run -- on any failure (network, HTTP, 429, 409 Conflict) tracking is skipped and the caller
+    must treat the reply status as unknown (never delete on unknown). Telegram keeps updates for only
+    ~24h, so a reply older than that is simply unseen -- an accepted limitation. Only ids are ever
+    read from a message; text and sender fields are never stored (public repo)."""
+    chat_id_env = env["TELEGRAM_CHAT_ID"]
+    target_id = state.digest.last_message_id
+    for _ in range(REPLY_POLL_MAX_PAGES):
+        updates = deps.get_updates(env["TELEGRAM_BOT_TOKEN"], state.telegram_offset)
+        if updates is None:
+            return False
+        if not updates:
+            return True
+        for update in updates:
+            state.telegram_offset = update["update_id"] + 1
+            message = update.get("message") or {}
+            reply_to = message.get("reply_to_message")
+            if (target_id is not None and reply_to is not None and reply_to.get("message_id") == target_id
+                    and _is_target_chat(message.get("chat") or {}, chat_id_env)):
+                state.digest.last_replied = True
+    return True
+
+
 # --- run ---------------------------------------------------------------------
 
 def _save_push(repo: Path, state: State, deps: Deps, message: str) -> bool:
@@ -955,6 +997,10 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     site_data = build_site_data(state, config, now)
     write_site_data(repo / SITE_DATA, site_data)
 
+    polled_ok = True   # getUpdates outcome this run; False (a failure) blocks deletion below regardless of replies
+    if not dry_run and not no_digest:
+        polled_ok = track_digest_replies(state, env, deps)
+
     drop_stale_events(state, now)
     digest = None
     if not no_digest and (dry_run or is_due(state, config.settings, now)):
@@ -996,8 +1042,18 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
                 return 1
             pushed = state.to_dict()
         elif sent.status == "sent":   # remembered so `edit-last-digest` can find and edit this message later
+            prev = mark.digest   # the digest record as it stood before this run's mark_sent (spec: owner's
+                                  # decision -- replace the group's previous digest, unless someone replied)
+            if (polled_ok and not digest.to_admin and not prev.last_to_admin and prev.last_message_id is not None
+                    and prev.last_message_id != sent.message_id and not prev.last_replied
+                    and prev.last_sent_at is not None
+                    and age_days(parse_iso(prev.last_sent_at), now) * 24 < DELETE_WINDOW_HOURS):
+                deleted = deps.delete_message(env["TELEGRAM_BOT_TOKEN"], env["TELEGRAM_CHAT_ID"], prev.last_message_id)
+                if deleted.status != "sent":
+                    print(f"не удалось удалить прошлую сводку: {deleted.description}", file=sys.stderr)
             state.digest.last_message_id = sent.message_id
             state.digest.last_to_admin = digest.to_admin
+            state.digest.last_replied = False
         digest_alerts(alerter, sent)
         # the marks are settled now: rebuild so the rows just announced carry 🆕/⭐
         write_site_data(repo / SITE_DATA, build_site_data(state, config, now))

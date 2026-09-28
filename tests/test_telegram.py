@@ -3,7 +3,10 @@ from datetime import datetime, timezone
 import requests
 
 from taps.state import empty_state
-from taps.telegram import API, EDIT_API, Alerter, SendOutcome, edit_message, send_message
+from taps.telegram import (
+    API, DELETE_API, EDIT_API, GET_UPDATES_API, Alerter, SendOutcome, delete_message, edit_message, get_updates,
+    send_message,
+)
 
 NOW = datetime(2026, 9, 24, 13, 0, tzinfo=timezone.utc)
 
@@ -253,6 +256,104 @@ def test_edit_migrate_to_chat_id_is_rejected_and_carries_new_id():
     outcome = edit(FakePost(FakeResponse(400, body)))
     assert outcome.status == "rejected"
     assert outcome.migrate_to_chat_id == -1001234567890
+
+
+# ---- get_updates ----
+
+UPDATES_OK = FakeResponse(200, {"ok": True, "result": [{"update_id": 501, "message": {"message_id": 10}}]})
+UPDATES_EMPTY = FakeResponse(200, {"ok": True, "result": []})
+
+
+def test_get_updates_payload_has_timeout_zero_limit_100_and_allowed_updates_message_and_no_offset():
+    post = FakePost(UPDATES_EMPTY)
+    get_updates("TOKEN", None, post=post)
+    [(url, kwargs)] = post.calls
+    assert url == GET_UPDATES_API.format(token="TOKEN") == "https://api.telegram.org/botTOKEN/getUpdates"
+    assert kwargs["timeout"] == 30
+    assert kwargs["json"] == {"timeout": 0, "limit": 100, "allowed_updates": ["message"]}
+
+
+def test_get_updates_includes_offset_when_given():
+    post = FakePost(UPDATES_EMPTY)
+    get_updates("TOKEN", 42, post=post)
+    assert post.calls[0][1]["json"]["offset"] == 42
+
+
+def test_get_updates_returns_the_result_list():
+    result = get_updates("TOKEN", None, post=FakePost(UPDATES_OK))
+    assert result == [{"update_id": 501, "message": {"message_id": 10}}]
+
+
+def test_get_updates_empty_result_is_an_empty_list():
+    assert get_updates("TOKEN", None, post=FakePost(UPDATES_EMPTY)) == []
+
+
+def test_get_updates_network_error_is_none():
+    assert get_updates("TOKEN", None, post=FakePost(requests.Timeout("timed out"))) is None
+
+
+def test_get_updates_429_is_none_without_retry():
+    post = FakePost(too_many(3))
+    assert get_updates("TOKEN", None, post=post) is None
+    assert len(post.calls) == 1
+
+
+def test_get_updates_409_conflict_is_none():
+    body = {"ok": False, "error_code": 409, "description": "Conflict: terminated by other getUpdates request"}
+    assert get_updates("TOKEN", None, post=FakePost(FakeResponse(409, body))) is None
+
+
+def test_get_updates_502_is_none():
+    post = FakePost(FakeResponse(502, {"ok": False, "error_code": 502, "description": "Bad Gateway"}))
+    assert get_updates("TOKEN", None, post=post) is None
+
+
+# ---- delete_message ----
+
+DELETE_OK = FakeResponse(200, {"ok": True, "result": True})
+
+
+def delete(post, sleep=None, **kwargs):
+    return delete_message("TOKEN", "-100123", 555, post=post, sleep=sleep or FakeSleep(), **kwargs)
+
+
+def test_delete_payload_has_chat_id_and_message_id_and_uses_timeout():
+    post = FakePost(DELETE_OK)
+    delete(post)
+    [(url, kwargs)] = post.calls
+    assert url == DELETE_API.format(token="TOKEN") == "https://api.telegram.org/botTOKEN/deleteMessage"
+    assert kwargs["timeout"] == 30
+    assert kwargs["json"] == {"chat_id": "-100123", "message_id": 555}
+
+
+def test_delete_ok_is_sent():
+    assert delete(FakePost(DELETE_OK)).status == "sent"
+
+
+def test_delete_429_sleeps_retry_after_and_retries_once():
+    post, sleep = FakePost(too_many(3), DELETE_OK), FakeSleep()
+    assert delete(post, sleep).status == "sent"
+    assert sleep.calls == [3]
+    assert len(post.calls) == 2
+
+
+def test_delete_other_400_is_rejected_with_description():
+    body = {"ok": False, "error_code": 400, "description": "Bad Request: message to delete not found"}
+    outcome = delete(FakePost(FakeResponse(400, body)))
+    assert outcome.status == "rejected"
+    assert outcome.description == "Bad Request: message to delete not found"
+
+
+def test_delete_502_is_unknown():
+    post = FakePost(FakeResponse(502, {"ok": False, "error_code": 502, "description": "Bad Gateway"}))
+    assert delete(post).status == "unknown"
+
+
+def test_delete_exception_text_with_the_bot_token_never_reaches_the_outcome():
+    leaky = requests.ConnectionError("HTTPSConnectionPool: Max retries with url: /bot123456:SECRET/deleteMessage")
+    outcome = delete(FakePost(leaky))
+    assert outcome.status == "unknown"
+    assert "SECRET" not in outcome.description and "123456" not in outcome.description
 
 
 # ---- Alerter ----

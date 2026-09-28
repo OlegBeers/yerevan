@@ -13,6 +13,8 @@ from taps.state import State
 
 API = "https://api.telegram.org/bot{token}/sendMessage"
 EDIT_API = "https://api.telegram.org/bot{token}/editMessageText"
+GET_UPDATES_API = "https://api.telegram.org/bot{token}/getUpdates"
+DELETE_API = "https://api.telegram.org/bot{token}/deleteMessage"
 MAX_RETRY_AFTER = 60      # never stall a run longer than this on a 429
 DEFAULT_RETRY_AFTER = 1
 MAX_TEXT = 4096           # Telegram message length limit
@@ -115,6 +117,43 @@ def edit_message(token: str, chat_id: str, message_id: int, html: str, button: t
     if isinstance(migrate, bool) or not isinstance(migrate, int):
         migrate = None
     return SendOutcome("rejected", description, migrate)
+
+
+def get_updates(token: str, offset: int | None, post: Callable[..., Any] = requests.post,
+                timeout: float = 30) -> list[dict] | None:
+    """One getUpdates poll (long-poll timeout 0: returns immediately). None on any failure (network,
+    HTTP, or a non-ok Telegram response, including 429 and a 409 Conflict from an overlapping poller)
+    so the caller can skip reply tracking for this run instead of mistaking a failure for "no
+    updates"; unlike send/edit, a 429 here is not retried -- the next run's poll picks up where the
+    stored offset left off."""
+    payload: dict[str, Any] = {"timeout": 0, "limit": 100, "allowed_updates": ["message"]}
+    if offset is not None:
+        payload["offset"] = offset
+    url = GET_UPDATES_API.format(token=token)
+
+    body = _post_once(post, url, payload, timeout)
+    if isinstance(body, SendOutcome) or not body["ok"]:
+        return None
+    result = body.get("result")
+    return result if isinstance(result, list) else None
+
+
+def delete_message(token: str, chat_id: str, message_id: int,
+                   post: Callable[..., Any] = requests.post, sleep: Callable[[float], None] = time.sleep,
+                   timeout: float = 30) -> SendOutcome:
+    """Delete a message the bot sent (Telegram allows this only within 48h of sending)."""
+    payload: dict[str, Any] = {"chat_id": chat_id, "message_id": message_id}
+    url = DELETE_API.format(token=token)
+
+    body = _post_once(post, url, payload, timeout)
+    if isinstance(body, dict) and not body["ok"] and body["error_code"] == 429:
+        sleep(_retry_after(body))
+        body = _post_once(post, url, payload, timeout)
+    if isinstance(body, SendOutcome):
+        return body
+    if body["ok"]:
+        return SendOutcome("sent")
+    return SendOutcome("rejected", str(body.get("description", "")))
 
 
 def _hash(text: str) -> str:
