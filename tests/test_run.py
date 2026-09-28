@@ -922,6 +922,20 @@ def test_apply_known_beer_info_fills_missing_style_abv_ibu_but_keeps_the_boards_
     assert (zot["style"], zot["abv"], zot["ibu"]) == ("Blonde", 6.0, 20)      # the board's own wins, gaps filled
 
 
+def test_apply_shop_matches_takes_a_manual_links_details_from_its_read_beer_page():
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:x": PairRec(first_seen=iso(NOW), last_seen=iso(NOW),
+                                               info={"kind": "shop", "name": "X", "abv": 4.9})}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=512, url="https://untappd.com/beer/512",
+                                             matched_at=iso(NOW), via="manual")
+    state.beers["u:512"] = BeerRec(first_seen_city=iso(NOW), name="Pils", brewery="Alpirsbacher", rating=3.4,
+                                   style="Pilsner - German", abv=4.9, logo="https://assets.untappd.com/p.jpg")
+    run_mod.apply_shop_matches(state)
+    info = state.pairs["beer-city"]["n:x"].info
+    assert (info["rating"], info["style"], info["logo"], info["u_name"]) == (3.4, "Pilsner - German",
+                                                                          "https://assets.untappd.com/p.jpg", "Pils")
+
+
 def test_apply_known_beer_info_uses_the_cached_label_of_a_beer_page():
     state = empty_state(NOW)
     state.pairs = {"ferment": {"u:1715344": _manual_pair(brewery="Rodenbach")}}

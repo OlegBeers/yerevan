@@ -664,15 +664,17 @@ def apply_shop_matches(state: State) -> None:
             _drop_overlay(rec.info)
             rec.info["url"] = match.url
             overlay = {}
+            beer = state.beers.get(f"u:{match.untappd_beer_id}")   # the beer page, read for a manual link too
             for field in ("logo", "rating", "style", "abv"):
                 value = getattr(match, field)
+                if value is None and beer is not None:
+                    value = getattr(beer, field)
                 if value is not None:
                     rec.info[field] = value
                     if field in _OVERLAY_FIELDS:
                         overlay[field] = value
             rec.info["u_overlay"] = overlay
             rec.info["match_weak"] = match.weak
-            beer = state.beers.get(f"u:{match.untappd_beer_id}")   # the beer page's name, when no bar showed the beer
             name, brewery = match.name or (beer and beer.name), match.brewery or (beer and beer.brewery)
             if name:
                 rec.info["u_name"] = name
