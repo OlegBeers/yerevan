@@ -181,7 +181,7 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: 
     # the shop's own text next to the canonical one, so a wrong merge can be spotted on the site
     row["shop_name"] = _shop_name(info, key) if match else None
     row["shop_brewery"] = info.get("brewery") if match else None
-    row["match_via"] = match.via if match else None
+    row["match_via"] = (match.via or "search") if match else None   # records from before "via" existed came from search
     if blocked:
         row["untappd_blocked"] = True
     row.update({

@@ -647,3 +647,11 @@ def test_place_map_link_given_in_places_yaml_wins_over_the_address_search():
     place = places_of(dors)["dors"]
     assert place["map_url"] == "https://yandex.com/maps/org/dors_kraft_garejur_yev_khohanots/167907282429/"
     assert place["address"] == "Павстоса Бюзанда"
+
+
+def test_a_match_recorded_before_via_existed_counts_as_a_search_match():
+    from taps.state import ShopMatchRec
+    st = state({"beer-city": {"n:x": pair("beercity", info={"kind": "shop", "name": "X", "brewery": "Y",
+                                                           "url": "https://untappd.com/beer/7"})}})
+    st.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=7, url="https://untappd.com/beer/7", matched_at=st.started_at)
+    assert build(st)["rows"][0]["match_via"] == "search"

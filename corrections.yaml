@@ -498,6 +498,97 @@ same_as:                         # магазинное пиво == пиво с 
   - place: beer-city
     beer: "n:kellers weizen"
     untappd_id: 4426822
+  # Claude, 29.09: сверено с известными боту сортами Untappd — совпали пивоварня, название и крепость
+  - place: beer-city
+    beer: "n:krombacher pils"
+    untappd_id: 9945
+  - place: beer-city
+    beer: "n:schofferhofer hefewizen"
+    untappd_id: 7489
+  - place: beer-city
+    beer: "n:schofferhofer հefewizen"
+    untappd_id: 7489
+  - place: beer-city
+    beer: "n:tripel karmeliet"
+    untappd_id: 6511
+  - place: beer-city
+    beer: "n:veltins pilsner"
+    untappd_id: 40173
+  - place: beer-city
+    beer: "n:volkovskaya pivovarnya nepravilniy mead"
+    untappd_id: 1561153
+  - place: beer-city
+    beer: "n:with honey volkovskaya pivovarnya nepravilniy myod"
+    untappd_id: 1561153
+  - place: beer-city
+    beer: "n:weihenstephaner weissbier"
+    untappd_id: 8745
+  - place: yerevan-city
+    beer: "n:krombacher pils"
+    untappd_id: 9945
+  - place: yerevan-city
+    beer: "n:krombacher pils termo bag"
+    untappd_id: 9945
+  - place: yerevan-city
+    beer: "n:leffe brun g b"
+    untappd_id: 5941
+  - place: yerevan-city
+    beer: "n:volkovskaya pivovarnya apa g b"
+    untappd_id: 4463971
+  - place: yerevan-city
+    beer: "n:volkovskaya pivovarnya ipa g b"
+    untappd_id: 1941326
+  - place: yerevan-city
+    beer: "n:hb original light g b"
+    untappd_id: 38001
+  - place: yerevan-city
+    beer: "n:bever vienna lager light g b"
+    untappd_id: 6291054
+  - place: parma
+    beer: "n:krombacher pils"
+    untappd_id: 9945
+  - place: parma
+    beer: "n:krombacher pils light"
+    untappd_id: 9945
+  - place: parma
+    beer: "n:wolfs apa light"
+    untappd_id: 4463971
+  - place: parma
+    beer: "n:379 american wheat ale light"
+    untappd_id: 4775604
+  - place: parma
+    beer: "n:bitburger light"
+    untappd_id: 17252
+  - place: parma
+    beer: "n:chimay blue peres trappistes dark"
+    untappd_id: 34039
+  - place: parma
+    beer: "n:chimay gold peres trappistes light"
+    untappd_id: 4702
+  - place: parma
+    beer: "n:chimay tripel ale peres trappistes light"
+    untappd_id: 10049
+  - place: parma
+    beer: "n:guinness stout dark"
+    untappd_id: 4473
+  - place: parma
+    beer: "n:hb original light"
+    untappd_id: 38001
+  - place: parma
+    beer: "n:st bernardus abt12 dark"
+    untappd_id: 6760
+  - place: parma
+    beer: "n:st bernardus pater6 dark"
+    untappd_id: 221
+  - place: parma
+    beer: "n:warsteiner gold semi dark"
+    untappd_id: 3492053
+  - place: parma
+    beer: "n:alpirsbacher klosterbrau pils light"
+    untappd_id: 512
+  - place: parma
+    beer: "n:alpirsbacher klosterbrau weizen light"
+    untappd_id: 85217
 
 aliases:
 
