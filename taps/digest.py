@@ -58,6 +58,9 @@ def drop_stale_events(state: State, now: datetime) -> int:
     return count
 
 
+MORNING_WINDOW = timedelta(hours=2, minutes=30)   # the morning run's own finds still make its digest
+
+
 def is_due(state: State, settings: Settings, now: datetime) -> bool:
     local = to_yerevan(now)
     if not DAY_START <= local.time() < DAY_END:
@@ -74,7 +77,9 @@ def is_due(state: State, settings: Settings, now: datetime) -> bool:
     if not times:
         return False
     if local.time() >= settings.digest_time:
-        return True
+        # only what was waiting by the morning run: a later find waits for the next morning's digest
+        cutoff = datetime.combine(local.date(), settings.digest_time, tzinfo=YEREVAN) + MORNING_WINDOW
+        return min(times) < cutoff
     yesterday_cutoff = datetime.combine(local.date() - timedelta(days=1), settings.digest_time, tzinfo=YEREVAN)
     return min(times) < yesterday_cutoff
 

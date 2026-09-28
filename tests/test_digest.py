@@ -597,3 +597,13 @@ def test_global_cap_final_tail_line_is_a_single_paragraph_after_the_body():
     d = build_digest(s, CONFIG, SETTINGS, NOW)
     assert d.lines_total == 16 and d.lines_shown == 15
     assert d.html.endswith("\n\n…и ещё 1 — на сайте")
+
+
+def test_is_due_something_found_after_the_morning_waits_for_the_next_morning():
+    """Live settings (digest at 10:30): the morning run sends; a beer the evening run finds waits for the
+    next morning instead of a second send slot, unless the morning run never happened."""
+    from datetime import time
+    live = Settings(digest_time=time(10, 30))
+    assert is_due(due_state(event_at=yv(24, 18, 17)), live, yv(24, 18, 20)) is False
+    assert is_due(due_state(event_at=yv(24, 10, 36)), live, yv(24, 10, 40)) is True     # the morning run's own find
+    assert is_due(due_state(event_at=yv(23, 18, 17)), live, yv(24, 18, 20)) is True     # morning run missed
