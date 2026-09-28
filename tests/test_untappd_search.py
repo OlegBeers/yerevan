@@ -1,10 +1,13 @@
+from tests.helpers import fixture_text
 from taps.sources.untappd_search import SearchResult, matches, matches_russian_name, parse_search_results, search_url
 
-# No capture of the real search results page exists yet (https://untappd.com/search?q=...&type=beer).
-# The row below is a SYNTHETIC page modeled on Untappd's div.beer-item markup (same shape as the
-# brewery beer list), with p.brewery added (a search hit needs its own brewery name, unlike a beer
-# list row where the whole page is one brewery). Check parse_search_results against a real page
-# before trusting it in production.
+# v1.3 search fix: 18 real (anonymized) Untappd search pages were captured in production -- but
+# Untappd's own Algolia widget reported "0 drink results" on all of them (a bad query, not a parser
+# problem -- see docs/superpowers), so none is a POPULATED results page. The row below therefore
+# stays a SYNTHETIC page modeled on Untappd's div.beer-item markup (same shape as the brewery beer
+# list), with p.brewery added (a search hit needs its own brewery name, unlike a beer list row where
+# the whole page is one brewery). Check parse_search_results against a real POPULATED page before
+# trusting it in production -- only the zero-result case is verified below with real markup.
 ROW = """
 <div class="beer-item" data-bid="{bid}">
  <a class="label" href="/b/{slug}/{bid}"><img src="https://assets.untappd.com/site/beer_logos/beer-{bid}.jpeg"></a>
@@ -51,6 +54,14 @@ def test_result_url_is_canonical_b_link():
 
 def test_no_results_is_empty_list():
     assert parse_search_results("<html><body>Nothing found.</body></html>") == []
+
+
+def test_no_results_on_a_real_untappd_zero_hit_search_page():
+    """v1.3 search fix: a genuine captured Untappd search page (Algolia's own "0 drink results"
+    state) has no div.beer-item at all -- parse_search_results must not choke on real markup, just
+    correctly report no hits."""
+    real_page = fixture_text("untappd/search_unfiltered_dargett.html")
+    assert parse_search_results(real_page) == []
 
 
 def test_row_without_beer_link_is_skipped():
@@ -126,3 +137,26 @@ def test_matches_russian_name_rejects_another_beer():
                           rating=None, logo=None)
     assert not matches_russian_name("Жигулевское светлое", result)
     assert not matches_russian_name("Афанасий Тверское светлое", result)   # brand only, name tokens all differ
+
+
+# --- matches(): shop-side noise (v1.3 search fix) must not block an otherwise-correct match --------
+
+def test_matches_ignores_unfiltered_noise_in_the_remaining_name_tokens():
+    """Real production search failure: shop name "Dargett non-filtered" -- "non"/"filtered" will
+    never appear in Untappd's own beer name, so they must not count against the 50% overlap."""
+    result = SearchResult(beer_id=1, slug="s", name="Dargett", brewery="Dargett Brewery", style=None,
+                          abv=None, rating=None, logo=None)
+    assert matches("Dargett", "Dargett non-filtered", result)
+
+
+def test_matches_still_rejects_wrong_brewery_despite_noise_cleaning():
+    """Noise-cleaning the shop side must not loosen the brewery check itself."""
+    result = SearchResult(beer_id=1, slug="s", name="Hell", brewery="Gargoyle Brewpub", style=None,
+                          abv=None, rating=None, logo=None)
+    assert not matches("Dahook", "Dahook hell non-filtered", result)
+
+
+def test_matches_russian_name_ignores_unfiltered_noise_in_the_remaining_words():
+    result = SearchResult(beer_id=1, slug="s", name="Лагер", brewery="Дарджетт", style=None, abv=None,
+                          rating=None, logo=None)
+    assert matches_russian_name("Дарджетт нефильтрованное", result)

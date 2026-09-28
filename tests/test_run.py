@@ -1124,7 +1124,7 @@ KILIKIA_RESULT_HTML = """
  </div>
 </div>
 """
-KILIKIA_SEARCH_URL = "https://untappd.com/search?q=Kilikia%20Kilikia&type=beer"
+KILIKIA_SEARCH_URL = "https://untappd.com/search?q=Kilikia&type=beer"   # v1.3: brand not duplicated, name already is it
 
 
 def test_shop_match_candidates_excludes_already_matched_and_untappd_keyed():
@@ -1162,7 +1162,38 @@ def test_shop_match_candidates_retries_a_stale_no_match():
 def test_shop_match_candidates_skips_a_fresh_no_match():
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
-    state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=29)))
+    state.shop_matches["n:kilikia"] = ShopMatchRec(
+        matched_at=iso(NOW - timedelta(days=29)), search_v=run_mod.SEARCH_LOGIC_VERSION)
+    assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def test_shop_match_candidates_retries_a_fresh_no_match_from_an_older_search_version():
+    """v1.3 search fix: a "no_match" produced by an older, worse query/acceptance version is
+    retried right away -- once -- instead of waiting out the usual 30 days."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(
+        matched_at=iso(NOW - timedelta(days=1)), search_v=run_mod.SEARCH_LOGIC_VERSION - 1)
+    assert run_mod._shop_match_candidates(state, NOW) == [("n:kilikia", "Kilikia", "Kilikia", None)]
+
+
+def test_shop_match_candidates_skips_a_fresh_no_match_already_at_the_current_search_version():
+    """Regression guard: once a "no_match" has been retried under the current version, the usual
+    30-day wait applies again -- it is not retried on every run forever."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(
+        matched_at=iso(NOW - timedelta(days=1)), search_v=run_mod.SEARCH_LOGIC_VERSION)
+    assert run_mod._shop_match_candidates(state, NOW) == []
+
+
+def test_shop_match_candidates_does_not_retry_a_manual_block_via_an_older_search_version():
+    """A corrections.yaml same_as untappd_id: null block ("не то же") must never be retried by
+    search, whether via the usual 30-day wait or the search-version bypass."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(
+        via="manual", matched_at=iso(NOW), search_v=run_mod.SEARCH_LOGIC_VERSION - 1)
     assert run_mod._shop_match_candidates(state, NOW) == []
 
 
@@ -1457,7 +1488,7 @@ def test_match_shop_beers_cleans_noise_from_the_query():
     string, e.g. "379 Dunkel dark" -- the shop's own colour suffix -- must not reach Untappd as-is."""
     state = empty_state(NOW)
     state.pairs = {"parma": {"n:379 dunkel dark": _shop_pair("379", "379 Dunkel dark")}}
-    client = _untappd_client({"https://untappd.com/search?q=379%20379%20Dunkel&type=beer":
+    client = _untappd_client({"https://untappd.com/search?q=379%20Dunkel&type=beer":
                               "<html><body>Nothing found.</body></html>"})
     run_mod.match_shop_beers(state, client, NOW)
     assert state.shop_matches["n:379 dunkel dark"].matched_at == iso(NOW)   # the cleaned URL was fetched
@@ -1512,6 +1543,35 @@ def test_match_shop_beers_stops_on_budget_error_without_consuming_the_others():
     assert state.shop_matches == {}
 
 
+def test_match_shop_beers_tries_a_simpler_fallback_query_when_the_first_finds_nothing():
+    """v1.3 search fix: budget of (at most) 2 pages per beer -- a second, simpler query (the brand
+    alone) is tried once the first (full) query comes back with no acceptable result."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Ayinger", "Ayinger Celebrator Doppelbock")}}
+    fallback_html = (KILIKIA_RESULT_HTML.replace("Kilikia Brewery", "Ayinger Privatbrauerei")
+                     .replace(">Kilikia</a>", ">Celebrator Doppelbock</a>"))
+    client = _untappd_client({
+        "https://untappd.com/search?q=Ayinger%20Celebrator%20Doppelbock&type=beer":
+            "<html><body>Nothing found.</body></html>",
+        "https://untappd.com/search?q=Ayinger&type=beer": fallback_html,
+    })
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.untappd_beer_id, match.via, match.name, match.brewery) == (
+        1547626, "search", "Celebrator Doppelbock", "Ayinger Privatbrauerei")
+
+
+def test_match_shop_beers_does_not_repeat_an_identical_fallback_query():
+    """"Kilikia"/"Kilikia" already cleans to the brand alone -- a fallback would just refetch the
+    same query, so only one page is spent."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: "<html><body>Nothing found.</body></html>"})
+    run_mod.match_shop_beers(state, client, NOW)
+    assert client.untappd.pages_today == 1
+    assert state.shop_matches["n:kilikia"].untappd_beer_id is None
+
+
 def test_match_shop_beers_respects_a_custom_limit():
     state = empty_state(NOW)
     state.pairs = {"parma": {
@@ -1519,11 +1579,160 @@ def test_match_shop_beers_respects_a_custom_limit():
         "n:b": _shop_pair("B", "B", last_seen=iso(NOW - timedelta(days=2))),
     }}
     client = _untappd_client({
-        "https://untappd.com/search?q=A%20A&type=beer": "<html><body>Nothing found.</body></html>",
-        "https://untappd.com/search?q=B%20B&type=beer": "<html><body>Nothing found.</body></html>",
+        "https://untappd.com/search?q=A&type=beer": "<html><body>Nothing found.</body></html>",
+        "https://untappd.com/search?q=B&type=beer": "<html><body>Nothing found.</body></html>",
     })
     run_mod.match_shop_beers(state, client, NOW, limit=1)
     assert list(state.shop_matches) == ["n:a"]                 # only the most recently seen one
+
+
+def test_match_shop_beers_stays_within_the_page_budget_across_fallback_queries():
+    """v1.3 search fix: `limit` counts PAGES, not beers -- once every beer needs its full 2-page
+    budget (first + fallback), fewer beers get processed, but total pages fetched never exceeds
+    `limit`."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {
+        f"n:beer{i}": _shop_pair(f"Brand{i}", f"Brand{i} Beer{i}", last_seen=iso(NOW - timedelta(days=i)))
+        for i in range(1, 4)
+    }}
+    client = _untappd_client({
+        url: "<html><body>Nothing found.</body></html>"
+        for i in range(1, 4)
+        for url in (f"https://untappd.com/search?q=Brand{i}%20Beer{i}&type=beer",
+                    f"https://untappd.com/search?q=Brand{i}&type=beer")
+    })
+    run_mod.match_shop_beers(state, client, NOW, limit=3)
+    assert client.untappd.pages_today == 3                     # never exceeds the page budget...
+    assert set(state.shop_matches) == {"n:beer1", "n:beer2"}   # ...even though beer3 never got a page
+
+
+def test_match_shop_beers_prefers_a_result_whose_abv_agrees_when_several_pass():
+    """v1.3 search fix: ABV as extra evidence to disambiguate when more than one result otherwise
+    passes matches() -- the agreeing one wins even when listed second."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Delirium", "Delirium Tremens", abv=8.5)}}
+    two_results = """
+<div class="beer-item" data-bid="1">
+ <a class="label" href="/b/delirium-tremens-nitro/1"><img src="https://x/1.jpg"></a>
+ <div class="beer-details">
+  <p class="name"><a href="/b/delirium-tremens-nitro/1">Tremens Nitro</a></p>
+  <p class="brewery">Huyghe / Delirium</p>
+  <p class="style">Strong Pale Ale</p>
+ </div>
+ <div class="details beer"><div class="abv">5.0% ABV</div><div class="caps" data-rating="3.5"></div></div>
+</div>
+<div class="beer-item" data-bid="2">
+ <a class="label" href="/b/delirium-tremens/2"><img src="https://x/2.jpg"></a>
+ <div class="beer-details">
+  <p class="name"><a href="/b/delirium-tremens/2">Tremens</a></p>
+  <p class="brewery">Huyghe / Delirium</p>
+  <p class="style">Strong Pale Ale</p>
+ </div>
+ <div class="details beer"><div class="abv">8.5% ABV</div><div class="caps" data-rating="4.1"></div></div>
+</div>
+"""
+    client = _untappd_client({"https://untappd.com/search?q=Delirium%20Tremens&type=beer": two_results})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.untappd_beer_id, match.abv) == (2, 8.5)       # not 1 (5.0%), despite being listed first
+
+
+def test_match_shop_beers_falls_back_to_the_first_passing_result_without_a_known_abv():
+    """Regression guard: when the shop's own ABV is unknown, the existing "first match wins"
+    tie-break is unchanged -- ABV is only ever extra evidence, never required."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    assert state.shop_matches["n:kilikia"].untappd_beer_id == 1547626
+
+
+def test_match_shop_beers_stamps_the_current_search_version_on_a_new_no_match():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Item")}}
+    client = _untappd_client({"https://untappd.com/search?q=Nonexistent%20Brand%20Nonexistent%20Item&type=beer":
+                              "<html><body>Nothing found.</body></html>"})
+    run_mod.match_shop_beers(state, client, NOW)
+    assert state.shop_matches["n:x"].search_v == run_mod.SEARCH_LOGIC_VERSION
+
+
+def test_match_shop_beers_stamps_the_current_search_version_on_a_new_match():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    assert state.shop_matches["n:kilikia"].search_v == run_mod.SEARCH_LOGIC_VERSION
+
+
+# --- v1.3 search fix: real production search-failure dumps (Cloudflare blocks this dev machine, so
+# these are captured, anonymized real Untappd search pages -- see docs/superpowers -- not synthetic
+# markup). Untappd's own Algolia widget reports "0 drink results" on every one of them: the shop's
+# raw query (brand duplicated, plus noise) found nothing. Each below is a distinct failure pattern. --
+
+REAL_DEDUP_HTML = fixture_text("untappd/search_dedup_ayinger.html")
+REAL_UNFILTERED_HTML = fixture_text("untappd/search_unfiltered_dargett.html")
+REAL_PARTIAL_NOISE_HTML = fixture_text("untappd/search_partial_noise_delirium.html")
+REAL_LONG_NAME_HTML = fixture_text("untappd/search_long_name_gletcher.html")
+
+
+def test_match_shop_beers_real_dump_plain_brand_duplication():
+    """Real dump 1/4: "Ayinger" + "Ayinger celebrator dunkles" -- production sent the brand twice
+    ("Ayinger Ayinger celebrator dunkles"); Untappd's Algolia widget found 0 results for it. The
+    fixed query drops the duplicate ("Ayinger celebrator dunkles"), still finds nothing on this real
+    capture, and the brand-alone fallback is tried within budget before giving up."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Ayinger", "Ayinger celebrator dunkles")}}
+    client = _untappd_client({
+        "https://untappd.com/search?q=Ayinger%20celebrator%20dunkles&type=beer": REAL_DEDUP_HTML,
+        "https://untappd.com/search?q=Ayinger&type=beer": REAL_DEDUP_HTML,
+    })
+    run_mod.match_shop_beers(state, client, NOW)
+    assert client.untappd.pages_today == 2                                   # both pages of the budget used
+    assert state.shop_matches["n:x"] == ShopMatchRec(matched_at=iso(NOW), search_v=run_mod.SEARCH_LOGIC_VERSION)
+
+
+def test_match_shop_beers_real_dump_unfiltered_noise_collapses_to_brand_alone():
+    """Real dump 2/4: "Dargett" + "Dargett non-filtered" -- production sent "Dargett Dargett
+    non-filtered"; the fixed query cleans down to just "Dargett" (dedup + noise-word), which already
+    equals its own fallback, so only ONE page is spent on this real capture, not two."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Dargett", "Dargett non-filtered")}}
+    client = _untappd_client({"https://untappd.com/search?q=Dargett&type=beer": REAL_UNFILTERED_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    assert client.untappd.pages_today == 1                                   # no wasted identical fallback
+    assert state.shop_matches["n:x"] == ShopMatchRec(matched_at=iso(NOW), search_v=run_mod.SEARCH_LOGIC_VERSION)
+
+
+def test_match_shop_beers_real_dump_partial_clean_residual_descriptor_noise():
+    """Real dump 3/4: "Delirium" + "Delirium tremens strong and blond" -- a translated shop
+    descriptor ("strong and blond") that isn't part of Untappd's own beer name; dedup shortens the
+    query, but "strong"/"blond" are not (yet) recognised noise, so the cleaned query still finds
+    nothing on this real capture and the brand-alone fallback is spent too."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Delirium", "Delirium tremens strong and blond")}}
+    client = _untappd_client({
+        "https://untappd.com/search?q=Delirium%20tremens%20strong%20and%20blond&type=beer": REAL_PARTIAL_NOISE_HTML,
+        "https://untappd.com/search?q=Delirium&type=beer": REAL_PARTIAL_NOISE_HTML,
+    })
+    run_mod.match_shop_beers(state, client, NOW)
+    assert client.untappd.pages_today == 2
+    assert state.shop_matches["n:x"] == ShopMatchRec(matched_at=iso(NOW), search_v=run_mod.SEARCH_LOGIC_VERSION)
+
+
+def test_match_shop_beers_real_dump_long_multi_word_name():
+    """Real dump 4/4: "Gletcher" + "Gletcher Milk Of Amnesia with mango and passion" -- dedup removes
+    the repeated brand, but the name itself stays a long, specific 7-word phrase; the brand-alone
+    fallback is the safety net for exactly this kind of over-long query on this real capture."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Gletcher", "Gletcher Milk Of Amnesia with mango and passion")}}
+    client = _untappd_client({
+        "https://untappd.com/search?q=Gletcher%20Milk%20Of%20Amnesia%20with%20mango%20and%20passion&type=beer":
+            REAL_LONG_NAME_HTML,
+        "https://untappd.com/search?q=Gletcher&type=beer": REAL_LONG_NAME_HTML,
+    })
+    run_mod.match_shop_beers(state, client, NOW)
+    assert client.untappd.pages_today == 2
+    assert state.shop_matches["n:x"] == ShopMatchRec(matched_at=iso(NOW), search_v=run_mod.SEARCH_LOGIC_VERSION)
 
 
 # --- v1.3 owner priority: bars before shops before countries ----------------

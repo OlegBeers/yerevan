@@ -23,6 +23,7 @@ _NOISE_WORDS = (
     "co", "company", "llc", "gmbh", "ltd", "craft", "de", "ооо", "спс",                 # corporate/legal form
     "can", "bottle", "keg", "tin", "glass", "pet",                                      # container, not the beer
     "dark", "light", "semi",                                                            # Yerevan City/Parma's own bottle-colour suffix
+    "non-filtered", "unfiltered", "нефильтрованное",                                    # serving-style suffix
 )
 _NOISE_RE = re.compile(
     r"\b(?:" + "|".join(_NOISE_WORDS) + r")\b"
@@ -50,10 +51,35 @@ def has_russian_name(brewery: str | None, name: str) -> bool:
     return has_cyrillic(name) and bool(brewery) and not has_cyrillic(brewery)
 
 
+def _name_repeats_brand(brewery: str, name: str) -> bool:
+    """True if `name` already starts with `brewery`'s own words (beer-city/Parma's own shop names
+    are consistently "<brand> <brand> <descriptor>", e.g. brewery="379" name="379 non-filtered")."""
+    brand_tokens = normalize_base(brewery).split()
+    return bool(brand_tokens) and normalize_base(name).split()[:len(brand_tokens)] == brand_tokens
+
+
 def clean_query(brewery: str | None, name: str) -> str:
     """The same noise-cleaning applied to an Untappd search query string (v1.1 §3 match_shop_beers);
-    a Russian name is searched alone."""
-    return clean_text(f"{brewery} {name}" if brewery and not has_russian_name(brewery, name) else name)
+    a Russian name is searched alone. A brewery already repeated at the start of the name (v1.3
+    search fix -- found in all 18 captured production search failures) is not joined again: doubling
+    it only makes the query longer and less likely for Untappd's own search to find anything."""
+    if not brewery or has_russian_name(brewery, name) or _name_repeats_brand(brewery, name):
+        return clean_text(name)
+    return clean_text(f"{brewery} {name}")
+
+
+def clean_query_fallback(brewery: str | None, name: str) -> str | None:
+    """v1.3 search fix: a second, simpler query to try only when clean_query's own result found no
+    acceptable match -- the shop's own brand alone (its first word, for a Russian name whose Latin
+    brewery is a transliteration -- same anchor matches_russian_name itself relies on). None when
+    there is no brand to fall back to, or it would just repeat clean_query's own result."""
+    if has_russian_name(brewery, name):
+        words = clean_text(name).split()
+        fallback = words[0] if words else None
+    else:
+        fallback = clean_text(brewery) if brewery else None
+    primary = clean_query(brewery, name)
+    return fallback if fallback and fallback != primary else None
 
 
 @dataclass(frozen=True)

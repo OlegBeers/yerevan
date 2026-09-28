@@ -61,6 +61,9 @@ class ShopMatchRec:
     brewery: str | None = None
     weak: bool = False              # a local match that relied on an unnamed parenthesised aside with no ABV
                                     # corroboration: still accepted, but flagged for review (round 3, C2)
+    search_v: int | None = None     # v1.3 search fix: the search-logic version that produced this record
+                                    # (None on an older state = version 0); a "no_match" below the current
+                                    # version is retried once, ignoring the usual 30-day wait
 
 
 @dataclass

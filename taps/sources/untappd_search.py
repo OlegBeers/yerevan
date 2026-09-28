@@ -1,10 +1,12 @@
 """Untappd beer search (v1.1 §3): matches shop beers (Beer City, Yerevan City, Parma) to Untappd, for
 rating/style/abv/logo/link on shop rows.
 
-No real fixture exists for https://untappd.com/search?q=<query>&type=beer -- tests build a SYNTHETIC
-page modeled on markup used elsewhere on Untappd (div.beer-item as in the brewery beer list,
-div.caps[data-rating] as in menu/list rows, a.label img as in check-ins/menu rows). Check it against a
-real search results page before trusting this parser in production."""
+No real POPULATED fixture exists for https://untappd.com/search?q=<query>&type=beer (v1.3 search fix:
+18 real captures exist, tests/fixtures/untappd/search_*.html, but Untappd's own Algolia widget found
+zero results on all of them -- a bad query, not a parser problem) -- tests build a SYNTHETIC page
+modeled on markup used elsewhere on Untappd (div.beer-item as in the brewery beer list,
+div.caps[data-rating] as in menu/list rows, a.label img as in check-ins/menu rows). Check
+parse_search_results against a real POPULATED page before trusting this parser in production."""
 import re
 from dataclasses import dataclass
 from urllib.parse import quote
@@ -12,6 +14,7 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup, Tag
 
 from taps.model import normalize_base
+from taps.sources.local_match import clean_text
 
 SEARCH_URL = "https://untappd.com/search?q={query}&type=beer"
 BEER_HREF_RE = re.compile(r"^/b/([^/]+)/(\d+)/?$")
@@ -73,20 +76,29 @@ def parse_search_results(html: str) -> list[SearchResult]:
     return out
 
 
-def _tokens(text: str) -> set[str]:
+def _shop_tokens(text: str) -> set[str]:
+    """A shop's own brand/name text: noisy (colour suffixes, "unfiltered", container words -- v1.3
+    search fix), so the same cleaning as the search query itself applies -- those words will never
+    appear in Untappd's own (canonical) brewery/beer name, so they must not count against the
+    required overlap below."""
+    return set(normalize_base(clean_text(text)).split())
+
+
+def _result_tokens(text: str) -> set[str]:
+    """An Untappd result's own brewery/name: already canonical, no shop noise to strip."""
     return set(normalize_base(text).split())
 
 
 def matches(shop_brand: str, shop_name: str, result: SearchResult) -> bool:
     """Accept only if the shop brand's tokens overlap the result's brewery, and at least half of the
     shop name's remaining tokens (brand words removed) are found in the result's own name."""
-    brand_tokens = _tokens(shop_brand)
-    if not brand_tokens or not brand_tokens & _tokens(result.brewery):
+    brand_tokens = _shop_tokens(shop_brand)
+    if not brand_tokens or not brand_tokens & _result_tokens(result.brewery):
         return False
-    name_tokens = _tokens(shop_name) - brand_tokens
+    name_tokens = _shop_tokens(shop_name) - brand_tokens
     if not name_tokens:
         return True
-    return len(name_tokens & _tokens(result.name)) / len(name_tokens) >= MIN_NAME_OVERLAP
+    return len(name_tokens & _result_tokens(result.name)) / len(name_tokens) >= MIN_NAME_OVERLAP
 
 
 _RU_COLOURS = {"светлое", "светлый", "темное", "темный"}   # the shop's colour suffix; Untappd names rarely carry it
@@ -95,9 +107,9 @@ _RU_COLOURS = {"светлое", "светлый", "темное", "темный
 def matches_russian_name(shop_name: str, result: SearchResult) -> bool:
     """For a Russian shop name whose Latin brewery is only a transliteration: its first word (the brand)
     must be in the result's brewery or name, and at least half of the remaining words (colour suffix aside) in the result's name."""
-    words = normalize_base(shop_name).split()
-    own = _tokens(result.brewery) | _tokens(result.name)
+    words = normalize_base(clean_text(shop_name)).split()
+    own = _result_tokens(result.brewery) | _result_tokens(result.name)
     if not words or words[0] not in own:
         return False
     rest = set(words[1:]) - _RU_COLOURS
-    return not rest or len(rest & _tokens(result.name)) / len(rest) >= MIN_NAME_OVERLAP
+    return not rest or len(rest & _result_tokens(result.name)) / len(rest) >= MIN_NAME_OVERLAP

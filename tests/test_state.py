@@ -135,6 +135,23 @@ def test_shop_match_rec_weak_defaults_to_false_and_survives_a_json_round_trip():
     assert back.shop_matches["n:kilikia"].weak is True
 
 
+def test_shop_match_rec_search_v_defaults_to_none_and_survives_a_json_round_trip():
+    """v1.3 search fix: a search "no_match" record remembers which search-logic version produced it,
+    so an older version can be retried once the query/acceptance logic improves."""
+    assert ShopMatchRec(matched_at="x").search_v is None
+    s = full_state()
+    s.shop_matches["n:kilikia"].search_v = 2
+    back = State.from_dict(json.loads(json.dumps(s.to_dict())))
+    assert back.shop_matches["n:kilikia"].search_v == 2
+
+
+def test_shop_match_rec_search_v_defaults_to_none_loading_an_older_state():
+    """An older state.json written before search_v existed must still load, defaulting to None (=
+    "version 0" for retry purposes) rather than failing."""
+    old = {"untappd_beer_id": None, "matched_at": "2026-09-01T00:00:00+00:00"}
+    assert ShopMatchRec(**old).search_v is None
+
+
 def test_from_dict_loads_an_older_state_whose_digest_lacks_message_id_and_admin_flag():
     """state.json files written before edit-last-digest existed must still load with the new fields
     defaulted, so an old state carries no stale message id or admin flag."""

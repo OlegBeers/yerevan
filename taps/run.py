@@ -26,7 +26,9 @@ from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
-from taps.sources.local_match import KnownBeer, clean_query, has_russian_name, local_match_with_confidence
+from taps.sources.local_match import (
+    KnownBeer, clean_query, clean_query_fallback, has_russian_name, local_match_with_confidence,
+)
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
 from taps.sources.untappd_beer import parse_beer_page
@@ -35,7 +37,7 @@ from taps.sources.untappd_checkins import (
     fetch_venue_checkins, is_armenia_location, is_yerevan_city, parse_venue_location, parse_venue_meta,
 )
 from taps.sources.untappd_menu import fetch_menu
-from taps.sources.untappd_search import matches, matches_russian_name, parse_search_results, search_url
+from taps.sources.untappd_search import SearchResult, matches, matches_russian_name, parse_search_results, search_url
 from taps.sources.yerevan_city import fetch_yerevan_city
 from taps.state import (
     VENUE_KEEP_DAYS, BeerRec, ShopMatchRec, State, apply_aliases, load_state, merge_places, prune, record_venues,
@@ -71,6 +73,8 @@ SHOP_BEER_PAGES_PER_RUN = 10         # v1.3: shop-matched beers with no name, sh
 COUNTRY_PAGES_PER_RUN = 8            # v1.3: one beer per brewery of unknown country, read last
 SHOP_SEARCH_CANDIDATES_PER_RUN = 8   # v1.1 §3: shop beers searched on Untappd per run
 SHOP_MATCH_RETRY_DAYS = 30           # a failed search ("no_match") is retried after this many days
+SEARCH_LOGIC_VERSION = 1             # v1.3: bump when query-building/acceptance changes meaningfully --
+                                     # a "no_match" below this version is retried once, ignoring the wait above
 SHOP_MATCH_REFRESH_PER_RUN = 3       # matched shop beers whose cached rating is refreshed per run
 SHOP_MATCH_MAX_AGE_DAYS = 30         # a matched beer's cached rating is refreshed after this many days
 REPLY_POLL_MAX_PAGES = 5      # small cap on getUpdates pages per run; one empty page normally ends it
@@ -510,8 +514,11 @@ def _shop_match_candidates(state: State, now: datetime,
     already excluded by the key check. limit=None (only match_shop_beers_locally) also ignores a
     search "no_match" record's retry-days wait: local matching is free, so it need not wait on
     search's own throttle -- but a corrections.yaml same_as untappd_id: null override (via="manual")
-    still blocks it, same as search. abv is the shop's own (possibly unknown) scraped value, for
-    local_match's parenthetical/ABV guard (code review round 2, finding C) -- search never uses it."""
+    still blocks it, same as search. abv is the shop's own (possibly unknown) scraped value, used by
+    local_match's parenthetical/ABV guard (code review round 2, finding C) and, for search, as extra
+    evidence when several results otherwise pass (v1.3 search fix). A search "no_match" from an
+    older SEARCH_LOGIC_VERSION is retried right away too (v1.3), same as an old-enough one -- but
+    never a manual block, which must not be retried by search at all."""
     best: dict[str, tuple[str, str, str, float | None, bool]] = {}   # key -> (last_seen, brand, name, abv, never_searched)
     for pairs in state.pairs.values():
         for key, rec in pairs.items():
@@ -526,8 +533,10 @@ def _shop_match_candidates(state: State, now: datetime,
                 if limit is None:
                     if match.via == "manual":
                         continue
-                elif age_days(parse_iso(match.matched_at), now) <= SHOP_MATCH_RETRY_DAYS:
-                    continue
+                else:
+                    outdated = match.via != "manual" and (match.search_v or 0) < SEARCH_LOGIC_VERSION
+                    if not outdated and age_days(parse_iso(match.matched_at), now) <= SHOP_MATCH_RETRY_DAYS:
+                        continue
             brand, name = rec.info.get("brewery"), rec.info.get("name")
             if not brand or not name:
                 continue
@@ -538,34 +547,83 @@ def _shop_match_candidates(state: State, now: datetime,
     return [(key, brand, name, abv) for key, (_, brand, name, abv, _never) in ordered[:limit]]
 
 
+def _search_page(client: UntappdClient, key: str, query: str) -> list[SearchResult]:
+    """One Untappd search page: fetch, parse (a page that doesn't parse fails just this attempt, not
+    the whole run -- I-1), and dump it for debugging when it yields nothing. Raises FetchError
+    straight through (budget/blocked/network) -- the caller decides what that means for the beer."""
+    html = client.get(search_url(query))
+    try:
+        results = parse_search_results(html)
+    except Exception:
+        results = []
+    if not results:
+        dump_debug_html(f"untappd_search_{key}", client)
+    return results
+
+
+_SEARCH_ABV_TOLERANCE = 0.3   # matches local_match's own tolerance (code review round 2, finding C)
+
+
+def _best_match(results: list[SearchResult], brand: str, name: str, russian: bool,
+                shop_abv: float | None) -> SearchResult | None:
+    """The first result whose brewery/name pass matches()/matches_russian_name() -- existing rules,
+    unchanged, so no loosening -- but when several pass and the shop's own ABV is known (v1.3 search
+    fix), prefer one whose ABV agrees, as extra evidence to disambiguate."""
+    passing = [r for r in results if (matches_russian_name(name, r) if russian else matches(brand, name, r))]
+    if not passing:
+        return None
+    if shop_abv is not None:
+        agreeing = [r for r in passing if r.abv is not None and abs(r.abv - shop_abv) <= _SEARCH_ABV_TOLERANCE]
+        if agreeing:
+            return agreeing[0]
+    return passing[0]
+
+
 def match_shop_beers(state: State, client: UntappdClient, now: datetime,
                      limit: int = SHOP_SEARCH_CANDIDATES_PER_RUN) -> None:
-    """Search Untappd for up to `limit` shop beers per run (SHOP_SEARCH_CANDIDATES_PER_RUN by
-    default, or the owner's temporary boost_search_per_run, v1.1 §3), same client/budget/pauses as
-    the other Untappd sources; a budget or Cloudflare error stops this step only. An empty or
-    unparseable results page is dumped for debugging (TAPS_DEBUG_DIR) and still counts as
-    "no_match", so it is retried after SHOP_MATCH_RETRY_DAYS rather than every run."""
-    for key, brand, name, _abv in _shop_match_candidates(state, now, limit):
+    """Search Untappd for up to `limit` PAGES per run (SHOP_SEARCH_CANDIDATES_PER_RUN by default, or
+    the owner's temporary boost_search_per_run, v1.1 §3), same client/budget/pauses as the other
+    Untappd sources; a budget or Cloudflare error stops this step only. An empty or unparseable
+    results page is dumped for debugging (TAPS_DEBUG_DIR) and still counts as "no_match", so it is
+    retried after SHOP_MATCH_RETRY_DAYS (or sooner, once, if the search logic itself has since
+    improved -- see SEARCH_LOGIC_VERSION) rather than every run.
+
+    v1.3 search fix: when the first (already brand-deduped/noise-cleaned) query finds no acceptable
+    result, a second, simpler query (clean_query_fallback -- the brand alone) is tried, but only
+    within the page budget above and only when it would actually differ from the first -- at most 2
+    pages per beer. Real production searches (18 captured failures) all sent an unnecessarily long,
+    brand-duplicated query that Untappd's own search found nothing for."""
+    pages_used = 0
+    for key, brand, name, shop_abv in _shop_match_candidates(state, now, limit):
+        if pages_used >= limit:
+            break
+        russian = has_russian_name(brand, name)
+        query = clean_query(brand, name)
         try:
-            html = client.get(search_url(clean_query(brand, name)))
+            results = _search_page(client, key, query)
         except FetchError:
             break
-        try:
-            results = parse_search_results(html)   # I-1: an unexpected page must fail this one beer
-        except Exception:
-            results = []
-        if not results:
-            dump_debug_html(f"untappd_search_{key}", client)
-        russian = has_russian_name(brand, name)
-        found = next((r for r in results if (matches_russian_name(name, r) if russian else matches(brand, name, r))),
-                     None)
+        pages_used += 1
+        found = _best_match(results, brand, name, russian, shop_abv)
+        stop_after = False
+        if found is None and pages_used < limit:
+            fallback = clean_query_fallback(brand, name)
+            if fallback and fallback != query:
+                try:
+                    results = _search_page(client, key, fallback)
+                    pages_used += 1
+                    found = _best_match(results, brand, name, russian, shop_abv)
+                except FetchError:
+                    stop_after = True
         if found is None:
-            state.shop_matches[key] = ShopMatchRec(matched_at=iso(now))
+            state.shop_matches[key] = ShopMatchRec(matched_at=iso(now), search_v=SEARCH_LOGIC_VERSION)
         else:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.beer_id, url=found.url, rating=found.rating, style=found.style,
                 abv=found.abv, logo=found.logo, name=found.name, brewery=found.brewery,
-                matched_at=iso(now), checked_at=iso(now), via="search")
+                matched_at=iso(now), checked_at=iso(now), via="search", search_v=SEARCH_LOGIC_VERSION)
+        if stop_after:
+            break
 
 
 def _shop_match_refresh_candidates(state: State, now: datetime) -> list[tuple[str, str]]:

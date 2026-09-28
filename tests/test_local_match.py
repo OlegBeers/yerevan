@@ -1,4 +1,6 @@
-from taps.sources.local_match import KnownBeer, clean_query, clean_text, local_match, local_match_with_confidence
+from taps.sources.local_match import (
+    KnownBeer, clean_query, clean_query_fallback, clean_text, local_match, local_match_with_confidence,
+)
 
 
 def test_clean_text_strips_colour_suffix_case_preserved():
@@ -50,6 +52,41 @@ def test_clean_query_drops_latin_brewery_for_a_russian_name():
 def test_clean_query_keeps_brewery_unless_it_is_latin_only_and_the_name_cyrillic():
     assert clean_query("Очаково", "Жигулевское") == "Очаково Жигулевское"
     assert clean_query("Kilikia", "Dunkel dark") == "Kilikia Dunkel"   # a Latin name: as before
+
+
+def test_clean_query_does_not_duplicate_a_brand_the_name_already_starts_with():
+    """Real Untappd search dumps (production, v1.3 search fix): beer-city's own shop names already
+    repeat the brand ("379" / "379 non-filtered"), so joining brewery+name as before sent Untappd a
+    query with the brand twice ("379 379 non-filtered") -- found in all 18 captured failures."""
+    assert clean_query("379", "379 non-filtered") == "379"   # dedup, then "non-filtered" strips as noise
+    assert clean_query("Ayinger", "Ayinger celebrator dunkles") == "Ayinger celebrator dunkles"
+
+
+def test_clean_query_still_joins_brand_and_name_when_name_does_not_start_with_it():
+    """Regression guard: the dedup above must not over-trigger when the name is genuinely brand-free."""
+    assert clean_query("Dargett", "Apricot Ale") == "Dargett Apricot Ale"
+
+
+# --- clean_query_fallback: v1.3 search fix, a second/simpler query when the first finds nothing ---
+
+def test_clean_query_fallback_is_the_brand_alone():
+    assert clean_query_fallback("Ayinger", "Ayinger celebrator dunkles") == "Ayinger"
+
+
+def test_clean_query_fallback_is_none_without_a_brand():
+    assert clean_query_fallback(None, "Dunkel dark") is None
+
+
+def test_clean_query_fallback_is_none_when_it_would_repeat_the_primary_query():
+    """"Dargett non-filtered" already cleans down to just "Dargett" -- a brand-alone fallback would
+    be an identical, wasted second page."""
+    assert clean_query_fallback("Dargett", "Dargett non-filtered") is None
+
+
+def test_clean_query_fallback_uses_the_first_word_for_a_russian_name():
+    """Same anchor word matches_russian_name itself relies on: the Latin brewery is a
+    transliteration, so it is useless as a fallback query for a Cyrillic name."""
+    assert clean_query_fallback("Jigulyovskoye", "Жигулевское светлое") == "Жигулевское"
 
 
 # --- local_match(): the three worked examples from the beer-identity task ----------------
