@@ -303,6 +303,29 @@ sightings:
     untappd: 6711885
     by: Олег
     date: 2026-09-20
+  # Олег прислал скриншоты чекинов Untappd (бот их пропустил: меню бара обновляется с опозданием)
+  - place: gargoyle
+    brewery: "Plan B Brewery"
+    beer: "Ковбой Мальборо"
+    container: банка
+    style: "IPA - American"
+    by: чекины Untappd
+    date: 2026-09-26
+  - place: dargett-brewpub
+    brewery: "Dargett Brewery"
+    beer: "Festbier"
+    container: розлив
+    style: "Märzen"
+    by: чекины Untappd
+    date: 2026-09-27
+  - place: dargett-brewpub
+    brewery: "Dargett Brewery"
+    beer: "The Prince of Purity"
+    container: розлив
+    style: "Lager - Helles"
+    by: чекины Untappd
+    date: 2026-09-28
+
 hide:
   # чекин с неверно выбранным пивом (см. «Мамонт тёмное» в sightings)
   - place: ferment
