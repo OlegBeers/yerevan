@@ -35,6 +35,9 @@ PARMA_ALE = row("parma", "n:parma ale", "Parma Ale", "Parma Brewery", abv=5.5, s
 LINKED = row("beer-city", "n:linked beer", "Linked Beer", "Brewery X", match_via="local")
 BLOCKED = row("beer-city", "n:blocked beer", "Blocked Beer", "Brewery Y", untappd_blocked=True)
 BAR_BEER = row("gargoyle", "u:123", "Bar IPA", "Brewery Z", section="bars")
+SUGGESTED = row("beer-city", "n:suggested beer", "Suggested Beer", "Some Brewery",
+                suggest={"id": 999, "name": "Maybe Beer", "brewery": "Maybe Brewery",
+                        "url": "https://untappd.com/beer/999"})
 
 
 def make_data(*extra_rows):
@@ -224,6 +227,40 @@ def test_search_and_place_chips_filter_the_list(open_page):
     page.click(chip)   # a second tap clears the filter
     assert set(names(page)) == {"Dors Stout", "City Lager", "Parma Ale"}
     assert problems == []
+
+
+def test_a_suggestion_offers_a_one_tap_fill_and_a_filter_chip(open_page):
+    """v1.4 owner suggestion: a doubtful search match (site_data.py's row["suggest"]) is shown as
+    "Возможно: ..." with a one-tap button that fills the card's own link field."""
+    data = make_data(SUGGESTED)
+    page, problems = open_page(data)
+    page.fill("#todo-search", "suggested beer")
+    card = page.locator("#todo-list .todo-card")
+    link = card.get_by_text("Maybe Beer — Maybe Brewery")
+    assert link.get_attribute("href") == "https://untappd.com/beer/999"
+    assert link.get_attribute("target") == "_blank"
+    assert "noopener" in link.get_attribute("rel")
+    card.get_by_text("Да, это оно").click()
+    assert text(page, "#todo-list .link-status") == "Пиво № 999"
+    assert card_input(page).input_value() == "https://untappd.com/beer/999"
+    assert problems == []
+
+
+def test_the_suggestion_filter_chip_only_appears_and_filters_when_something_has_one(open_page):
+    page, problems = open_page()   # default fixture has no suggestions
+    chip = "#todo-places button:has-text('с подсказкой')"
+    assert page.locator(chip).count() == 0
+    assert problems == []
+
+    data = make_data(SUGGESTED)
+    page2, problems2 = open_page(data)
+    assert page2.locator(chip).count() == 1
+    page2.click(chip)
+    assert names(page2) == ["Suggested Beer"]
+    assert page2.get_attribute(chip, "aria-pressed") == "true"
+    page2.click(chip)   # a second tap clears the filter
+    assert set(names(page2)) == {"Dors Stout", "City Lager", "Parma Ale", "Suggested Beer"}
+    assert problems2 == []
 
 
 def test_progress_survives_a_reload_via_local_storage(open_page):

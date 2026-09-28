@@ -152,6 +152,26 @@ def test_shop_match_rec_search_v_defaults_to_none_loading_an_older_state():
     assert ShopMatchRec(**old).search_v is None
 
 
+def test_shop_match_rec_suggest_fields_default_to_none_and_survive_a_json_round_trip():
+    """v1.4 owner one-tap suggestion: a failed search's best rejected candidate (id/name/brewery),
+    shown as "Возможно: ..." on the to-do list until a real match is made or a new search stores a
+    new failure."""
+    assert ShopMatchRec(matched_at="x").suggest_id is None
+    s = full_state()
+    s.shop_matches["n:kilikia"].suggest_id = 999
+    s.shop_matches["n:kilikia"].suggest_name = "Maybe Beer"
+    s.shop_matches["n:kilikia"].suggest_brewery = "Maybe Brewery"
+    back = State.from_dict(json.loads(json.dumps(s.to_dict())))
+    rec = back.shop_matches["n:kilikia"]
+    assert (rec.suggest_id, rec.suggest_name, rec.suggest_brewery) == (999, "Maybe Beer", "Maybe Brewery")
+
+
+def test_shop_match_rec_suggest_fields_default_to_none_loading_an_older_state():
+    old = {"untappd_beer_id": None, "matched_at": "2026-09-01T00:00:00+00:00"}
+    rec = ShopMatchRec(**old)
+    assert (rec.suggest_id, rec.suggest_name, rec.suggest_brewery) == (None, None, None)
+
+
 def test_from_dict_loads_an_older_state_whose_digest_lacks_message_id_and_admin_flag():
     """state.json files written before edit-last-digest existed must still load with the new fields
     defaulted, so an old state carries no stale message id or admin flag."""

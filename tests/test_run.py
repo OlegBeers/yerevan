@@ -1518,6 +1518,39 @@ def test_match_shop_beers_records_no_match_when_nothing_scores():
     assert match.matched_at == iso(NOW)
 
 
+def test_match_shop_beers_stores_the_best_rejected_candidate_as_a_suggestion():
+    """v1.4 owner suggestion: a search page returned a result, but it did not pass matches() --
+    stored on the failed ShopMatchRec for a one-tap "Возможно: ..." on the to-do list."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:x": _shop_pair("Nonexistent Brand", "Nonexistent Item")}}
+    client = _untappd_client({"https://untappd.com/search?q=Nonexistent%20Brand%20Nonexistent%20Item&type=beer":
+                              KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:x"]
+    assert (match.suggest_id, match.suggest_name, match.suggest_brewery) == (1547626, "Kilikia", "Kilikia Brewery")
+
+
+def test_match_shop_beers_leaves_no_suggestion_when_the_search_finds_nothing_at_all():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    client = _untappd_client({KILIKIA_SEARCH_URL: "<html><body>Nothing found.</body></html>"})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:kilikia"]
+    assert (match.suggest_id, match.suggest_name, match.suggest_brewery) == (None, None, None)
+
+
+def test_match_shop_beers_clears_a_stale_suggestion_once_a_real_match_is_made():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    state.shop_matches["n:kilikia"] = ShopMatchRec(matched_at=iso(NOW - timedelta(days=40)),
+                                                   suggest_id=1, suggest_name="Old", suggest_brewery="Old Br")
+    client = _untappd_client({KILIKIA_SEARCH_URL: KILIKIA_RESULT_HTML})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:kilikia"]
+    assert match.untappd_beer_id == 1547626
+    assert (match.suggest_id, match.suggest_name, match.suggest_brewery) == (None, None, None)
+
+
 def test_match_shop_beers_dumps_debug_html_on_empty_results(monkeypatch, tmp_path):
     debug_dir = tmp_path / "debug"
     monkeypatch.setenv("TAPS_DEBUG_DIR", str(debug_dir))

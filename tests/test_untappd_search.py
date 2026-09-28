@@ -1,5 +1,6 @@
 from tests.helpers import fixture_text
-from taps.sources.untappd_search import SearchResult, matches, matches_russian_name, parse_search_results, search_url
+from taps.sources.untappd_search import (
+    SearchResult, best_candidate, matches, matches_russian_name, parse_search_results, search_url)
 
 # v1.3 search fix: 18 real (anonymized) Untappd search pages were captured in production -- but
 # Untappd's own Algolia widget reported "0 drink results" on all of them (a bad query, not a parser
@@ -160,3 +161,25 @@ def test_matches_russian_name_ignores_unfiltered_noise_in_the_remaining_words():
     result = SearchResult(beer_id=1, slug="s", name="Лагер", brewery="Дарджетт", style=None, abv=None,
                           rating=None, logo=None)
     assert matches_russian_name("Дарджетт нефильтрованное", result)
+
+
+# --- best_candidate(): the best-scoring REJECTED result, for a one-tap owner suggestion (v1.4) -----
+
+def test_best_candidate_picks_the_higher_brand_and_name_overlap():
+    close = SearchResult(beer_id=1, slug="s1", name="Hell", brewery="Dahook", style=None, abv=None,
+                         rating=None, logo=None)
+    far = SearchResult(beer_id=2, slug="s2", name="Nothing Alike", brewery="Someone Else", style=None,
+                       abv=None, rating=None, logo=None)
+    assert best_candidate([far, close], "Dahook", "Hell") == close
+
+
+def test_best_candidate_prefers_closer_abv_when_overlap_ties():
+    near = SearchResult(beer_id=1, slug="s1", name="Tremens", brewery="Delirium", style=None, abv=8.4,
+                        rating=None, logo=None)
+    far = SearchResult(beer_id=2, slug="s2", name="Tremens", brewery="Delirium", style=None, abv=5.0,
+                       rating=None, logo=None)
+    assert best_candidate([far, near], "Delirium", "Delirium Tremens", shop_abv=8.5) == near
+
+
+def test_best_candidate_is_none_for_an_empty_list():
+    assert best_candidate([], "Dahook", "Hell") is None

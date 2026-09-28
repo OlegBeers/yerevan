@@ -283,7 +283,7 @@ const OK_KEY = "matches-ok";   // {entry id: the Untappd link it was confirmed a
 const TODO_KEY = "matches-todo";   // {place_id|key: {type:"link", id} | {type:"none"} | {type:"notbeer"}}
 const VIA_RU = { local: "авто по названию", search: "поиск Untappd", manual: "вручную" };
 const ui = { matches: [], marked: new Set(), ok: {}, note: "", items: [], picked: new Map(),
-            todoItems: [], todo: {}, todoPlaces: new Set() };
+            todoItems: [], todo: {}, todoPlaces: new Set(), todoSuggestOnly: false };
 const $ = (id) => document.getElementById(id);
 
 // Every value from data.json goes into the DOM as text, never as HTML.
@@ -681,6 +681,7 @@ function todoItems(data) {
       return {
         uid, place_id: r.place_id, key: r.beer_key, place, section: r.section, name,
         brewery: r.brewery, abv: r.abv, photo: r.beer_logo, shop_url: r.shop_url || r.url,
+        suggest: r.suggest || null,
         hay: [name, r.brewery, place, r.beer_key.slice(2)].filter(Boolean).join(" ").toLowerCase(),
       };
     })
@@ -695,7 +696,7 @@ function untappdSearchUrl(it) {
 function visibleTodo() {
   const words = $("todo-search").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return ui.todoItems.filter((it) => (!ui.todoPlaces.size || ui.todoPlaces.has(it.place_id))
-    && words.every((w) => it.hay.includes(w)));
+    && (!ui.todoSuggestOnly || it.suggest) && words.every((w) => it.hay.includes(w)));
 }
 function todoDone() {
   return ui.todoItems.filter((it) => ui.todo[idOf(it)]).length;
@@ -725,10 +726,22 @@ function placeChip(id, name) {
   });
   return btn;
 }
+function suggestChip() {
+  const btn = el("button", { type: "button", class: "place-filter", "aria-pressed": String(ui.todoSuggestOnly) },
+    "с подсказкой");
+  btn.addEventListener("click", () => {
+    ui.todoSuggestOnly = !ui.todoSuggestOnly;
+    btn.setAttribute("aria-pressed", String(ui.todoSuggestOnly));
+    renderTodoList();
+  });
+  return btn;
+}
 function renderTodoChips() {
   const seen = new Map();
   for (const it of ui.todoItems) if (!seen.has(it.place_id)) seen.set(it.place_id, it.place);
-  $("todo-places").replaceChildren(...[...seen].map(([id, name]) => placeChip(id, name)));
+  const chips = [...seen].map(([id, name]) => placeChip(id, name));
+  if (ui.todoItems.some((it) => it.suggest)) chips.push(suggestChip());
+  $("todo-places").replaceChildren(...chips);
 }
 function todoStatusNodes(link) {   // «Пиво № N» or the error text -- a per-card twin of renderLink's status line
   if (!link) return [];
@@ -743,6 +756,12 @@ function todoCardNode(it) {
   const status = el("p", { id: statusId, class: "link-status", role: "status" });
   const noneBtn = el("button", { type: "button", class: "act", "aria-pressed": "false" }, "Нет на Untappd");
   const notBeerBtn = el("button", { type: "button", class: "act", "aria-pressed": "false" }, "Не пиво");
+  const suggestBtn = it.suggest ? el("button", { type: "button", class: "act" }, "Да, это оно") : null;
+  const suggestNode = it.suggest ? el("div", { class: "todo-suggest" },
+    el("p", { class: "small" }, "Возможно: ",
+      el("a", { href: safeUrl(it.suggest.url), target: "_blank", rel: "noopener noreferrer" },
+        `${it.suggest.name} — ${it.suggest.brewery}`)),
+    suggestBtn) : null;
   const card = el("li", { class: "card todo-card" },
     el("div", { class: "side" }, thumb(it.photo),
       el("div", { class: "text" },
@@ -752,6 +771,7 @@ function todoCardNode(it) {
         it.abv != null ? el("span", { class: "small" }, `${it.abv}%`) : null)),
     el("a", { class: "act", href: safeUrl(untappdSearchUrl(it)), target: "_blank", rel: "noopener noreferrer" },
       "Искать на Untappd"),
+    suggestNode,
     el("div", null, el("label", { class: "field-label", for: linkId }, "Ссылка на пиво в Untappd"), input, status),
     el("div", { class: "todo-actions" }, noneBtn, notBeerBtn));
 
@@ -784,6 +804,10 @@ function todoCardNode(it) {
     status.replaceChildren();
     input.setAttribute("aria-invalid", "false");
     setChoice(on ? { type: "notbeer" } : null);
+  });
+  if (suggestBtn) suggestBtn.addEventListener("click", () => {
+    input.value = it.suggest.url;
+    input.dispatchEvent(new Event("input"));
   });
 
   const existing = ui.todo[id];   // restore a choice made earlier (this session, reload, or a transfer link)

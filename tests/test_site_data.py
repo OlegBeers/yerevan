@@ -570,6 +570,23 @@ def test_row_flags_a_manual_not_on_untappd_block_so_a_to_do_list_can_exclude_it(
     assert "untappd_blocked" not in rows["n:c"]
 
 
+def test_unlinked_row_carries_a_suggestion_when_the_failed_match_has_one():
+    """v1.4 owner suggestion: a failed search's best rejected candidate reaches the site so
+    site/matches.html can offer it as a one-tap "Возможно: ..." on the to-do list."""
+    suggestion = ShopMatchRec(matched_at=ago(1), suggest_id=34039, suggest_name="Chimay Grande Réserve (Blue)",
+                              suggest_brewery="Bières de Chimay")
+    st = match_state({"beer-city": {"n:a": pair("beercity", in_stock=True)}}, a=suggestion)
+    row = build(st)["rows"][0]
+    assert row["suggest"] == {"id": 34039, "name": "Chimay Grande Réserve (Blue)",
+                              "brewery": "Bières de Chimay", "url": "https://untappd.com/beer/34039"}
+
+
+def test_row_has_no_suggest_field_when_none_is_stored():
+    st = match_state({"beer-city": {"n:a": pair("beercity", in_stock=True)}})
+    row = build(st)["rows"][0]
+    assert "suggest" not in row
+
+
 def test_matches_list_carries_both_sides_of_each_visible_matched_pair():
     st = match_state({"beer-city": {"n:chimay": pair("beercity", in_stock=True, info=CHIMAY_INFO)}}, chimay=CHIMAY)
     assert build(st)["matches"] == [{

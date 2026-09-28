@@ -64,6 +64,9 @@ class ShopMatchRec:
     search_v: int | None = None     # v1.3 search fix: the search-logic version that produced this record
                                     # (None on an older state = version 0); a "no_match" below the current
                                     # version is retried once, ignoring the usual 30-day wait
+    suggest_id: int | None = None   # v1.4 owner suggestion: the best REJECTED search candidate's id/
+    suggest_name: str | None = None # name/brewery, for a one-tap "Возможно: ..." on the to-do list.
+    suggest_brewery: str | None = None  # Cleared (a fresh ShopMatchRec) on a match or a new search.
 
 
 @dataclass

@@ -150,12 +150,24 @@ def _is_blocked(state: State, key: str) -> bool:
     return bool(match and match.untappd_beer_id is None and match.via == "manual")
 
 
+def _suggestion(state: State, key: str, kind: str) -> dict | None:
+    """v1.4 owner suggestion: the best REJECTED search candidate stored on a failed shop match (see
+    run.py match_shop_beers), for a one-tap "Возможно: ..." on the to-do list (site/matches.html)."""
+    if kind not in ("shop", "menu", "manual"):
+        return None
+    match = state.shop_matches.get(key)
+    if not match or match.suggest_id is None:
+        return None
+    return {"id": match.suggest_id, "name": match.suggest_name, "brewery": match.suggest_brewery,
+            "url": f"https://untappd.com/beer/{match.suggest_id}"}
+
+
 def _shop_name(info: dict, key: str) -> str:
     return info.get("name") or info.get("title") or key
 
 
 def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: ShopMatchRec | None,
-         blocked: bool) -> dict:
+         blocked: bool, state: State) -> dict:
     info = rec.info
     new = _is_new(rec, now)
     # v1.2 beer identity: a shop/menu/manual pair matched to Untappd carries the canonical name/
@@ -184,6 +196,9 @@ def _row(place: Place, key: str, rec: PairRec, kind: str, now: datetime, match: 
     row["match_via"] = (match.via or "search") if match else None   # records from before "via" existed came from search
     if blocked:
         row["untappd_blocked"] = True
+    suggestion = _suggestion(state, key, kind) if not match else None
+    if suggestion:
+        row["suggest"] = suggestion
     row.update({
         "badge": kind,
         "since": yerevan_date(parse_iso(rec.first_seen)),
@@ -222,7 +237,7 @@ def build_site_data(state: State, config: Config, now: datetime) -> dict:
             kind = _kind(rec)
             if kind and _visible(place, rec, kind, state, now):
                 match = _active_match(state, key, kind)
-                rows.append(_row(place, key, rec, kind, now, match, _is_blocked(state, key)))
+                rows.append(_row(place, key, rec, kind, now, match, _is_blocked(state, key), state))
                 if match:
                     matches.append(_match_entry(place, key, rec, match))
     return {

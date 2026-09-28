@@ -37,7 +37,9 @@ from taps.sources.untappd_checkins import (
     fetch_venue_checkins, is_armenia_location, is_yerevan_city, parse_venue_location, parse_venue_meta,
 )
 from taps.sources.untappd_menu import fetch_menu
-from taps.sources.untappd_search import SearchResult, matches, matches_russian_name, parse_search_results, search_url
+from taps.sources.untappd_search import (
+    SearchResult, best_candidate, matches, matches_russian_name, parse_search_results, search_url,
+)
 from taps.sources.yerevan_city import fetch_yerevan_city
 from taps.state import (
     VENUE_KEEP_DAYS, BeerRec, ShopMatchRec, State, apply_aliases, load_state, merge_places, prune, record_venues,
@@ -605,6 +607,7 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
             break
         pages_used += 1
         found = _best_match(results, brand, name, russian, shop_abv)
+        all_results = list(results)
         stop_after = False
         if found is None and pages_used < limit:
             fallback = clean_query_fallback(brand, name)
@@ -613,10 +616,19 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
                     results = _search_page(client, key, fallback)
                     pages_used += 1
                     found = _best_match(results, brand, name, russian, shop_abv)
+                    all_results += results
                 except FetchError:
                     stop_after = True
         if found is None:
-            state.shop_matches[key] = ShopMatchRec(matched_at=iso(now), search_v=SEARCH_LOGIC_VERSION)
+            # v1.4 owner suggestion: the best REJECTED candidate (if any), for a one-tap "Возможно:
+            # ..." on the to-do list -- same scoring signals as acceptance (brewery/name overlap, ABV
+            # closeness), never accepted itself, since it already failed matches()/matches_russian_name().
+            suggestion = best_candidate(all_results, brand, name, shop_abv)
+            state.shop_matches[key] = ShopMatchRec(
+                matched_at=iso(now), search_v=SEARCH_LOGIC_VERSION,
+                suggest_id=suggestion.beer_id if suggestion else None,
+                suggest_name=suggestion.name if suggestion else None,
+                suggest_brewery=suggestion.brewery if suggestion else None)
         else:
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.beer_id, url=found.url, rating=found.rating, style=found.style,

@@ -113,3 +113,30 @@ def matches_russian_name(shop_name: str, result: SearchResult) -> bool:
         return False
     rest = set(words[1:]) - _RU_COLOURS
     return not rest or len(rest & _result_tokens(result.name)) / len(rest) >= MIN_NAME_OVERLAP
+
+
+def _candidate_score(brand: str, name: str, result: SearchResult, shop_abv: float | None) -> float:
+    """How well `result` fits (brand, name): the same overlap signals matches() itself checks
+    (brand-in-brewery, remaining-name-in-name), each as a 0..1 fraction, plus an ABV-closeness bonus
+    when both sides know it -- used only to RANK results that already failed matches(), for a
+    one-tap owner suggestion (v1.4), never to accept one."""
+    brand_tokens = _shop_tokens(brand)
+    brand_overlap = (len(brand_tokens & _result_tokens(result.brewery)) / len(brand_tokens)
+                     if brand_tokens else 0.0)
+    name_tokens = _shop_tokens(name) - brand_tokens
+    name_overlap = (len(name_tokens & _result_tokens(result.name)) / len(name_tokens)
+                    if name_tokens else 1.0)
+    score = brand_overlap + name_overlap
+    if shop_abv is not None and result.abv is not None:
+        score += max(0.0, 1.0 - abs(result.abv - shop_abv) / 5.0)
+    return score
+
+
+def best_candidate(results: list[SearchResult], brand: str, name: str,
+                   shop_abv: float | None = None) -> SearchResult | None:
+    """The best-scoring result (see _candidate_score), or None for an empty list -- for suggesting a
+    doubtful match to the owner (site/matches.html "Найти на Untappd") when a search page returned
+    results but none was accepted by matches()/matches_russian_name()."""
+    if not results:
+        return None
+    return max(results, key=lambda r: _candidate_score(brand, name, r, shop_abv))
