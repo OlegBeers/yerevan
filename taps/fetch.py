@@ -16,7 +16,6 @@ from taps.timeutil import parse_iso, yerevan_date
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 TIMEOUT = 30            # seconds per plain HTTP request
-UNTAPPD_EVERY = timedelta(hours=20)
 RETRY_SLEEP = 10.0      # seconds before the single retry after a network error
 COUNTRY_BACKFILL_PER_RUN = 40   # product pages a shop adapter may read per run for known items lacking a country
 
@@ -99,7 +98,9 @@ def shop_photo(src: str | None, base: str, hosts: Collection[str]) -> str | None
 
 
 def untappd_due(untappd: UntappdRec, now: datetime) -> bool:
-    return untappd.last_attempt is None or now - parse_iso(untappd.last_attempt) >= UNTAPPD_EVERY
+    """Once per Yerevan day: the morning run reads Untappd, the evening run only if the morning missed.
+    A fixed hour gap drifted: one manual run shifted every later day's window past the morning run."""
+    return untappd.last_attempt is None or yerevan_date(parse_iso(untappd.last_attempt)) < yerevan_date(now)
 
 
 class UntappdClient:

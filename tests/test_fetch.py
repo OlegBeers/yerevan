@@ -179,10 +179,12 @@ def test_shop_photo_rejects_everything_else(src):
 
 # --- untappd_due --------------------------------------------------------------
 
-def test_untappd_due():
+def test_untappd_due_once_per_yerevan_day_so_a_manual_run_never_pushes_the_next_morning_back():
     assert untappd_due(UntappdRec(), NOW)
-    assert not untappd_due(UntappdRec(last_attempt=iso(NOW - timedelta(hours=19))), NOW)
-    assert untappd_due(UntappdRec(last_attempt=iso(NOW - timedelta(hours=20))), NOW)
+    assert not untappd_due(UntappdRec(last_attempt=iso(NOW - timedelta(hours=7))), NOW)    # 11:00 today
+    assert untappd_due(UntappdRec(last_attempt=iso(NOW - timedelta(hours=19))), NOW)       # 23:00 yesterday in Yerevan
+    morning = datetime(2026, 9, 24, 6, 35, tzinfo=timezone.utc)                            # 10:35 next day
+    assert untappd_due(UntappdRec(last_attempt=iso(NOW + timedelta(hours=1))), morning)    # yesterday 19:00
 
 
 # --- UntappdClient ------------------------------------------------------------
