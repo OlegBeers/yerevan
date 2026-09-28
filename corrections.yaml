@@ -358,6 +358,91 @@ same_as:                         # магазинное пиво == пиво с 
   - place: beer-city
     beer: "n:alpirsbacher weizen"
     untappd_id: 85217
+  # Олег, список «Найти на Untappd», 29.09
+  - place: beer-city
+    beer: "n:379 non"
+    untappd_id: 4775549
+  - place: beer-city
+    beer: "n:ayinger celebrator dunkles"
+    untappd_id: 6683
+  - place: beer-city
+    beer: "n:ayinger urweisse non wheat"
+    untappd_id: 24679
+  - place: beer-city
+    beer: "n:ayinger urweisse wheat"
+    untappd_id: 24679
+  - place: beer-city
+    beer: "n:bavik super wit wheat"
+    untappd_id: 4042637
+  - place: beer-city
+    beer: "n:bever vienna lager"
+    untappd_id: 6291054
+  - place: beer-city
+    beer: "n:bitburger premium pils"
+    untappd_id: 17252
+  - place: beer-city
+    beer: "n:volfas engelman blanc"
+    untappd_id: 3777934
+  - place: beer-city
+    beer: "n:chimay peres trappistes blue"
+    untappd_id: 34039
+  - place: beer-city
+    beer: "n:chimay peres trappistes rouge"
+    untappd_id: 4072
+  - place: beer-city
+    beer: "n:dahook dark"
+    untappd_id: 5817013
+  - place: beer-city
+    beer: "n:dahook hell non"
+    untappd_id: 5817007
+  - place: beer-city
+    beer: "n:dargett chani non"
+    untappd_id: 6512970
+  - place: beer-city
+    beer: "n:dargett non"
+    untappd_id: 1518439
+  - place: beer-city
+    beer: "n:dargett non weizen"
+    untappd_id: 1554084
+  - place: beer-city
+    beer: "n:delirium nocturnum strong and dark"
+    untappd_id: 4486
+  - place: beer-city
+    beer: "n:delirium tremens strong and blond"
+    untappd_id: 4485
+  - place: beer-city
+    beer: "n:estrella galicia"
+    untappd_id: 7313
+  - place: beer-city
+    beer: "n:gletcher ausweis non wheat"
+    untappd_id: 3078175
+  - place: beer-city
+    beer: "n:gletcher ausweis weissbier wheat"
+    untappd_id: 3078175
+  - place: beer-city
+    beer: "n:gletcher blue monkey non wheat ale"
+    untappd_id: 4804233
+  - place: beer-city
+    beer: "n:gletcher bowler ipa non"
+    untappd_id: 3226597
+  - place: beer-city
+    beer: "n:gletcher cynic imperial stout dark"
+    untappd_id: 6567982
+  - place: beer-city
+    beer: "n:gletcher heidegger hell lager"
+    untappd_id: 4776420
+  - place: beer-city
+    beer: "n:gletcher heidegger hell non"
+    untappd_id: 4776420
+  - place: beer-city
+    beer: "n:gletcher milk of amnesia with mango and passion"
+    untappd_id: 2576678
+  - place: beer-city
+    beer: "n:gletcher nut butter brown ale dark ale"
+    untappd_id: 2746075
+  - place: beer-city
+    beer: "n:gletcher nut butter brown ale non dark ale"
+    untappd_id: 2746075
 
 aliases:
 
