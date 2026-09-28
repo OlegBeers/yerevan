@@ -158,12 +158,14 @@ class _Merger:
                     pair.last_in_result = (result.place_id, key) in touched
 
     def _ignored_checkin(self, s: Sighting, place: Place) -> bool:
-        """A check-in counts only when poured at a place without a menu (spec §6). The serving no longer
-        matters in any kind of place (v1.1): a bottle, can or unlabelled check-in is as good a sighting
-        as a draft pour, in a bar or brewpub just like it already was in a shop."""
+        """A check-in counts only when poured at a place without an authoritative (native Untappd) menu
+        (spec §6): a buy.am delivery listing is not the taproom's own tap list, so it does not block
+        check-ins there. The serving no longer matters in any kind of place (v1.1): a bottle, can or
+        unlabelled check-in is as good a sighting as a draft pour, in a bar or brewpub just like it
+        already was in a shop."""
         if s.kind != "checkin":
             return False
-        return place.has_menu or s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS
+        return place.menu_is_authoritative or s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS
 
     def _key(self, s: Sighting) -> str:
         key = resolve_alias(s.beer_key, self.corrections.aliases)
@@ -263,8 +265,18 @@ class _Merger:
                 return True
         if s.kind == "checkin" and age_days(s.seen_at, self.now) > CHECKIN_EVENT_DAYS:
             return True
+        # the same beer is already here, shown under a shop key matched to this Untappd id (search/local
+        # match, or a corrections.yaml same_as override -- either way, state.shop_matches carries it)
+        if s.untappd_beer_id is not None and any(
+            self._matched_untappd_id(k) == s.untappd_beer_id for k in self.state.pairs.get(place.id, {})
+        ):
+            return True
         # the same beer is already here under another key (Untappd changed the id)
         return nk is not None and any(self._stored_n_key(k) == nk for k in self.state.pairs.get(place.id, {}))
+
+    def _matched_untappd_id(self, key: str) -> int | None:
+        match = self.state.shop_matches.get(key)
+        return match.untappd_beer_id if match else None
 
     def _stored_n_key(self, key: str) -> str | None:
         if key.startswith("n:"):

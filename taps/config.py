@@ -57,6 +57,13 @@ class Place:
     def has_menu(self) -> bool:
         return "untappd_menu" in self.sources or "buyam" in self.sources
 
+    @property
+    def menu_is_authoritative(self) -> bool:
+        """Only a native Untappd menu is trusted to list every beer currently on tap; a buy.am delivery
+        listing (has_menu is true for it too) is not the taproom's own tap list, so it must not block
+        check-ins the way a real Untappd menu does (spec §6)."""
+        return "untappd_menu" in self.sources
+
     def _checkin_venues(self) -> list[Mapping[str, Any]]:
         checkins = self.sources.get("untappd_checkins")
         if checkins is None:

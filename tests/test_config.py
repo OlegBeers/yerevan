@@ -76,6 +76,15 @@ def test_menu_places(cfg):
     assert (dargett.brewery_id, dargett.brewery_name) == (265165, "Dargett")
 
 
+def test_menu_is_authoritative_only_for_a_native_untappd_menu(cfg):
+    """A buy.am delivery listing is not the taproom's own tap list, so it must not count as an
+    authoritative menu the way a native Untappd menu does (has_menu keeps its old, broader meaning)."""
+    assert cfg.places["gargoyle"].menu_is_authoritative
+    dargett = cfg.places["dargett-brewpub"]
+    assert not dargett.menu_is_authoritative
+    assert dargett.has_menu
+
+
 def test_checkin_brewpubs(cfg):
     dors = cfg.places["dors"]
     assert dors.brewery_name == "Dors"
@@ -367,6 +376,28 @@ def test_shop_with_untappd_checkins_source_is_valid(tmp_path):
     assert houl.kind == "shop"
     assert houl.venue_id == 9709804
     assert not houl.has_menu
+
+
+def test_a_place_may_combine_a_buyam_menu_and_its_own_checkins_source(tmp_path):
+    """A place may declare more than one source at once: Dargett's buy.am delivery listing is not its own
+    taproom tap list, so the place also gets a dedicated untappd_checkins source for what is actually
+    poured there, without dropping buyam."""
+    extra = MINIMAL + """
+  - id: dargett-brewpub
+    name: Dargett Brewpub
+    kind: brewpub
+    brewery_id: 265165
+    brewery_name: Dargett
+    sources:
+      buyam: {url: "https://buy.am/en/restaurants/dargett"}
+      untappd_checkins: {slug: dargett-craft-brewery, venue_id: 4640403}
+"""
+    cfg = load_config(write(tmp_path, extra))
+    dargett = cfg.places["dargett-brewpub"]
+    assert set(dargett.sources) == {"buyam", "untappd_checkins"}
+    assert dargett.source_keys() == ["buyam:dargett-brewpub", "untappd_checkins:dargett-brewpub"]
+    assert dargett.venue_id == 4640403
+    assert not dargett.menu_is_authoritative and dargett.has_menu
 
 
 def test_map_url_must_be_a_yandex_maps_https_link(tmp_path):

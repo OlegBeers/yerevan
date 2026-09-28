@@ -422,7 +422,6 @@ def test_menu_row_stays_a_menu_row_when_a_friend_reports_the_same_beer():
 
 IGNORED_CHECKINS = {
     "place-with-menu": brewery_checkins(checkin(1, "gargoyle")),
-    "brewpub-with-buyam-menu": brewery_checkins(checkin(1, "dargett-brewpub", serving=None), brewery_id=265165),
     "untappd-at-home": venue_checkins(checkin(1, at_home=True)),
     "25-days-old": venue_checkins(checkin(1, days=25)),
 }
@@ -434,6 +433,32 @@ def test_ignored_checkins_leave_no_trace(result):
     out = merge(state, result)
     assert out == MergeOutcome(ok=[result.key])
     assert state.pairs == {} and state.beers == {}
+
+
+def test_buyam_place_keeps_checkins():
+    """A buy.am delivery listing is not the taproom's own tap list, unlike a native Untappd menu (has_menu
+    is true for both): a check-in at a buy.am place must still count -- the bug that hid every pour at
+    Dargett's own taproom, whose brewery-page check-ins were dropped just because buyam counts as a menu."""
+    state = ready("untappd_brewery:265165", "buyam:dargett-brewpub")
+    out = merge(state, brewery_checkins(checkin(1, "dargett-brewpub", serving=None), brewery_id=265165))
+    assert out.events == [("dargett-brewpub", "u:1")]
+
+
+def test_checkin_of_a_beer_already_matched_to_a_buyam_pair_is_not_a_second_event():
+    """A check-in for a beer the buy.am menu already shows under its own n:-key, once that key is linked
+    to the same Untappd beer via state.shop_matches (a corrections.yaml same_as override, or a local/search
+    match), must not create a duplicate event -- the beer is already announced under the buy.am key."""
+    from taps.state import ShopMatchRec
+
+    state = ready("untappd_brewery:265165", "buyam:dargett-brewpub")
+    t = iso(NOW - 5 * DAY)
+    state.pairs["dargett-brewpub"] = {"n:dargett american pale ale": PairRec(
+        first_seen=t, last_seen=t, notified_at="baseline", info={"source": "buyam", "kind": "menu"})}
+    state.shop_matches["n:dargett american pale ale"] = ShopMatchRec(untappd_beer_id=1518441, matched_at=t,
+                                                                     via="manual")
+    out = merge(state, brewery_checkins(checkin(1518441, "dargett-brewpub", serving=None), brewery_id=265165))
+    assert out.events == []
+    assert state.pairs["dargett-brewpub"]["u:1518441"].notified_at == "suppressed"
 
 
 @pytest.mark.parametrize("serving", ["Bottle", "Can", None, "Draft"])
@@ -517,6 +542,29 @@ def test_checkin_backfill_from_the_cache_does_not_overwrite_known_fields():
     state.beers["u:9"] = BeerRec(first_seen_city=iso(NOW - DAY), rating=3.82, style="Fruit Beer")
     merge(state, venue_checkins(checkin(9, style="Sour")))
     assert state.pairs["tap-station"]["u:9"].info["style"] == "Sour"   # the sighting's own value wins
+
+
+def test_a_new_checkin_source_added_to_an_established_place_is_a_silent_baseline():
+    """Dargett gains its own untappd_checkins source alongside its long-running buyam menu, so guest beers
+    poured at the taproom (not on the buy.am delivery menu) count too. The new source key's first run must
+    be a silent baseline, not a burst of events for every beer it happens to see on tap already."""
+    dargett = place("dargett-brewpub", "brewpub",
+                    {"buyam": {"url": "https://buy.am/en/restaurants/dargett"}, "untappd_checkins": venue(4640403)},
+                    brewery_id=265165, brewery_name="Dargett")
+    config = Config(places={"dargett-brewpub": dargett}, breweries=(), settings=Settings())
+    state = ready("buyam:dargett-brewpub")   # buyam is established; untappd_checkins is brand new
+    result = SourceResult(key="untappd_checkins:dargett-brewpub", source="untappd_checkins", ok=True,
+                          place_id="dargett-brewpub",
+                          sightings=[checkin(1, "dargett-brewpub", serving=None),
+                                     checkin(2, "dargett-brewpub", serving=None)])
+    out = merge_results(state, [result], config, Corrections(), NOW)
+    assert out.events == []
+    assert all(p.notified_at == "baseline" for p in state.pairs["dargett-brewpub"].values())
+    out = merge_results(state, [SourceResult(key="untappd_checkins:dargett-brewpub", source="untappd_checkins",
+                                             ok=True, place_id="dargett-brewpub",
+                                             sightings=[checkin(3, "dargett-brewpub", serving=None)])],
+                        config, Corrections(), NOW + 12 * H)
+    assert out.events == [("dargett-brewpub", "u:3")]
 
 
 def test_merged_multi_venue_place_first_run_after_state_merge_is_silent():
