@@ -443,6 +443,61 @@ same_as:                         # магазинное пиво == пиво с 
   - place: beer-city
     beer: "n:gletcher nut butter brown ale non dark ale"
     untappd_id: 2746075
+  # Олег, список «Найти на Untappd», 29.09 (вторая порция)
+  - place: dargett-brewpub
+    beer: "n:dargett american pale ale"
+    untappd_id: 1518441
+  - place: beer-city
+    beer: "n:жигулевское высшии сорт"
+    untappd_id: 3851702
+  - place: beer-city
+    beer: "n:жигулевское особая варка"
+    untappd_id: 4724271
+  - place: beer-city
+    beer: "n:ambar gluten free"
+    untappd_id: 5216540
+  - place: beer-city
+    beer: "n:gletcher rouge de fleur cherry"
+    untappd_id: 624799
+  - place: beer-city
+    beer: "n:gletcher rouge de fleur non"
+    untappd_id: 624799
+  - place: beer-city
+    beer: "n:gletcher ruby road cherry flavor ale"
+    untappd_id: 5342083
+  - place: beer-city
+    beer: "n:gletcher ruby road non cherry flavor ale"
+    untappd_id: 5342083
+  - place: beer-city
+    beer: "n:hard root double ipa"
+    untappd_id: 6614493
+  - place: beer-city
+    beer: "n:paulaner weissbier"
+    untappd_id: 15677
+  - place: beer-city
+    beer: "n:hike premium"
+    untappd_id: 90179
+  - place: beer-city
+    beer: "n:hofbrau helles lager"
+    untappd_id: 1670139
+  - place: beer-city
+    beer: "n:hofbrau weisse"
+    untappd_id: 7834
+  - place: beer-city
+    beer: "n:hop flow ipa american"
+    untappd_id: 6620442
+  - place: beer-city
+    beer: "n:jiguli barnoe"
+    untappd_id: 26210
+  - place: beer-city
+    beer: "n:kellers non"
+    untappd_id: 2170835
+  - place: beer-city
+    beer: "n:kellers non dark"
+    untappd_id: 2170556
+  - place: beer-city
+    beer: "n:kellers weizen"
+    untappd_id: 4426822
 
 aliases:
 
