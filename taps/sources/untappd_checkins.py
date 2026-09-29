@@ -14,6 +14,7 @@ from taps.model import Sighting, SourceResult, VenueCheckin, u_key
 
 BEER_HREF_RE = re.compile(r"^/b/[^/]+/(\d+)/?$")
 VENUE_HREF_RE = re.compile(r"^/v/[^/]+/(\d+)/?$")
+USER_HREF_RE = re.compile(r"^/user/([^/]+)/?$")
 AT_HOME = "untappd at home"
 
 
@@ -31,6 +32,8 @@ class Checkin:
     venue_url: str | None = None
     beer_url: str | None = None   # canonical /b/<slug>/<id> link from the check-in's own beer href
     logo: str | None = None       # beer label image (a.label img, before p.text)
+    username: str | None = None   # from the check-in's own user link (stats.html check-in log)
+    rating: float | None = None   # this check-in's own rating (div.caps[data-rating]), never the beer's average
 
 
 def _text(tag: Tag | None) -> str:
@@ -65,9 +68,11 @@ def _parse_item(item: Tag) -> Checkin | None:
     created_at = created_at or _created_at(_text(time_link))
     if text is None or created_at is None:
         return None
-    beer = venue = brewery = None
+    beer = venue = brewery = username = None
     for a in text.find_all("a", href=True):   # user, beer, brewery, venue - in this order
-        if beer is None:
+        if username is None and (m := USER_HREF_RE.match(a["href"])):
+            username = m.group(1)
+        elif beer is None:
             if m := BEER_HREF_RE.match(a["href"]):
                 beer = (int(m.group(1)), _text(a), a["href"])
         elif m := VENUE_HREF_RE.match(a["href"]):
@@ -78,6 +83,7 @@ def _parse_item(item: Tag) -> Checkin | None:
         return None
     serving = _text(item.select_one("p.serving span")) or None
     logo = item.select_one("a.label img[src]")
+    caps = item.select_one("div.caps[data-rating]")
     return Checkin(
         checkin_id=int(item["data-checkin-id"]),
         beer_id=beer[0],
@@ -91,6 +97,8 @@ def _parse_item(item: Tag) -> Checkin | None:
         venue_url=f"https://untappd.com{venue[2]}" if venue else None,
         beer_url=f"https://untappd.com{beer[2]}",
         logo=logo["src"] if logo else None,
+        username=username,
+        rating=float(caps["data-rating"]) if caps else None,
     )
 
 
@@ -253,5 +261,6 @@ def fetch_venue_checkins(client: UntappdClient, place: Place, config: Config, no
                 result.venue_meta = {"venue_id": v["venue_id"], "name": place.name, "url": url, **meta}
     result.sightings = checkins_to_sightings(all_checkins, config, "untappd_checkins", now, brewery_aliases)
     result.venue_checkins = checkins_to_venue_checkins(all_checkins)
+    result.checkins = all_checkins
     result.ok = True
     return result

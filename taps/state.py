@@ -91,6 +91,10 @@ class SourceRec:
     seen_menu_ids: list[str] = field(default_factory=list)
     max_beer_id: int = 0
     menu_updated_at: str | None = None
+    # Phase 2 (budget-aware check-in coverage), untappd_checkins/untappd_brewery sources only:
+    checkin_overflow: bool = False   # this read's oldest visible check-in was newer than the read before it
+    last_checkin_id: int | None = None   # newest check-in id seen on the page, for quiet-source detection
+    quiet_since: str | None = None       # iso date since last_checkin_id last changed; None while still active
 
 
 @dataclass
@@ -99,6 +103,7 @@ class UntappdRec:
     pages_today: int = 0
     pages_date: str | None = None
     brewery_list_cursor: int = 0
+    topup_date: str | None = None   # Phase 2a: Yerevan date the evening overflow top-up last ran
 
 
 @dataclass

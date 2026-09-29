@@ -8,6 +8,7 @@ from taps.corrections import Corrections, ManualEntry
 from taps.model import BreweryBeer, Serving, Sighting, SourceResult
 from taps.rules import CHECKIN_EVENT_DAYS, CHECKIN_KEEP_DAYS, MANUAL_EVENT_DAYS, MergeOutcome, merge_results
 from taps.sources.manual import manual_result
+from taps.sources.untappd_checkins import Checkin
 from taps.state import BeerRec, BreweryNewRec, PairRec, SourceRec, apply_aliases, empty_state
 from taps.timeutil import iso, to_yerevan
 
@@ -88,16 +89,23 @@ def checkin(beer_id, place="tap-station", days=1.0, serving="Draft", **kw):
     return Sighting(**{**fields, **kw})
 
 
-def venue_checkins(*sightings, place="tap-station"):
+def venue_checkins(*sightings, place="tap-station", **kw):
     return SourceResult(key=f"untappd_checkins:{place}", source="untappd_checkins", ok=True,
-                        sightings=list(sightings), place_id=place)
+                        sightings=list(sightings), place_id=place, **kw)
 
 
-def brewery_checkins(*sightings, brewery_id=441775):
+def brewery_checkins(*sightings, brewery_id=441775, **kw):
     """Brewery page check-ins: like the real source, sightings carry the page's brewery_id."""
     return SourceResult(key=f"untappd_brewery:{brewery_id}", source="untappd_brewery", ok=True,
                         sightings=[replace(s, source="untappd_brewery", brewery_id=brewery_id) for s in sightings],
-                        brewery_id=brewery_id)
+                        brewery_id=brewery_id, **kw)
+
+
+def raw_checkin(id, created_at, venue_id=5):
+    """A raw Checkin (as parse_checkins would return), for the Phase 2 schedule bookkeeping tests below --
+    distinct from the Sighting the same page also produces via checkin()."""
+    return Checkin(checkin_id=id, beer_id=id, beer_name="Beer", brewery="B", venue_id=venue_id,
+                   venue_name="V", serving="Draft", at_home=False, created_at=created_at)
 
 
 def entry(place, beer_name, days_ago, by="Аня", brewery="379", untappd_id=None):
@@ -955,3 +963,50 @@ def test_a_new_pair_from_entries_one_of_which_was_announced_is_not_announced_aga
     out = merge(state, manual(first, friend))
     assert out.events == []
     assert state.pairs["tap-station"]["n:379 hazy pale"].notified_at == "suppressed"
+
+
+# --- Phase 2: per check-in source schedule bookkeeping (overflow / quiet) -----------------------
+
+def test_checkin_source_overflow_flagged_when_the_oldest_on_the_page_is_newer_than_the_previous_read():
+    state = ready("untappd_checkins:tap-station")   # last_ok 12h before NOW
+    merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(1, NOW - H)]))   # oldest: 1h ago, newer than last_ok
+    assert state.source("untappd_checkins:tap-station").checkin_overflow is True
+
+
+def test_checkin_source_no_overflow_when_the_page_still_reaches_back_to_the_previous_read():
+    state = ready("untappd_checkins:tap-station")   # last_ok 12h before NOW
+    merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(1, NOW - 20 * H)]))   # oldest: 20h ago
+    assert state.source("untappd_checkins:tap-station").checkin_overflow is False
+
+
+def test_checkin_source_no_overflow_on_the_first_ever_read():
+    state = empty_state(NOW)
+    merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(1, NOW)]))
+    assert state.source("untappd_checkins:tap-station").checkin_overflow is False
+
+
+def test_checkin_source_schedule_ignores_a_result_with_no_sightings():
+    """menu/shop/manual results (and a checkin result with an empty page) leave the schedule alone."""
+    state = ready("untappd_menu:gargoyle")
+    merge(state, menu(beer(1)))
+    assert state.source("untappd_menu:gargoyle").checkin_overflow is False
+
+
+def test_checkin_source_quiet_since_starts_once_the_newest_id_repeats_unchanged():
+    state = ready("untappd_checkins:tap-station")
+    merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(5, NOW)]))
+    rec = state.source("untappd_checkins:tap-station")
+    assert (rec.last_checkin_id, rec.quiet_since) == (5, None)   # first time seeing id 5: still "active"
+
+    merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(5, NOW)]), now=NOW + DAY)
+    rec = state.source("untappd_checkins:tap-station")
+    assert (rec.last_checkin_id, rec.quiet_since) == (5, iso(NOW + DAY))   # unchanged: the quiet clock starts
+
+
+def test_checkin_source_quiet_since_resets_when_a_newer_checkin_id_appears():
+    state = ready("untappd_checkins:tap-station")
+    rec = state.source("untappd_checkins:tap-station")
+    rec.last_checkin_id, rec.quiet_since = 5, iso(NOW - DAY)
+    merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(6, NOW)]))
+    rec = state.source("untappd_checkins:tap-station")
+    assert (rec.last_checkin_id, rec.quiet_since) == (6, None)

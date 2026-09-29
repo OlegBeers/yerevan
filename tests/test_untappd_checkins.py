@@ -73,6 +73,7 @@ def test_craft_story_checkin_fields():
         venue_url="https://untappd.com/v/craft-story/12281551",
         beer_url="https://untappd.com/b/omnipollo-black-is-beautiful-vol-2-ipa/5698328",
         logo="https://assets.untappd.com/site/beer_logos/beer-5698328_a6ee7_sm.jpeg",
+        username="user16", rating=4.0,
     )
 
 
@@ -120,6 +121,18 @@ def test_brewery_page_at_home_and_no_venue():
     no_venue = checkins[1528687768]
     assert (no_venue.venue_id, no_venue.venue_name, no_venue.at_home) == (None, None, False)
     assert checkins[1528689976].serving == "Taster"
+
+
+def test_parse_checkins_reads_username_and_rating():
+    checkins = by_id(parse_checkins(fixture_text("untappd/craftstory_checkins.html")))
+    c = checkins[1429774602]
+    assert (c.username, c.rating) == ("user16", 4.0)
+
+
+def test_parse_checkins_rating_is_none_when_absent():
+    [c] = parse_checkins(AT_HOME_HTML)
+    assert c.username == "user1"
+    assert c.rating is None
 
 
 def test_browser_rewritten_time():
@@ -192,6 +205,14 @@ def test_fetch_ok():
     }
     assert len(result.venue_checkins) == 20
     assert all(vc.venue_id == 12281551 for vc in result.venue_checkins)
+
+
+def test_fetch_carries_raw_checkins_for_schedule_and_log():
+    """Phase 2 (overflow/quiet scheduling) and Phase 1 (the check-in log) both need the raw per-check-in
+    data (username, rating, venue) beyond what Sighting/VenueCheckin expose."""
+    html = fixture_text("untappd/craftstory_checkins.html")
+    result = fetch_venue_checkins(FakeClient(html), CRAFT_STORY, CONFIG, NOW, {})
+    assert result.checkins == parse_checkins(html)
 
 
 def test_fetch_error():

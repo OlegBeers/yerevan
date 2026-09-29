@@ -45,7 +45,7 @@ def fetch_brewery_checkins(client: UntappdClient, brewery: Brewery, config: Conf
     sightings = checkins_to_sightings(checkins, config, "untappd_brewery", now, brewery_aliases)
     return SourceResult(key=key, source="untappd_brewery", ok=True, brewery_id=brewery.brewery_id,
                         sightings=[replace(s, brewery_id=brewery.brewery_id) for s in sightings],
-                        venue_checkins=checkins_to_venue_checkins(checkins))
+                        venue_checkins=checkins_to_venue_checkins(checkins), checkins=checkins)
 
 
 def parse_beer_list(html: str) -> BeerList:

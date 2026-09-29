@@ -244,7 +244,7 @@ def test_first_run_is_silent_and_saves_state_and_site(world):
     state = world.state()
     assert world.pulls == [world.repo]
     assert world.sends == []
-    assert [p["paths"] for p in world.pushes] == [["state.json"]]
+    assert [p["paths"] for p in world.pushes] == [["state.json", "data/checkins.json"]]
     assert set(state.sources) == SOURCE_KEYS
     assert all(state.sources[k].baseline_done and state.sources[k].last_ok == iso(NOW) for k in SOURCE_KEYS)
     pairs = [rec for recs in state.pairs.values() for rec in recs.values()]
@@ -664,6 +664,39 @@ def test_city_check_respects_the_untappd_budget(world):
     rec = world.state().venues["54321"]
     assert rec.location_checked_at is None
     assert world.untappd.urls == [GARGOYLE]   # the one page the budget allowed; nothing after it
+
+
+# --- Phase 1: the check-in log (data/checkins.json) --------------------------
+
+FIXTURE_NOW = datetime(2024, 11, 1, 12, 0, tzinfo=timezone.utc)   # close to the Untappd fixtures' own
+                                                                   # check-in dates, so Phase 1's 120-day
+                                                                   # prune keeps them for these tests
+
+
+def test_checkin_log_is_saved_and_pushed_alongside_state_json(world):
+    assert world.run(FIXTURE_NOW) == 0
+
+    assert [p["paths"] for p in world.pushes] == [["state.json", "data/checkins.json"]]
+    lines = (world.repo / "data" / "checkins.json").read_text(encoding="utf-8").splitlines()
+    entries = [json.loads(line) for line in lines]
+    # craft-story's own venue (20 check-ins) + Dargett Craft Brewery's own venue on the brewery page (8);
+    # the other venues on that page (at-home, foreign, untracked, no venue) are excluded
+    assert len(entries) == 28
+    assert {e["venue_id"] for e in entries} == {12281551, 4640403}
+    assert [e["id"] for e in entries] == sorted(e["id"] for e in entries)   # id order: small git diffs
+    assert all(set(e) == {"id", "time", "venue_id", "username", "beer_id", "brewery", "rating"} for e in entries)
+
+
+def test_checkin_log_excludes_a_username_opted_out_via_corrections(world):
+    (world.repo / "corrections.yaml").write_text(
+        (CONFIG_FIXTURES / "corrections.yaml").read_text(encoding="utf-8") + "\nhide_users:\n  - user16\n",
+        encoding="utf-8")
+    assert world.run(FIXTURE_NOW) == 0
+
+    entries = [json.loads(line) for line in
+              (world.repo / "data" / "checkins.json").read_text(encoding="utf-8").splitlines()]
+    assert "user16" not in {e["username"] for e in entries}
+    assert len(entries) == 27
 
 
 # --- v1.1 §2: beer ratings for beers seen only in check-ins ------------------
@@ -1852,6 +1885,129 @@ def test_collect_untappd_uses_normal_budget_and_cap_when_not_boosted():
     assert client.daily_pages == 40
     searches = [u for u in urls if u.startswith("https://untappd.com/search?q=")]
     assert len(searches) == 8
+
+
+# --- Phase 2: budget-aware check-in coverage (overflow top-up, quiet sources) --------------------
+
+def test_checkin_source_due_when_never_read():
+    assert run_mod._checkin_source_due(empty_state(NOW), "untappd_checkins:x", NOW) is True
+
+
+def test_checkin_source_due_while_still_active_not_yet_quiet():
+    state = empty_state(NOW)
+    rec = state.source("untappd_checkins:x")
+    rec.last_ok, rec.quiet_since = iso(NOW), None
+    assert run_mod._checkin_source_due(state, "untappd_checkins:x", NOW + timedelta(days=10)) is True
+
+
+def test_checkin_source_skipped_the_day_right_after_it_went_quiet():
+    state = empty_state(NOW)
+    rec = state.source("untappd_checkins:x")
+    rec.last_ok, rec.quiet_since = iso(NOW), iso(NOW - timedelta(days=8))   # quiet for 8 days already
+    assert run_mod._checkin_source_due(state, "untappd_checkins:x", NOW + timedelta(hours=1)) is False
+
+
+def test_checkin_source_due_again_after_two_days_once_quiet():
+    state = empty_state(NOW)
+    rec = state.source("untappd_checkins:x")
+    rec.last_ok, rec.quiet_since = iso(NOW - timedelta(days=2)), iso(NOW - timedelta(days=8))
+    assert run_mod._checkin_source_due(state, "untappd_checkins:x", NOW) is True
+
+
+def test_checkin_source_due_before_seven_quiet_days_have_passed():
+    state = empty_state(NOW)
+    rec = state.source("untappd_checkins:x")
+    rec.last_ok, rec.quiet_since = iso(NOW), iso(NOW - timedelta(days=3))   # only 3 quiet days so far
+    assert run_mod._checkin_source_due(state, "untappd_checkins:x", NOW + timedelta(hours=1)) is True
+
+
+def test_collect_untappd_skips_a_quiet_checkin_source_but_reads_an_active_one():
+    state = empty_state(NOW)
+    quiet = state.source("untappd_checkins:quiet-bar")
+    quiet.last_ok, quiet.quiet_since = iso(NOW), iso(NOW - timedelta(days=8))
+    config = _config(places={
+        "quiet-bar": Place(id="quiet-bar", name="Quiet Bar", kind="bar",
+                           sources={"untappd_checkins": {"slug": "quiet-bar", "venue_id": 1}}),
+        "active-bar": Place(id="active-bar", name="Active Bar", kind="bar",
+                            sources={"untappd_checkins": {"slug": "active-bar", "venue_id": 2}}),
+    })
+    urls = []
+
+    def fetch_page(url):
+        urls.append(url)
+        return HttpResponse(200, {}, "<html><body>Nothing found.</body></html>")
+
+    deps = Deps(untappd_fetcher=lambda: (fetch_page, lambda: None), sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert "https://untappd.com/v/quiet-bar/1" not in urls
+    assert "https://untappd.com/v/active-bar/2" in urls
+
+
+def test_topup_due_only_after_the_regular_collection_ran_today():
+    assert run_mod._topup_due(UntappdRec(last_attempt=iso(NOW)), NOW) is True
+    assert run_mod._topup_due(UntappdRec(), NOW) is False                                   # nothing attempted yet
+    assert run_mod._topup_due(UntappdRec(last_attempt=iso(NOW - timedelta(days=1))), NOW) is False   # not today
+
+
+def test_topup_due_only_once_per_day():
+    untappd = UntappdRec(last_attempt=iso(NOW), topup_date="2026-09-24")
+    assert run_mod._topup_due(untappd, NOW) is False
+
+
+def test_collect_untappd_topup_noop_when_the_regular_collection_has_not_run_today():
+    state = empty_state(NOW)   # last_attempt unset: today's regular collection should run instead, not the top-up
+    fetcher = FakeUntappd({})
+    deps = Deps(untappd_fetcher=fetcher, sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    results, client = run_mod.collect_untappd_topup(state, _config(), run_mod.Corrections(), NOW, deps, alerter)
+
+    assert fetcher.started == 0 and results == [] and client is None
+    assert state.untappd.topup_date is None
+
+
+def test_collect_untappd_topup_launches_nothing_when_no_source_overflowed():
+    state = empty_state(NOW)
+    state.untappd.last_attempt = iso(NOW)
+    config = _config(places={"bar": Place(id="bar", name="Bar", kind="bar",
+                                          sources={"untappd_checkins": {"slug": "bar", "venue_id": 1}})})
+    fetcher = FakeUntappd({})
+    deps = Deps(untappd_fetcher=fetcher, sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    results, client = run_mod.collect_untappd_topup(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert fetcher.started == 0 and results == [] and client is None
+    assert state.untappd.topup_date == "2026-09-24"   # still marked done today, so it is not retried this evening
+
+
+def test_collect_untappd_topup_rereads_only_overflowed_checkin_sources_capped_at_six():
+    state = empty_state(NOW)
+    state.untappd.last_attempt = iso(NOW)
+    places = {}
+    for i in range(8):
+        pid = f"bar{i}"
+        places[pid] = Place(id=pid, name=f"Bar {i}", kind="bar",
+                            sources={"untappd_checkins": {"slug": pid, "venue_id": i}})
+        state.source(f"untappd_checkins:{pid}").checkin_overflow = True
+    places["ok-bar"] = Place(id="ok-bar", name="Ok Bar", kind="bar",
+                             sources={"untappd_checkins": {"slug": "ok-bar", "venue_id": 100}})
+    state.source("untappd_checkins:ok-bar").checkin_overflow = False   # did not overflow: not re-read
+    config = _config(places=places)
+    pages = {f"https://untappd.com/v/bar{i}/{i}": "<html><body>Nothing found.</body></html>" for i in range(8)}
+    fetcher = FakeUntappd(pages)
+    deps = Deps(untappd_fetcher=fetcher, sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    results, client = run_mod.collect_untappd_topup(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert len(fetcher.urls) == 6                                  # capped, within the daily budget
+    assert "https://untappd.com/v/ok-bar/100" not in fetcher.urls
+    assert state.untappd.topup_date == "2026-09-24"
+    assert fetcher.started == fetcher.closed == 1
 
 
 def test_shop_match_refresh_candidates_oldest_checked_first_capped_at_three():

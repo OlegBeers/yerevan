@@ -114,6 +114,19 @@ def test_numbers_are_accepted_as_text():
     assert corrections.not_craft == ("1795",)
 
 
+def test_parse_hide_users():
+    corrections, errors = parse("hide_users:\n  - some_user\n  - other_user\n")
+    assert errors == []
+    assert corrections.hide_users == frozenset({"some_user", "other_user"})
+
+
+def test_bad_hide_users_entry_is_skipped():
+    corrections, errors = parse("hide_users:\n  - some_user\n  - ''\n")
+    assert corrections.hide_users == frozenset({"some_user"})
+    assert len(errors) == 1
+    assert errors[0].startswith("corrections.yaml, hide_users (")
+
+
 def test_unknown_place_skips_entry_with_russian_error():
     corrections, errors = parse(
         "sightings:\n"

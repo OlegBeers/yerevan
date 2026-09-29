@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
+from taps.checkin_log import load_checkin_log, record_checkins, save_checkin_log
 from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
 from taps.digest import Digest, build_digest, drop_stale_events, is_due, mark_sent, rollback
@@ -51,6 +52,7 @@ from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow,
 STATE_FILE = "state.json"
 FATAL_FILE = ".taps-fatal"   # dedup marker for fatal alerts when no state.json can be trusted; not committed
 SITE_DATA = Path("site") / "data.json"
+CHECKINS_FILE = Path("data") / "checkins.json"   # Phase 1: the check-in log, committed alongside state.json
 BUTTON_TEXT = "Открыть список"
 LISTS_PER_RUN = 2          # brewery beer lists per Untappd collection (spec §10: 1-2)
 ADMIN_ENV_KEYS = ("TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID")          # alerts only
@@ -79,6 +81,10 @@ SEARCH_LOGIC_VERSION = 1             # v1.3: bump when query-building/acceptance
                                      # a "no_match" below this version is retried once, ignoring the wait above
 SHOP_MATCH_REFRESH_PER_RUN = 3       # matched shop beers whose cached rating is refreshed per run
 SHOP_MATCH_MAX_AGE_DAYS = 30         # a matched beer's cached rating is refreshed after this many days
+QUIET_DAYS = 7                # Phase 2b: a check-in source with an unchanged newest check-in for this
+                              # long is "quiet"
+QUIET_READ_EVERY = 2          # Phase 2b: a quiet source is then read only every this many days
+TOPUP_MAX_PAGES = 6           # Phase 2a: evening top-up cap on re-read overflowed check-in sources
 REPLY_POLL_MAX_PAGES = 5      # small cap on getUpdates pages per run; one empty page normally ends it
 DELETE_WINDOW_HOURS = 47      # Telegram lets a bot delete its own messages only within 48h; 1h safety margin
 
@@ -114,6 +120,18 @@ def _maybe_dump_debug(result: SourceResult, client: UntappdClient) -> None:
         dump_debug_html(result.key, client)
 
 
+def _checkin_source_due(state: State, key: str, now: datetime) -> bool:
+    """Phase 2b: a check-in source (untappd_checkins/untappd_brewery) is read every run while active;
+    once quiet (its newest check-in unchanged for QUIET_DAYS -- rules.py's _update_checkin_schedule),
+    it is read only every QUIET_READ_EVERY days, to save budget for busier places."""
+    rec = state.sources.get(key)
+    if rec is None or rec.quiet_since is None:
+        return True
+    if age_days(parse_iso(rec.quiet_since), now) < QUIET_DAYS:
+        return True
+    return rec.last_ok is None or age_days(parse_iso(rec.last_ok), now) >= QUIET_READ_EVERY
+
+
 def collect_untappd(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
                     alerter: Alerter) -> tuple[list[SourceResult], UntappdClient | None]:
     """Menus -> brewery check-ins -> venue check-ins -> 1-2 brewery lists -> city check for a few
@@ -131,9 +149,10 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
         *[(f"untappd_menu:{p.id}", p.id, lambda c, p=p: fetch_menu(c, p, now, ba))
           for p in places if "untappd_menu" in p.sources],
         *[(f"untappd_brewery:{b.brewery_id}", None, lambda c, b=b: fetch_brewery_checkins(c, b, config, now, ba))
-          for b in config.breweries],
+          for b in config.breweries if _checkin_source_due(state, f"untappd_brewery:{b.brewery_id}", now)],
         *[(f"untappd_checkins:{p.id}", p.id, lambda c, p=p: fetch_venue_checkins(c, p, config, now, ba))
-          for p in places if "untappd_checkins" in p.sources],
+          for p in places if "untappd_checkins" in p.sources
+          and _checkin_source_due(state, f"untappd_checkins:{p.id}", now)],
         *[(f"untappd_brewery_list:{b.brewery_id}", None, lambda c, b=b: fetch_brewery_list(c, b, now))
           for b in picked],
     ]
@@ -169,6 +188,65 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
         done = sum(1 for r in results if r.source == "untappd_brewery_list" and r.error != "budget")
         state.untappd.brewery_list_cursor = (cursor + done) % len(lists)
     # out of budget: skipped without a failure status (spec §10)
+    return [r for r in results if r.error != "budget"], client
+
+
+def _topup_due(untappd: UntappdRec, now: datetime) -> bool:
+    """Phase 2a: due only on a run after today's regular collection already happened (collect_untappd
+    above already covers "not yet attempted today"), and only once per day itself."""
+    today = yerevan_date(now)
+    if untappd.last_attempt is None or yerevan_date(parse_iso(untappd.last_attempt)) != today:
+        return False
+    return untappd.topup_date != today
+
+
+def _overflowed(state: State, key: str) -> bool:
+    rec = state.sources.get(key)
+    return bool(rec and rec.checkin_overflow)
+
+
+def _overflowed_checkin_jobs(state: State, config: Config, corrections: Corrections, now: datetime
+                             ) -> list[tuple[str, str | None, Callable[[UntappdClient], SourceResult]]]:
+    """Check-in sources (untappd_checkins/untappd_brewery) flagged overflow at the last read (rules.py's
+    _update_checkin_schedule), capped at TOPUP_MAX_PAGES -- same shape as collect_untappd's own jobs."""
+    ba = corrections.brewery_aliases
+    jobs: list[tuple[str, str | None, Callable[[UntappdClient], SourceResult]]] = [
+        *[(f"untappd_checkins:{p.id}", p.id, lambda c, p=p: fetch_venue_checkins(c, p, config, now, ba))
+          for p in config.places.values()
+          if "untappd_checkins" in p.sources and _overflowed(state, f"untappd_checkins:{p.id}")],
+        *[(f"untappd_brewery:{b.brewery_id}", None, lambda c, b=b: fetch_brewery_checkins(c, b, config, now, ba))
+          for b in config.breweries if _overflowed(state, f"untappd_brewery:{b.brewery_id}")],
+    ]
+    return jobs[:TOPUP_MAX_PAGES]
+
+
+def collect_untappd_topup(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
+                          alerter: Alerter) -> tuple[list[SourceResult], UntappdClient | None]:
+    """Phase 2a: evening top-up -- re-reads ONLY the check-in sources that overflowed at today's
+    (morning's) regular read, within the same daily Untappd budget, nothing else from Untappd."""
+    if not _topup_due(state.untappd, now):
+        return [], None
+    state.untappd.topup_date = yerevan_date(now)
+    jobs = _overflowed_checkin_jobs(state, config, corrections, now)
+    if not jobs:
+        return [], None
+    try:
+        fetch_page, close = deps.untappd_fetcher()
+    except Exception as e:
+        alerter.alert("untappd:browser", f"не запустился браузер для Untappd: {type(e).__name__}: {e}",
+                      dedupe_by_key=True)
+        return [], None
+    alerter.resolve("untappd:browser")
+    try:
+        daily_pages = config.settings.effective_daily_pages(yerevan_date(now))
+        client = UntappdClient(state.untappd, daily_pages, now, fetch_page, sleep=deps.sleep)
+        results = []
+        for key, place_id, job in jobs:
+            result = _guard(key, place_id, lambda: job(client))
+            _maybe_dump_debug(result, client)
+            results.append(result)
+    finally:
+        close()
     return [r for r in results if r.error != "budget"], client
 
 
@@ -982,10 +1060,15 @@ def track_digest_replies(state: State, env: Mapping[str, str], deps: Deps) -> bo
 
 # --- run ---------------------------------------------------------------------
 
-def _save_push(repo: Path, state: State, deps: Deps, message: str) -> bool:
+def _save_push(repo: Path, state: State, deps: Deps, message: str, checkin_log: list | None = None) -> bool:
+    """checkin_log (Phase 1), when given, is saved and committed together with state.json."""
     save_state(repo / STATE_FILE, state)
+    paths = [STATE_FILE]
+    if checkin_log is not None:
+        save_checkin_log(repo / CHECKINS_FILE, checkin_log)
+        paths.append(str(CHECKINS_FILE))
     try:
-        return deps.push(repo, [STATE_FILE], message)
+        return deps.push(repo, paths, message)
     except GitError:
         return False
 
@@ -1056,10 +1139,19 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     merge_places(state, {old: p.id for p in config.places.values() for old in p.merged_from})
     apply_same_as(state, corrections, now)   # v1.2 beer identity: manual override, wins over local/search
     match_shop_beers_locally(state, now)     # v1.2 beer identity: zero-page match, before search
-    untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
+    if untappd_due(state.untappd, now):
+        untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
+    else:   # Phase 2a: already collected today -- consider a small evening top-up instead
+        untappd_results, client = collect_untappd_topup(state, config, corrections, now, deps, alerter)
     results = [*untappd_results, *collect_shops(state, config, corrections, now, deps.http),
                manual_result(corrections, config, now)]
     record_venues(state, results, now, config.known_venue_ids)
+    # Phase 1: the check-in log (data/checkins.json) -- Armenian venues only (our places, plus any
+    # discovered venue the city check has confirmed is in Armenia), opted-out usernames purged.
+    armenia_venue_ids = config.known_venue_ids | {
+        int(vid) for vid, rec in state.venues.items() if rec.country == "Armenia"}
+    checkin_log = record_checkins(load_checkin_log(repo / CHECKINS_FILE), [c for r in results for c in r.checkins],
+                                  armenia_venue_ids, corrections.hide_users, now)
     outcome = merge_results(state, results, config, corrections, now)
     apply_shop_matches(state)   # v1.1 §3: overlay this run's (or an earlier) Untappd match onto shop rows
     apply_known_beer_info(state)   # hand-entered beers borrow label/rating from the same beer elsewhere
@@ -1095,7 +1187,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
 
     # Spec §7: the sent mark is pushed before sending, so a failed push sends nothing.
     mark = mark_sent(state, digest, now) if digest else None
-    if not _save_push(repo, state, deps, f"state {iso(now)}"):
+    if not _save_push(repo, state, deps, f"state {iso(now)}", checkin_log):
         return 1
     pushed = state.to_dict()
     # The discovery report's own bookkeeping (reported ids, last_report_date) was pushed above already,

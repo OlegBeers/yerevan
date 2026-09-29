@@ -95,6 +95,13 @@ def test_brewery_page_records_every_venue_seen_in_checkins():
     assert result.venue_meta is None   # a brewery page, not a venue page
 
 
+def test_fetch_brewery_checkins_carries_raw_checkins():
+    """Phase 2/1: the raw check-ins (username, rating, all venues) behind the schedule and the log."""
+    page = brewery_page()
+    result = fetch_brewery_checkins(FakeClient(page), DARGETT, CONFIG, NOW, {})
+    assert result.checkins == parse_checkins(page)
+
+
 def test_no_checkins_at_config_places_is_ok():
     tap_station = Place(id="tap-station", name="Tap Station", kind="bar",
                         sources={"untappd_checkins": {"slug": "tap-station", "venue_id": 8234456}})

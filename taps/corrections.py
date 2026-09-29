@@ -10,7 +10,7 @@ import yaml
 
 from taps.model import untappd_n_key
 
-LIST_SECTIONS = ("sightings", "hide", "same_as", "not_craft")
+LIST_SECTIONS = ("sightings", "hide", "same_as", "not_craft", "hide_users")
 MAP_SECTIONS = ("aliases", "brewery_aliases")
 SIGHTING_FIELDS = ("place", "brewery", "beer", "untappd", "by", "date", "container", "style", "abv", "ibu", "price")
 CONTAINERS = {"розлив": "draft", "банка": "can", "бутылка": "bottle"}
@@ -45,6 +45,7 @@ class Corrections:
     aliases: Mapping[str, str] = field(default_factory=dict)          # beer_key -> beer_key
     brewery_aliases: Mapping[str, str] = field(default_factory=dict)  # text -> text
     not_craft: tuple[str, ...] = ()
+    hide_users: frozenset[str] = frozenset()   # Untappd usernames opted out of the check-in log (stats.html)
 
 
 @dataclass
@@ -194,6 +195,13 @@ def _brand(item: Any) -> str:
     return brand
 
 
+def _username(item: Any) -> str:
+    username = _text(item, "имя пользователя")
+    if username is None:
+        raise _Skip("пустое имя пользователя")
+    return username
+
+
 def _parse_all(section: str, items: Iterable[Any], parse: Callable[[Any], Any], errors: list[str]) -> list:
     out = []
     for item in items:
@@ -229,6 +237,7 @@ def parse_corrections(raw: dict, place_ids: Collection[str]) -> tuple[Correction
         aliases=dict(_parse_all("aliases", s["aliases"].items(), _alias, errors)),
         brewery_aliases=brewery_aliases,
         not_craft=tuple(_parse_all("not_craft", s["not_craft"], _brand, errors)),
+        hide_users=frozenset(_parse_all("hide_users", s["hide_users"], _username, errors)),
     )
     return corrections, errors
 

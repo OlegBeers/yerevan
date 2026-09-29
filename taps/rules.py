@@ -6,7 +6,7 @@ from datetime import date, datetime
 from taps.breaker import evaluate, result_keys
 from taps.config import Config, Place
 from taps.corrections import Corrections
-from taps.model import Sighting, SourceResult, strip_color, u_key, untappd_n_key
+from taps.model import SOURCE_KINDS, Sighting, SourceResult, strip_color, u_key, untappd_n_key
 from taps.shop_filter import classify
 from taps.state import BeerRec, BreweryNewRec, PairRec, SourceRec, State, resolve_alias
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan
@@ -121,16 +121,34 @@ class _Merger:
 
     def merge(self, result: SourceResult, baseline: bool) -> None:
         rec = self.state.source(result.key)
+        previous_read_at = rec.last_ok   # before this merge overwrites it below
         if result.source == "untappd_brewery_list":
             self._brewery_list(result, rec, baseline)
         else:
             self._sightings(result, rec, baseline)
+        if SOURCE_KINDS.get(result.source) == "checkin" and result.checkins:
+            self._update_checkin_schedule(rec, result.checkins, previous_read_at)
         rec.baseline_done, rec.last_ok, rec.fail_streak, rec.last_error = True, self.stamp, 0, None
         if result.full:
             rec.last_count = len(result_keys(result))
             rec.last_full = self.stamp
         rec.seen_menu_ids = sorted({s.menu_id for s in result.sightings if s.menu_id})
         rec.menu_updated_at = iso(result.menu_updated_at) if result.menu_updated_at else None
+
+    def _update_checkin_schedule(self, rec: SourceRec, checkins: Sequence, previous_read_at: str | None) -> None:
+        """Phase 2 budget-aware coverage, per check-in source (spec):
+        overflow -- the oldest check-in currently on the page is newer than the page's own previous
+        read, meaning more than the ~25 shown may have arrived since (a possible gap: run.py's evening
+        top-up target); quiet -- the newest check-in id is unchanged since the last read (run.py reads
+        a quiet source only every second day once this has held for long enough)."""
+        newest_id = max(c.checkin_id for c in checkins)
+        oldest_at = min(c.created_at for c in checkins)
+        rec.checkin_overflow = previous_read_at is not None and oldest_at > parse_iso(previous_read_at)
+        if newest_id != rec.last_checkin_id:
+            rec.last_checkin_id = newest_id
+            rec.quiet_since = None
+        elif rec.quiet_since is None:
+            rec.quiet_since = self.stamp
 
     def _sightings(self, result: SourceResult, rec: SourceRec, baseline: bool) -> None:
         tabs = set(rec.seen_menu_ids)   # menu tabs of the previous successful run

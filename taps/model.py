@@ -4,6 +4,10 @@ import unicodedata
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from taps.sources.untappd_checkins import Checkin
 
 SOURCE_KINDS: dict[str, str] = {
     "untappd_menu": "menu", "buyam": "menu",
@@ -98,6 +102,8 @@ class SourceResult:
     brewery_beers: list[BreweryBeer] = field(default_factory=list)
     venue_meta: dict | None = None            # {"venue_id","name","url","logo","verified"} of this result's own venue
     venue_checkins: list[VenueCheckin] = field(default_factory=list)   # every venue seen in check-ins (v1.1)
+    checkins: "list[Checkin]" = field(default_factory=list)   # every raw check-in on the page (untappd_checkins/
+                                                               # untappd_brewery only): schedule overflow + the check-in log
 
 
 MAX_SERVINGS = 6   # a bad menu must not bloat state.json
