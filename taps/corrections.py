@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml
 
+from taps.checkin_log import normalize_username
 from taps.model import untappd_n_key
 
 LIST_SECTIONS = ("sightings", "hide", "same_as", "not_craft", "hide_users")
@@ -199,7 +200,10 @@ def _username(item: Any) -> str:
     username = _text(item, "имя пользователя")
     if username is None:
         raise _Skip("пустое имя пользователя")
-    return username
+    normalized = normalize_username(username)
+    if not normalized:
+        raise _Skip("пустое имя пользователя")
+    return normalized
 
 
 def _parse_all(section: str, items: Iterable[Any], parse: Callable[[Any], Any], errors: list[str]) -> list:

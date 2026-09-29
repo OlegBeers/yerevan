@@ -135,6 +135,27 @@ def test_parse_checkins_rating_is_none_when_absent():
     assert c.rating is None
 
 
+def test_parse_checkins_survives_a_malformed_rating_without_losing_other_checkins():
+    """One odd data-rating (bad markup, a future Untappd change) must not fail the whole page."""
+    bad = AT_HOME_HTML.replace("1528967315", "1").replace(
+        '<div class="rating-serving"><p class="serving"><img alt="Bottle"><span>Bottle</span></p></div>',
+        '<div class="rating-serving"><p class="serving"><img alt="Bottle"><span>Bottle</span></p>'
+        '<div class="caps " data-rating="N/A"></div></div>')
+    other = AT_HOME_HTML.replace("1528967315", "2")
+    checkins = by_id(parse_checkins(bad + other))
+    assert checkins[1].rating is None
+    assert checkins[2].rating is None   # the AT_HOME_HTML fixture itself has no rating markup
+
+
+def test_parse_checkins_rating_of_zero_means_no_ratings_yet():
+    html = AT_HOME_HTML.replace(
+        '<div class="rating-serving"><p class="serving"><img alt="Bottle"><span>Bottle</span></p></div>',
+        '<div class="rating-serving"><p class="serving"><img alt="Bottle"><span>Bottle</span></p>'
+        '<div class="caps " data-rating="0"></div></div>')
+    [c] = parse_checkins(html)
+    assert c.rating is None
+
+
 def test_browser_rewritten_time():
     # In a browser, refreshTime(".timezoner", "D MMM YY") turns the time into a date only.
     html = AT_HOME_HTML.replace("Sun, 16 Nov 2025 00:44:33 +0000", "6 Nov 25")

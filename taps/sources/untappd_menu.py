@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup, Tag
 from taps.config import Place
 from taps.fetch import FetchError, UntappdClient
 from taps.model import Serving, Sighting, SourceResult, u_key, with_servings
-from taps.sources.untappd_checkins import parse_venue_meta
+from taps.sources.untappd_checkins import parse_rating, parse_venue_meta
 from taps.timeutil import parse_iso
 
 SKIP_TAB_RE = re.compile(r"(food|wine|cocktail|spirit|kitchen|кухн|вино)", re.I)
@@ -76,15 +76,6 @@ def _tabs(soup: BeautifulSoup) -> tuple[list[tuple[str, str]], str | None]:
     return tabs, matches[0] if len(matches) == 1 else None
 
 
-def _rating(li: Tag) -> float | None:
-    caps = li.select_one("div.caps[data-rating]")
-    try:
-        rating = float(caps["data-rating"]) if caps else None
-    except ValueError:
-        return None
-    return rating or None   # 0 means no ratings yet
-
-
 def _price(li: Tag) -> tuple[int | None, int | None, str | None]:
     """(price_amd, volume_ml, container) from the first AMD price row, else from the first row."""
     rows = li.select("div.beer-prices p")
@@ -126,7 +117,7 @@ def _item(li: Tag, section: str) -> MenuItem | None:
         style=_text(li.select_one("h5 em")) or None,
         abv=float(abv.group(1)) if abv else None,
         ibu=round(float(ibu.group(1))) if ibu else None,
-        rating=_rating(li),
+        rating=parse_rating(li),
         price_amd=price,
         volume_ml=volume,
         container=container,

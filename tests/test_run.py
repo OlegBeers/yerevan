@@ -707,6 +707,36 @@ def test_checkin_log_excludes_a_username_opted_out_via_corrections(world):
     assert len(entries) == 27
 
 
+def test_corrupt_checkin_log_alerts_and_is_never_overwritten_with_an_empty_one(world):
+    """The check-in log is non-essential: a broken data/checkins.json must not stop the run (menus,
+    checkins, the digest all still work), and -- since we cannot safely rebuild it -- it must be left
+    exactly as it was on disk, never replaced with an empty result."""
+    (world.repo / "data").mkdir()
+    (world.repo / "data" / "checkins.json").write_text("{not json\n", encoding="utf-8")
+
+    assert world.run(FIXTURE_NOW) == 0
+
+    assert (world.repo / "data" / "checkins.json").read_text(encoding="utf-8") == "{not json\n"
+    assert [p["paths"] for p in world.pushes] == [["state.json"]]   # checkins.json was not touched
+    admin_alerts = [s for s in world.sends if s["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]]
+    assert any("checkins.json" in a["text"] for a in admin_alerts)
+
+
+def test_stats_build_failure_alerts_and_does_not_break_the_run(world, monkeypatch):
+    """site/stats.json is also non-essential: if building it ever breaks, the core run (state, site
+    data, digest, push) must still complete normally."""
+    monkeypatch.setattr(run_mod, "build_stats_data",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+
+    assert world.run(FIXTURE_NOW) == 0
+
+    assert (world.repo / "site" / "data.json").exists()
+    assert not (world.repo / "site" / "stats.json").exists()   # never written this run
+    assert [p["paths"] for p in world.pushes] == [["state.json", "data/checkins.json"]]
+    admin_alerts = [s for s in world.sends if s["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]]
+    assert any("stats.json" in a["text"] for a in admin_alerts)
+
+
 # --- v1.1 §2: beer ratings for beers seen only in check-ins ------------------
 
 BEER_URL = "https://untappd.com/b/dargett-brewery-cherry-ale-morello/1559917"
@@ -1867,7 +1897,8 @@ def test_collect_untappd_uses_boosted_daily_pages_and_search_cap():
 
     _, client = run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
 
-    assert client.daily_pages == 80                                              # boosted, not the plain 40
+    # boosted (80), not the plain 40, minus the pages reserved for the evening top-up
+    assert client.daily_pages == 80 - run_mod.TOPUP_MAX_PAGES
     searches = [u for u in urls if u.startswith("https://untappd.com/search?q=")]
     assert len(searches) == 10                                                    # boosted cap, not the plain 8
 
@@ -1890,7 +1921,7 @@ def test_collect_untappd_uses_normal_budget_and_cap_when_not_boosted():
 
     _, client = run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
 
-    assert client.daily_pages == 40
+    assert client.daily_pages == 40 - run_mod.TOPUP_MAX_PAGES   # minus the pages reserved for the evening top-up
     searches = [u for u in urls if u.startswith("https://untappd.com/search?q=")]
     assert len(searches) == 8
 
@@ -1929,6 +1960,27 @@ def test_checkin_source_due_before_seven_quiet_days_have_passed():
     assert run_mod._checkin_source_due(state, "untappd_checkins:x", NOW + timedelta(hours=1)) is True
 
 
+def test_checkin_source_due_uses_yerevan_calendar_dates_not_fractional_hours():
+    """Schedule jitter (a run starting a few minutes earlier than the day before) must not stretch the
+    real gap: two Yerevan calendar dates apart is due even when the absolute gap is just under 48h,
+    which a naive age_days(...) >= 2 comparison would wrongly read as still under two full days."""
+    state = empty_state(NOW)
+    rec = state.source("untappd_checkins:x")
+    day1_1035 = datetime(2026, 9, 1, 6, 35, tzinfo=timezone.utc)    # 10:35 Yerevan, day 1
+    rec.last_ok, rec.quiet_since = iso(day1_1035), iso(day1_1035 - timedelta(days=10))
+    day3_1020 = datetime(2026, 9, 3, 6, 20, tzinfo=timezone.utc)    # 10:20 Yerevan, day 3: <48h later
+    assert (day3_1020 - day1_1035) < timedelta(days=2)              # the naive fractional check would say "not due"
+    assert run_mod._checkin_source_due(state, "untappd_checkins:x", day3_1020) is True
+
+
+def test_quiet_read_cadence_never_reaches_the_breaker_stale_days_threshold():
+    """A gap this long would fold the source's next successful read into a silent baseline
+    (breaker.evaluate's own "stale" rule) instead of merging it -- so real check-ins could go
+    unannounced. The quiet-source cadence must stay strictly under that threshold."""
+    from taps.breaker import STALE_DAYS
+    assert run_mod.QUIET_READ_EVERY < STALE_DAYS
+
+
 def test_collect_untappd_skips_a_quiet_checkin_source_but_reads_an_active_one():
     state = empty_state(NOW)
     quiet = state.source("untappd_checkins:quiet-bar")
@@ -1954,6 +2006,27 @@ def test_collect_untappd_skips_a_quiet_checkin_source_but_reads_an_active_one():
     assert "https://untappd.com/v/active-bar/2" in urls
 
 
+def test_collect_untappd_reserves_topup_pages_from_the_lower_priority_tiers():
+    """The lower-priority tiers (bar/shop beer pages onward, which run after menus and check-ins) must
+    stop TOPUP_MAX_PAGES short of the day's budget, so the evening top-up always has pages left for
+    whichever check-in sources overflow this morning."""
+    state = empty_state(NOW)
+    state.pairs = {"gargoyle": {
+        f"u:{i}": _checkin_pair(iso(NOW - timedelta(days=1)), url=f"https://untappd.com/b/x/{i}")
+        for i in range(1, 11)   # 10 candidates: more than the budget left after the reserve
+    }}
+    config = _config(places={"gargoyle": Place(id="gargoyle", name="Gargoyle", kind="bar", sources={})},
+                     untappd_daily_pages=10)
+    deps = Deps(untappd_fetcher=lambda: (
+        lambda url: HttpResponse(200, {}, "<html><body>Nothing found.</body></html>"), lambda: None),
+        sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    run_mod.collect_untappd(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert state.untappd.pages_today == 10 - run_mod.TOPUP_MAX_PAGES
+
+
 def test_topup_due_only_after_the_regular_collection_ran_today():
     assert run_mod._topup_due(UntappdRec(last_attempt=iso(NOW)), NOW) is True
     assert run_mod._topup_due(UntappdRec(), NOW) is False                                   # nothing attempted yet
@@ -1963,6 +2036,23 @@ def test_topup_due_only_after_the_regular_collection_ran_today():
 def test_topup_due_only_once_per_day():
     untappd = UntappdRec(last_attempt=iso(NOW), topup_date="2026-09-24")
     assert run_mod._topup_due(untappd, NOW) is False
+
+
+def test_collect_untappd_topup_skips_launching_the_browser_when_the_days_budget_is_exhausted():
+    state = empty_state(NOW)
+    state.untappd.last_attempt = iso(NOW)
+    state.untappd.pages_today, state.untappd.pages_date = 40, "2026-09-24"   # the morning run spent it all
+    state.source("untappd_checkins:bar").checkin_overflow = True
+    config = _config(places={"bar": Place(id="bar", name="Bar", kind="bar",
+                                          sources={"untappd_checkins": {"slug": "bar", "venue_id": 1}})},
+                     untappd_daily_pages=40)
+    fetcher = FakeUntappd({})
+    deps = Deps(untappd_fetcher=fetcher, sleep=lambda s: None)
+    alerter = run_mod.Alerter(state)
+
+    results, client = run_mod.collect_untappd_topup(state, config, run_mod.Corrections(), NOW, deps, alerter)
+
+    assert fetcher.started == 0 and results == [] and client is None
 
 
 def test_collect_untappd_topup_noop_when_the_regular_collection_has_not_run_today():

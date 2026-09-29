@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from taps.checkin_log import CheckinLogEntry, load_checkin_log, record_checkins, save_checkin_log
+from taps.checkin_log import CheckinLogEntry, load_checkin_log, normalize_username, record_checkins, save_checkin_log
 from taps.sources.untappd_checkins import Checkin
 
 NOW = datetime(2026, 9, 24, 12, 0, tzinfo=timezone.utc)
@@ -38,6 +38,26 @@ def test_record_checkins_drops_hidden_users_and_purges_existing_entries():
     checkins = [checkin(1, 12281551, username="hidden_one"), checkin(2, 12281551, username="visible")]
     log = record_checkins(existing, checkins, ARMENIA, {"hidden_one"}, NOW)
     assert [e.id for e in log] == [2]
+
+
+def test_normalize_username_casefolds_strips_at_and_profile_url():
+    assert normalize_username("SomeUser") == "someuser"
+    assert normalize_username("@SomeUser") == "someuser"
+    assert normalize_username("https://untappd.com/user/SomeUser") == "someuser"
+    assert normalize_username("https://untappd.com/user/SomeUser/") == "someuser"
+
+
+def test_record_checkins_hidden_users_match_regardless_of_case_at_or_url_form():
+    checkins = [checkin(1, 12281551, username="SomeUser"), checkin(2, 12281551, username="visible")]
+    log = record_checkins([], checkins, ARMENIA, {"@someuser"}, NOW)
+    assert [e.id for e in log] == [2]
+
+
+def test_record_checkins_purges_an_existing_entry_regardless_of_stored_case():
+    existing = [CheckinLogEntry(id=9, time=NOW.isoformat(timespec="seconds"), venue_id=12281551,
+                                username="SomeUser", beer_id=1, brewery="X", rating=None)]
+    log = record_checkins(existing, [], ARMENIA, {"someuser"}, NOW)
+    assert log == []
 
 
 def test_record_checkins_dedupes_by_id_across_sources():

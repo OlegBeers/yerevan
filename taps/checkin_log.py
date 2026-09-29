@@ -4,6 +4,7 @@ Privacy (spec): only id, time, venue id, username, beer id, brewery name and the
 are stored -- no display names, avatars, photos, comments or per-user venue history. corrections.yaml
 hide_users opts a username out entirely: never stored, and purged from an existing log."""
 import json
+import re
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +14,16 @@ from taps.sources.untappd_checkins import Checkin
 from taps.timeutil import age_days, iso, parse_iso
 
 LOG_KEEP_DAYS = 120   # a check-in older than this is pruned every run
+USER_URL_RE = re.compile(r"^https?://(?:www\.)?untappd\.com/user/([^/?#]+)", re.IGNORECASE)
+
+
+def normalize_username(raw: str) -> str:
+    """Case/format-insensitive comparison key for a hide_users entry or a parsed check-in username:
+    strips a untappd.com/user/ profile URL down to the handle, drops a leading '@', and casefolds."""
+    text = raw.strip()
+    if m := USER_URL_RE.match(text):
+        text = m.group(1)
+    return text.lstrip("@").strip().casefold()
 
 
 @dataclass(frozen=True)
@@ -53,11 +64,12 @@ def record_checkins(log: list[CheckinLogEntry], checkins: Collection[Checkin], a
     user's existing entries. Deduped by check-in id (across venue and brewery-page sources), pruned to
     LOG_KEEP_DAYS, sorted by id (spec: small git diffs)."""
     armenia = set(armenia_venue_ids)
-    by_id = {e.id: e for e in log if e.username not in hidden_users}
+    hidden = {normalize_username(u) for u in hidden_users}
+    by_id = {e.id: e for e in log if normalize_username(e.username) not in hidden}
     for c in checkins:
         if c.venue_id is None or c.at_home or c.username is None:
             continue
-        if c.venue_id not in armenia or c.username in hidden_users:
+        if c.venue_id not in armenia or normalize_username(c.username) in hidden:
             continue
         by_id[c.checkin_id] = _entry(c)
     kept = [e for e in by_id.values() if age_days(parse_iso(e.time), now) <= LOG_KEEP_DAYS]

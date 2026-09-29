@@ -40,6 +40,18 @@ def _text(tag: Tag | None) -> str:
     return " ".join(tag.get_text(" ").split()) if tag else ""
 
 
+def parse_rating(tag: Tag) -> float | None:
+    """A div.caps[data-rating] rating within `tag` -- shared with untappd_menu.py's own menu items, so a
+    malformed data-rating (a future Untappd change, "N/A") never fails the whole page; 0 means no
+    ratings yet."""
+    caps = tag.select_one("div.caps[data-rating]")
+    try:
+        rating = float(caps["data-rating"]) if caps else None
+    except ValueError:
+        return None
+    return rating or None
+
+
 def _created_at(text: str) -> datetime | None:
     """Server HTML has 'Thu, 31 Oct 2024 15:50:09 +0000'. In a real browser the page script
     refreshTime(".timezoner", "D MMM YY") rewrites it to '31 Oct 24', a browser-local date:
@@ -83,7 +95,6 @@ def _parse_item(item: Tag) -> Checkin | None:
         return None
     serving = _text(item.select_one("p.serving span")) or None
     logo = item.select_one("a.label img[src]")
-    caps = item.select_one("div.caps[data-rating]")
     return Checkin(
         checkin_id=int(item["data-checkin-id"]),
         beer_id=beer[0],
@@ -98,7 +109,7 @@ def _parse_item(item: Tag) -> Checkin | None:
         beer_url=f"https://untappd.com{beer[2]}",
         logo=logo["src"] if logo else None,
         username=username,
-        rating=float(caps["data-rating"]) if caps else None,
+        rating=parse_rating(item),
     )
 
 

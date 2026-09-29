@@ -10,10 +10,11 @@ import os
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
+from taps.breaker import STALE_DAYS
 from taps.checkin_log import load_checkin_log, record_checkins, save_checkin_log
 from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
@@ -85,7 +86,10 @@ SHOP_MATCH_REFRESH_PER_RUN = 3       # matched shop beers whose cached rating is
 SHOP_MATCH_MAX_AGE_DAYS = 30         # a matched beer's cached rating is refreshed after this many days
 QUIET_DAYS = 7                # Phase 2b: a check-in source with an unchanged newest check-in for this
                               # long is "quiet"
-QUIET_READ_EVERY = 2          # Phase 2b: a quiet source is then read only every this many days
+QUIET_READ_EVERY = 2          # Phase 2b: a quiet source is then read only every this many days; must
+                              # stay under breaker.STALE_DAYS, or a longer gap would fold the source's
+                              # next successful read into a silent baseline instead of merging it
+assert QUIET_READ_EVERY < STALE_DAYS
 TOPUP_MAX_PAGES = 6           # Phase 2a: evening top-up cap on re-read overflowed check-in sources
 REPLY_POLL_MAX_PAGES = 5      # small cap on getUpdates pages per run; one empty page normally ends it
 DELETE_WINDOW_HOURS = 47      # Telegram lets a bot delete its own messages only within 48h; 1h safety margin
@@ -122,6 +126,15 @@ def _maybe_dump_debug(result: SourceResult, client: UntappdClient) -> None:
         dump_debug_html(result.key, client)
 
 
+def _yerevan_date_gap(then_iso: str, now: datetime) -> int:
+    """Whole Yerevan calendar days between an iso timestamp and now. Deliberately not age_days'
+    fractional/continuous comparison: a run's exact time of day jitters (GitHub Actions cron does not
+    fire at the exact second), so two runs 47h50m apart can straddle two calendar-day boundaries while
+    still reading under a fractional "2.0 days" threshold -- silently stretching a "read every Nth day"
+    cadence past its intended gap."""
+    return (date.fromisoformat(yerevan_date(now)) - date.fromisoformat(yerevan_date(parse_iso(then_iso)))).days
+
+
 def _checkin_source_due(state: State, key: str, now: datetime) -> bool:
     """Phase 2b: a check-in source (untappd_checkins/untappd_brewery) is read every run while active;
     once quiet (its newest check-in unchanged for QUIET_DAYS -- rules.py's _update_checkin_schedule),
@@ -129,9 +142,9 @@ def _checkin_source_due(state: State, key: str, now: datetime) -> bool:
     rec = state.sources.get(key)
     if rec is None or rec.quiet_since is None:
         return True
-    if age_days(parse_iso(rec.quiet_since), now) < QUIET_DAYS:
+    if _yerevan_date_gap(rec.quiet_since, now) < QUIET_DAYS:
         return True
-    return rec.last_ok is None or age_days(parse_iso(rec.last_ok), now) >= QUIET_READ_EVERY
+    return rec.last_ok is None or _yerevan_date_gap(rec.last_ok, now) >= QUIET_READ_EVERY
 
 
 def collect_untappd(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
@@ -174,6 +187,9 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
             result = _guard(key, place_id, lambda: job(client))
             _maybe_dump_debug(result, client)   # client.last_html/url still belong to this job
             results.append(result)
+        # Phase 2a: reserve TOPUP_MAX_PAGES of today's budget for the evening top-up -- menus and
+        # check-ins (above) already got the full budget; only the lower-priority tiers below yield.
+        client.daily_pages = max(daily_pages - TOPUP_MAX_PAGES, 0)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
         # v1.3 owner priority: bars, then shops, then search, then countries (limited daily page budget)
         sampled = fetch_bar_beer_pages(state, config, client, now)      # tier A: bar/brewpub beers
@@ -235,6 +251,9 @@ def collect_untappd_topup(state: State, config: Config, corrections: Corrections
     jobs = _overflowed_checkin_jobs(state, config, corrections, now)
     if not jobs:
         return [], None
+    daily_pages = config.settings.effective_daily_pages(yerevan_date(now))
+    if state.untappd.pages_today >= daily_pages:   # the morning run already spent today's whole budget
+        return [], None
     try:
         fetch_page, close = deps.untappd_fetcher()
     except Exception as e:
@@ -243,7 +262,6 @@ def collect_untappd_topup(state: State, config: Config, corrections: Corrections
         return [], None
     alerter.resolve("untappd:browser")
     try:
-        daily_pages = config.settings.effective_daily_pages(yerevan_date(now))
         client = UntappdClient(state.untappd, daily_pages, now, fetch_page, sleep=deps.sleep)
         results = []
         for key, place_id, job in jobs:
@@ -1153,10 +1171,20 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     record_venues(state, results, now, config.known_venue_ids)
     # Phase 1: the check-in log (data/checkins.json) -- Armenian venues only (our places, plus any
     # discovered venue the city check has confirmed is in Armenia), opted-out usernames purged.
+    # Non-essential to the core run: a load/merge failure alerts and leaves the file untouched (never
+    # overwritten with an empty result) rather than risk losing the accumulated log.
     armenia_venue_ids = config.known_venue_ids | {
         int(vid) for vid, rec in state.venues.items() if rec.country == "Armenia"}
-    checkin_log = record_checkins(load_checkin_log(repo / CHECKINS_FILE), [c for r in results for c in r.checkins],
-                                  armenia_venue_ids, corrections.hide_users, now)
+    checkin_log = None
+    try:
+        checkin_log = record_checkins(load_checkin_log(repo / CHECKINS_FILE),
+                                      [c for r in results for c in r.checkins],
+                                      armenia_venue_ids, corrections.hide_users, now)
+    except Exception as e:
+        alerter.alert("checkins:load", f"data/checkins.json не читается: {type(e).__name__}: {e}",
+                      dedupe_by_key=True)
+    else:
+        alerter.resolve("checkins:load")
     outcome = merge_results(state, results, config, corrections, now)
     apply_shop_matches(state)   # v1.1 §3: overlay this run's (or an earlier) Untappd match onto shop rows
     apply_known_beer_info(state)   # hand-entered beers borrow label/rating from the same beer elsewhere
@@ -1165,7 +1193,14 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     update_alerts(alerter, state, outcome, client, load.errors)
     site_data = build_site_data(state, config, now)
     write_site_data(repo / SITE_DATA, site_data)
-    write_stats_data(repo / STATS_DATA, build_stats_data(state, config, checkin_log, now))
+    if checkin_log is not None:   # Phase 3: also non-essential -- an alert, never a broken run
+        try:
+            write_stats_data(repo / STATS_DATA, build_stats_data(state, config, checkin_log, now))
+        except Exception as e:
+            alerter.alert("stats:build", f"не удалось собрать site/stats.json: {type(e).__name__}: {e}",
+                          dedupe_by_key=True)
+        else:
+            alerter.resolve("stats:build")
 
     polled_ok = True   # getUpdates outcome this run; False (a failure) blocks deletion below regardless of replies
     if not dry_run and not no_digest:

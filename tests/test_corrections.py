@@ -127,6 +127,13 @@ def test_bad_hide_users_entry_is_skipped():
     assert errors[0].startswith("corrections.yaml, hide_users (")
 
 
+def test_hide_users_normalizes_case_at_and_profile_url():
+    corrections, errors = parse(
+        "hide_users:\n  - '@SomeUser'\n  - https://untappd.com/user/Other/\n  - PlainUser\n")
+    assert errors == []
+    assert corrections.hide_users == frozenset({"someuser", "other", "plainuser"})
+
+
 def test_unknown_place_skips_entry_with_russian_error():
     corrections, errors = parse(
         "sightings:\n"
