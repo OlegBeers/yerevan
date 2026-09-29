@@ -790,6 +790,67 @@ same_as:                         # магазинное пиво == пиво с 
   - place: parma
     beer: "n:балтика o7 light"
     untappd_id: 7097
+  # Олег, 30.09: проверено глазами (магазин ↔ Untappd)
+  - place: beer-city
+    beer: "n:staropeazske"
+    untappd_id: 6663679
+  - place: beer-city
+    beer: "n:volfas engelman australian pale ale"
+    untappd_id: 4992480
+  - place: beer-city
+    beer: "n:welfbrau pilsner"
+    untappd_id: 4876944
+  - place: yerevan-city
+    beer: "n:cooler light"
+    untappd_id: 20093
+  - place: yerevan-city
+    beer: "n:cooler light g b"
+    untappd_id: 20093
+  - place: yerevan-city
+    beer: "n:gorkovskaya pivovarnya apa light"
+    untappd_id: 3312077
+  - place: yerevan-city
+    beer: "n:gorkovskaya pivovarnya ipa light"
+    untappd_id: 3312078
+  - place: yerevan-city
+    beer: "n:hb weisse light g b"
+    untappd_id: 7834
+  - place: yerevan-city
+    beer: "n:hofbrauhaus halles lage"
+    untappd_id: 5987598
+  - place: yerevan-city
+    beer: "n:jigulyovskoye light top grade"
+    untappd_id: 3046267
+  - place: yerevan-city
+    beer: "n:jigulyovskoye special brew light g b"
+    untappd_id: 4724271
+  - place: yerevan-city
+    beer: "n:jigulyovskoye top grade light g b"
+    untappd_id: 3851702
+  - place: yerevan-city
+    beer: "n:liebenweiss light"
+    untappd_id: 116833
+  - place: yerevan-city
+    beer: "n:weihenstephaner dark g b"
+    untappd_id: 6273
+  - place: yerevan-city
+    beer: "n:weihenstephaner light g b"
+    untappd_id: 8745
+  - place: parma
+    beer: "n:chimay red dark"
+    untappd_id: 4072
+  - place: parma
+    beer: "n:dahook ipa light"
+    untappd_id: 5817002
+  - place: parma
+    beer: "n:dahook light"
+    untappd_id: 5817020
+  - place: parma
+    beer: "n:dargett ale light cherry"
+    untappd_id: 1559917
+  - place: parma
+    beer: "n:dargett imperial stout dark"
+    untappd_id: 2508041
 
 aliases:
 
