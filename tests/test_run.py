@@ -687,6 +687,14 @@ def test_checkin_log_is_saved_and_pushed_alongside_state_json(world):
     assert all(set(e) == {"id", "time", "venue_id", "username", "beer_id", "brewery", "rating"} for e in entries)
 
 
+def test_stats_json_is_written_next_to_data_json(world):
+    assert world.run(FIXTURE_NOW) == 0
+
+    stats = json.loads((world.repo / "site" / "stats.json").read_text(encoding="utf-8"))
+    assert stats["generated_at"] == iso(FIXTURE_NOW)
+    assert stats["periods"]["all"]["summary"]["checkins"] == 28   # same log as the test above
+
+
 def test_checkin_log_excludes_a_username_opted_out_via_corrections(world):
     (world.repo / "corrections.yaml").write_text(
         (CONFIG_FIXTURES / "corrections.yaml").read_text(encoding="utf-8") + "\nhide_users:\n  - user16\n",

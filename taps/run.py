@@ -25,6 +25,7 @@ from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
+from taps.stats_data import build_stats_data, write_stats_data
 from taps.sources.beercity import fetch_beercity
 from taps.sources.buyam import fetch_buyam
 from taps.sources.local_match import (
@@ -52,6 +53,7 @@ from taps.timeutil import YEREVAN, age_days, iso, parse_iso, to_yerevan, utcnow,
 STATE_FILE = "state.json"
 FATAL_FILE = ".taps-fatal"   # dedup marker for fatal alerts when no state.json can be trusted; not committed
 SITE_DATA = Path("site") / "data.json"
+STATS_DATA = Path("site") / "stats.json"   # Phase 3: aggregates from the check-in log, next to data.json
 CHECKINS_FILE = Path("data") / "checkins.json"   # Phase 1: the check-in log, committed alongside state.json
 BUTTON_TEXT = "Открыть список"
 LISTS_PER_RUN = 2          # brewery beer lists per Untappd collection (spec §10: 1-2)
@@ -1160,6 +1162,7 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     update_alerts(alerter, state, outcome, client, load.errors)
     site_data = build_site_data(state, config, now)
     write_site_data(repo / SITE_DATA, site_data)
+    write_stats_data(repo / STATS_DATA, build_stats_data(state, config, checkin_log, now))
 
     polled_ok = True   # getUpdates outcome this run; False (a failure) blocks deletion below regardless of replies
     if not dry_run and not no_digest:
