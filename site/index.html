@@ -67,6 +67,12 @@
   }
   .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s1) var(--s3); }
   h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.15; margin: 0; font-weight: 800; }
+  .head-actions { display: flex; align-items: flex-start; gap: var(--s2); flex: 0 0 auto; }
+  .stats-link {
+    display: inline-flex; align-items: center; gap: var(--s1); min-height: var(--hit); padding: 0 var(--s2);
+    border-radius: 999px; color: var(--text); text-decoration: none; font-size: .85rem; font-weight: 600;
+  }
+  .stats-link:hover { background: var(--surface-2); text-decoration: none; }
   .lang { display: inline-flex; flex: 0 0 auto; }
   .lang button {
     position: relative; font: inherit; font-size: .75rem; font-weight: 700; letter-spacing: .04em; cursor: pointer;
@@ -91,6 +97,8 @@
     .tab .ico { display: none; }   /* four tabs must fit 375px in both languages without scrolling */
     .head { flex-wrap: nowrap; align-items: flex-start; }   /* the switch stays top right on the title's line, a long title wraps under itself */
     h1 { min-width: 0; font-size: 1.5rem; }   /* the Russian title fits beside the switch at 375px */
+    .stats-link-text { display: none; }   /* the 📊 icon alone fits 375px in both languages */
+    .stats-link { padding: 0; }
     /* the word "Сортировка"/"Sort by" is dropped so the select and the Filters button fit one row;
        the label stays in the DOM (same clip technique as .sr-only) so the select keeps its accessible name */
     .sort-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -229,9 +237,15 @@
     <header>
       <div class="head">
         <h1><span aria-hidden="true">🍺</span> <span data-i18n="title">Ереван на кранах</span></h1>
-        <div class="lang" role="group" aria-label="Язык" data-i18n-aria-label="lang.label">
-          <button type="button" data-lang="ru" aria-pressed="true" title="Русский">RU</button>
-          <button type="button" data-lang="en" aria-pressed="false" title="English">EN</button>
+        <div class="head-actions">
+          <a href="stats.html" class="stats-link" title="Статистика" aria-label="Статистика"
+             data-i18n-title="stats.link" data-i18n-aria-label="stats.link">
+            <span aria-hidden="true">📊</span><span class="stats-link-text" data-i18n="stats.link">Статистика</span>
+          </a>
+          <div class="lang" role="group" aria-label="Язык" data-i18n-aria-label="lang.label">
+            <button type="button" data-lang="ru" aria-pressed="true" title="Русский">RU</button>
+            <button type="button" data-lang="en" aria-pressed="false" title="English">EN</button>
+          </div>
         </div>
       </div>
       <p class="sub"><span data-i18n="sub">Крафтовое пиво в барах и магазинах Еревана</span> · <span id="updated" data-i18n="updated.loading">загружаем…</span></p>
@@ -329,6 +343,7 @@ const I18N = {
     "sub": "Крафтовое пиво в барах и магазинах Еревана",
     "updated.loading": "загружаем…",
     "banner.stale": "⚠️ Данные устарели.",
+    "stats.link": "Статистика",
     "lang.label": "Язык",
     "tabs.label": "Раздел",
     "tab.all": "Всё пиво",
@@ -445,6 +460,7 @@ const I18N = {
     "sub": "Craft beer in Yerevan's bars and shops",
     "updated.loading": "loading…",
     "banner.stale": "⚠️ The data is out of date.",
+    "stats.link": "Stats",
     "lang.label": "Language",
     "tabs.label": "Section",
     "tab.all": "All beer",

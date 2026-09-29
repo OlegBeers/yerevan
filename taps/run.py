@@ -210,7 +210,10 @@ def _overflowed(state: State, key: str) -> bool:
 def _overflowed_checkin_jobs(state: State, config: Config, corrections: Corrections, now: datetime
                              ) -> list[tuple[str, str | None, Callable[[UntappdClient], SourceResult]]]:
     """Check-in sources (untappd_checkins/untappd_brewery) flagged overflow at the last read (rules.py's
-    _update_checkin_schedule), capped at TOPUP_MAX_PAGES -- same shape as collect_untappd's own jobs."""
+    _update_checkin_schedule), capped at TOPUP_MAX_PAGES -- same shape as collect_untappd's own jobs.
+    shortcut: caps by source count, not literal HTTP pages, so a multi-venue place (Place.venue_ids with
+    several entries) can cost more than one page; fine while such places are rare (v1.1's own jobs list
+    already accepts one page-vs-source job per untappd_checkins place the same way)."""
     ba = corrections.brewery_aliases
     jobs: list[tuple[str, str | None, Callable[[UntappdClient], SourceResult]]] = [
         *[(f"untappd_checkins:{p.id}", p.id, lambda c, p=p: fetch_venue_checkins(c, p, config, now, ba))
