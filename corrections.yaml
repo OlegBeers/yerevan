@@ -327,6 +327,11 @@ sightings:
     date: 2026-09-28
 
 hide:
+  # напитки на спиртовой основе (Parma, Очаково): не пиво
+  - place: parma
+    beer: "n:carribay cuba libre"
+  - place: parma
+    beer: "n:glanmorris cola"
   # чекин с неверно выбранным пивом (см. «Мамонт тёмное» в sightings)
   - place: ferment
     beer: "u:1702994"
@@ -622,6 +627,169 @@ same_as:                         # магазинное пиво == пиво с 
   - place: dargett-brewpub
     beer: "n:dargett the prince of purity"
     untappd_id: 3136914
+  # Claude, 29.09: найдено через поисковик (ссылки Untappd в выдаче), совпали пивоварня, название и крепость
+  - place: beer-city
+    beer: "n:konix ruby black currant"
+    untappd_id: 3539672
+  - place: beer-city
+    beer: "n:kwaremont blond"
+    untappd_id: 26918
+  - place: beer-city
+    beer: "n:la estrella de galicia"
+    untappd_id: 1528074
+  - place: beer-city
+    beer: "n:moritz 7 lager"
+    untappd_id: 3026042
+  - place: beer-city
+    beer: "n:mythos"
+    untappd_id: 5650
+  - place: beer-city
+    beer: "n:paulaner munchen"
+    untappd_id: 3235
+  - place: beer-city
+    beer: "n:pauwel kwak amber wheat"
+    untappd_id: 358
+  - place: beer-city
+    beer: "n:petrus blond"
+    untappd_id: 77
+  - place: beer-city
+    beer: "n:petrus nitro cherry chocolate"
+    untappd_id: 2835869
+  - place: beer-city
+    beer: "n:petrus red cherry"
+    untappd_id: 311764
+  - place: beer-city
+    beer: "n:shame apa"
+    untappd_id: 5332572
+  - place: beer-city
+    beer: "n:starnberger helles"
+    untappd_id: 1556949
+  - place: beer-city
+    beer: "n:sviesuis 1410 lager"
+    untappd_id: 2279295
+  - place: beer-city
+    beer: "n:tynt meadow trappist ale dunkel"
+    untappd_id: 2718730
+  - place: beer-city
+    beer: "n:volfas engelman balta pinta wheat"
+    untappd_id: 649885
+  - place: beer-city
+    beer: "n:weihenstephaner dark wheat"
+    untappd_id: 6273
+  - place: beer-city
+    beer: "n:weihenstephaner vitus citrus"
+    untappd_id: 7408
+  - place: yerevan-city
+    beer: "n:athanasius porter dark g b"
+    untappd_id: 43727
+  - place: yerevan-city
+    beer: "n:bever amber semi dark g b"
+    untappd_id: 5530164
+  - place: yerevan-city
+    beer: "n:bever bohemian pilsner light g b"
+    untappd_id: 5535943
+  - place: yerevan-city
+    beer: "n:cernovar dark"
+    untappd_id: 204187
+  - place: yerevan-city
+    beer: "n:erdinger weissbier g b"
+    untappd_id: 7420
+  - place: yerevan-city
+    beer: "n:flenburger pilsener"
+    untappd_id: 5311
+  - place: yerevan-city
+    beer: "n:flenburger pilsener g b"
+    untappd_id: 5311
+  - place: yerevan-city
+    beer: "n:flenburger weizen g b"
+    untappd_id: 7389
+  - place: yerevan-city
+    beer: "n:grevensteiner light g b"
+    untappd_id: 540889
+  - place: yerevan-city
+    beer: "n:prazacka light"
+    untappd_id: 184172
+  - place: yerevan-city
+    beer: "n:primator stout darck g b"
+    untappd_id: 52878
+  - place: yerevan-city
+    beer: "n:tryoghgornoe premium ale light g b"
+    untappd_id: 6164904
+  - place: yerevan-city
+    beer: "n:wheat 379 american citrus g b"
+    untappd_id: 4775604
+  - place: parma
+    beer: "n:379 cherry dark"
+    untappd_id: 6385601
+  - place: parma
+    beer: "n:379 pilsner lager light"
+    untappd_id: 4775549
+  - place: parma
+    beer: "n:alpirsbacher klosterbrau kloster helles light"
+    untappd_id: 2502206
+  - place: parma
+    beer: "n:bohemian bever amber semi dark"
+    untappd_id: 5530164
+  - place: parma
+    beer: "n:bohemian bever pilsner light"
+    untappd_id: 5535943
+  - place: parma
+    beer: "n:chouffe cherry dark"
+    untappd_id: 1824901
+  - place: parma
+    beer: "n:chouffe houblon dark"
+    untappd_id: 230
+  - place: parma
+    beer: "n:dargett stout light"
+    untappd_id: 1533350
+  - place: parma
+    beer: "n:delirium nocturnum dark"
+    untappd_id: 4486
+  - place: parma
+    beer: "n:estense calle san miguel 426 apa light"
+    untappd_id: 384218
+  - place: parma
+    beer: "n:flensburger dunkel dark"
+    untappd_id: 8791
+  - place: parma
+    beer: "n:flensburger gold light"
+    untappd_id: 9143
+  - place: parma
+    beer: "n:flensburger pilsener light"
+    untappd_id: 5311
+  - place: parma
+    beer: "n:forged irish stout dark"
+    untappd_id: 5448475
+  - place: parma
+    beer: "n:krombacher weizen light"
+    untappd_id: 11387
+  - place: parma
+    beer: "n:la chouffe cherry dark"
+    untappd_id: 1824901
+  - place: parma
+    beer: "n:la trappe blond light"
+    untappd_id: 17858
+  - place: parma
+    beer: "n:la trappe dubbel dark"
+    untappd_id: 368
+  - place: parma
+    beer: "n:lowenbrau original light"
+    untappd_id: 25914
+  - place: parma
+    beer: "n:sherwood granatu shonio light"
+    untappd_id: 2404655
+  - place: parma
+    beer: "n:warsteiner pilsener extra light"
+    untappd_id: 5240737
+  - place: parma
+    beer: "n:warsteiner premium light"
+    untappd_id: 10703
+  - place: parma
+    beer: "n:балтика o0 light"
+    untappd_id: 20092
+  - place: parma
+    beer: "n:балтика o7 light"
+    untappd_id: 7097
 
 aliases:
 
