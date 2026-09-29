@@ -612,6 +612,16 @@ same_as:                         # магазинное пиво == пиво с 
   - place: parma
     beer: "n:alpirsbacher klosterbrau weizen light"
     untappd_id: 85217
+  # Олег, 29.09: пропущенные чекины (Gargoyle, Dargett)
+  - place: gargoyle
+    beer: "n:plan b ковбои мальборо"
+    untappd_id: 673144
+  - place: dargett-brewpub
+    beer: "n:dargett festbier"
+    untappd_id: 4522683
+  - place: dargett-brewpub
+    beer: "n:dargett the prince of purity"
+    untappd_id: 3136914
 
 aliases:
 
