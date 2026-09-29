@@ -141,9 +141,11 @@ class _Merger:
         known_items = set(self.state.shop_items.get(result.place_id, {})) if partial_shop else set()
         for s in result.sightings:
             place = self.config.places.get(s.place_id)
-            if place is None or self._ignored_checkin(s, place):
+            if place is None:
                 continue
             key = self._key(s)
+            if self._ignored_checkin(s, place, key):
+                continue
             silent = (baseline
                       or (s.menu_id is not None and s.menu_id not in tabs)
                       or (place.id in self.new_places and s.source not in place.sources and s.kind != "manual"))
@@ -157,15 +159,25 @@ class _Merger:
                 if pair.info.get("source") == result.source:
                     pair.last_in_result = (result.place_id, key) in touched
 
-    def _ignored_checkin(self, s: Sighting, place: Place) -> bool:
-        """A check-in counts only when poured at a place without an authoritative (native Untappd) menu
-        (spec §6): a buy.am delivery listing is not the taproom's own tap list, so it does not block
-        check-ins there. The serving no longer matters in any kind of place (v1.1): a bottle, can or
-        unlabelled check-in is as good a sighting as a draft pour, in a bar or brewpub just like it
-        already was in a shop."""
+    def _ignored_checkin(self, s: Sighting, place: Place, key: str) -> bool:
+        """A check-in is ignored when poured at home or too old to matter, or -- per beer, at a place
+        with an authoritative (native Untappd) menu (spec §6) -- when it is a beer the place's current
+        menu already lists: such a check-in merges into that existing menu pair with no new pair and no
+        event, same as before. A beer not (or no longer) on the menu becomes a normal check-in sighting,
+        since even a native menu can lag days behind what is actually poured (owner report: a beer
+        bought and checked in at Gargoyle that the bot never saw). A buy.am delivery listing is not the
+        taproom's own tap list (menu_is_authoritative is false for it), so it never blocks check-ins.
+        The serving no longer matters in any kind of place (v1.1): a bottle, can or unlabelled check-in
+        is as good a sighting as a draft pour, in a bar or brewpub just like it already was in a shop."""
         if s.kind != "checkin":
             return False
-        return place.menu_is_authoritative or s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS
+        if s.at_home or age_days(s.seen_at, self.now) > CHECKIN_KEEP_DAYS:
+            return True
+        return place.menu_is_authoritative and self._on_current_menu(place, key)
+
+    def _on_current_menu(self, place: Place, key: str) -> bool:
+        rec = self.state.pairs.get(place.id, {}).get(key)
+        return rec is not None and rec.info.get("kind") == "menu" and rec.last_in_result
 
     def _key(self, s: Sighting) -> str:
         key = resolve_alias(s.beer_key, self.corrections.aliases)

@@ -421,7 +421,6 @@ def test_menu_row_stays_a_menu_row_when_a_friend_reports_the_same_beer():
 # --- check-ins ---------------------------------------------------------------
 
 IGNORED_CHECKINS = {
-    "place-with-menu": brewery_checkins(checkin(1, "gargoyle")),
     "untappd-at-home": venue_checkins(checkin(1, at_home=True)),
     "25-days-old": venue_checkins(checkin(1, days=25)),
 }
@@ -433,6 +432,41 @@ def test_ignored_checkins_leave_no_trace(result):
     out = merge(state, result)
     assert out == MergeOutcome(ok=[result.key])
     assert state.pairs == {} and state.beers == {}
+
+
+def test_checkin_of_a_beer_on_the_authoritative_menu_merges_into_the_menu_pair_silently():
+    """Gargoyle's own Untappd menu is authoritative: a check-in for a beer the current menu already
+    lists changes nothing observable -- no new pair, no event -- same as before this place also got its
+    own untappd_checkins source (spec §6)."""
+    state = ready("untappd_menu:gargoyle", "untappd_checkins:gargoyle")
+    merge(state, menu(beer(1)), now=NOW - 12 * H)
+    out = merge(state, venue_checkins(checkin(1, "gargoyle", serving=None), place="gargoyle"))
+    assert out.events == []
+    assert set(state.pairs["gargoyle"]) == {"u:1"}
+    assert state.pairs["gargoyle"]["u:1"].info["kind"] == "menu"   # the check-in did not take over the pair
+
+
+def test_checkin_of_a_beer_not_on_the_authoritative_menu_becomes_a_sighting():
+    """Gargoyle's own Untappd menu can lag days behind what is actually poured (owner report: a beer
+    bought and checked in at Gargoyle that the bot never saw because the menu never listed it) -- a
+    check-in for a beer the current menu does NOT list must count as a normal sighting (spec §6)."""
+    state = ready("untappd_menu:gargoyle", "untappd_checkins:gargoyle")
+    merge(state, menu(beer(1)), now=NOW - 12 * H)
+    out = merge(state, venue_checkins(checkin(2, "gargoyle", serving=None), place="gargoyle"))
+    assert out.events == [("gargoyle", "u:2")]
+    assert state.pairs["gargoyle"]["u:2"].info["kind"] == "checkin"
+
+
+def test_checkin_of_a_beer_that_fell_off_the_menu_is_not_ignored():
+    """last_in_result, not just "was ever on some menu": a beer the menu no longer lists (a later full
+    menu read did not include it) is, for this rule, no longer "on the current menu" either -- its
+    check-in still touches the pair instead of being silently dropped."""
+    state = ready("untappd_menu:gargoyle", "untappd_checkins:gargoyle")
+    merge(state, menu(beer(1), beer(2)), now=NOW - 12 * H)
+    merge(state, menu(beer(1)))                              # beer 2 fell off the menu
+    stale_last_seen = state.pairs["gargoyle"]["u:2"].last_seen
+    merge(state, venue_checkins(checkin(2, "gargoyle", serving=None), place="gargoyle"), now=NOW + 12 * H)
+    assert state.pairs["gargoyle"]["u:2"].last_seen != stale_last_seen
 
 
 def test_buyam_place_keeps_checkins():
@@ -565,6 +599,22 @@ def test_a_new_checkin_source_added_to_an_established_place_is_a_silent_baseline
                                              sightings=[checkin(3, "dargett-brewpub", serving=None)])],
                         config, Corrections(), NOW + 12 * H)
     assert out.events == [("dargett-brewpub", "u:3")]
+
+
+def test_a_new_checkin_source_at_a_menu_place_does_not_silence_that_runs_menu_events():
+    """Gargoyle gains its own untappd_checkins source alongside its long-running untappd_menu (v1.2):
+    the new source key's first run is its own silent baseline (breaker §10 first_run), exactly like
+    Dargett's above. Being a "new place" for that reason must not silence the SAME run's ordinary menu
+    events: the new_places silencing clause in _sightings only fires for a sighting whose OWN source is
+    not among the place's declared sources, and untappd_menu always is one of Gargoyle's."""
+    gargoyle = place("gargoyle", "bar", {"untappd_menu": venue(1), "untappd_checkins": venue(9)})
+    config = Config(places={"gargoyle": gargoyle}, breweries=(), settings=Settings())
+    state = ready("untappd_menu:gargoyle")   # untappd_menu established; untappd_checkins is brand new
+    checkins_result = SourceResult(key="untappd_checkins:gargoyle", source="untappd_checkins", ok=True,
+                                   place_id="gargoyle", sightings=[checkin(50, "gargoyle", serving=None)])
+    out = merge_results(state, [menu(beer(1)), checkins_result], config, Corrections(), NOW)
+    assert out.events == [("gargoyle", "u:1")]                        # the menu's new beer is a normal event
+    assert state.pairs["gargoyle"]["u:50"].notified_at == "baseline"   # the new source's own first run is silent
 
 
 def test_merged_multi_venue_place_first_run_after_state_merge_is_silent():

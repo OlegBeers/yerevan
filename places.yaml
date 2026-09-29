@@ -24,6 +24,7 @@ places:
     enabled: true
     sources:
       untappd_menu: {slug: gargoyle-bar, venue_id: 12252462}
+      untappd_checkins: {slug: gargoyle-bar, venue_id: 12252462}
 
   - id: beatles
     name: Beatles Pub
@@ -34,6 +35,7 @@ places:
     enabled: true
     sources:
       untappd_menu: {slug: beatles-pub-yerevan, venue_id: 2162817}
+      untappd_checkins: {slug: beatles-pub-yerevan, venue_id: 2162817}
 
   - id: ferment
     name: Ferment

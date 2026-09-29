@@ -6,8 +6,9 @@ from bs4 import BeautifulSoup
 PAGE = Path(__file__).resolve().parent.parent / "site" / "index.html"
 
 ROW_FIELDS = ("place_id", "section", "name", "brewery", "style", "abv", "ibu", "rating", "price_amd",
-              "volume_ml", "container", "badge", "since", "seen_days_ago", "new", "star", "url", "by", "serving",
-              "beer_logo", "shop_url", "beer_key", "shop_name", "servings", "country", "style_inferred", "style_group")
+              "volume_ml", "container", "badge", "source", "since", "seen_days_ago", "new", "star", "url", "by",
+              "serving", "beer_logo", "shop_url", "beer_key", "shop_name", "servings", "country", "style_inferred",
+              "style_group")
 PLACE_FIELDS = ("id", "name", "section", "last_ok", "menu_updated_at", "failing", "failing_days",
                 "logo", "verified", "untappd_url", "address", "map_url")
 VENUE_FIELDS = ("name", "url", "logo", "verified", "checkins_30d", "last_checkin", "tracked", "address", "map_url")
@@ -479,6 +480,15 @@ def test_a_place_block_names_its_source_and_a_checkin_says_when_it_was_seen_in_a
     assert '"chip chip-note"' in seen_fn and 'iconSpan("👀")' in seen_fn      # the eyes live inside the pill
     assert 't("badge.seen.ago", { ago: ago(r.seen_days_ago) })' in seen_fn and "servingLabel(r.serving)" in seen_fn
     assert re.search(r"\.chip-source,\s*\.chip-note\s*\{[^}]*color:\s*var\(--muted\)", css)     # both read as muted text
+
+
+def test_a_buyam_row_is_labelled_delivery_not_menu():
+    """Dargett has both its own taproom (untappd_checkins) and a buy.am delivery listing: both are
+    badge "menu", but a delivery listing is not the taproom's own tap list, so it must read as delivery
+    rather than the generic menu label (r.source tells the two apart, since kind alone cannot)."""
+    js = _js(_soup())
+    label_fn = re.search(r"function sourceLabel\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert re.search(r'r\.source === "buyam" \? t\("badge\.delivery"\) : t\("badge\.menu"\)', label_fn)
 
 
 def test_the_card_ends_with_when_the_beer_appeared_in_muted_small_text():

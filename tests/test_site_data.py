@@ -160,7 +160,7 @@ def test_row_carries_display_fields():
         "price_amd": 2300, "volume_ml": 330, "container": "bottle",
         "url": "https://untappd.com/b/ayinger-celebrator/4280", "serving": None, "shop_url": None, "beer_logo": None,
         "country": None,
-        "badge": "menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
+        "badge": "menu", "source": "untappd_menu", "since": "2026-09-25",  # 01:30 next day in Yerevan
         "since_at": "2026-09-24T21:30:00+00:00",
         "seen_days_ago": None, "new": False, "star": False, "by": None, "match_weak": False,
         "shop_name": None, "shop_brewery": None, "match_via": None,
@@ -203,6 +203,14 @@ def test_a_menu_beer_from_buyam_gets_the_guess_too():
     st = state({"gargoyle": {"n:a": pair("buyam", last_in_result=True, info=info)}})
     row = build(st)["rows"][0]
     assert (row["badge"], row["style"], row["style_inferred"]) == ("menu", "Pilsner", True)
+
+
+def test_row_exposes_its_source_so_a_buyam_row_can_be_told_apart_from_a_native_menu():
+    """Both are badge "menu", but a buy.am delivery listing (Dargett) is not the same thing as a bar's
+    own Untappd menu (Gargoyle) -- the site tells them apart on row["source"]."""
+    st = state({"gargoyle": {"u:1": pair("untappd_menu"), "n:a": pair("buyam")}})
+    rows = {r["beer_key"]: r["source"] for r in build(st)["rows"]}
+    assert rows == {"u:1": "untappd_menu", "n:a": "buyam"}
 
 
 def test_the_guess_stays_out_of_the_pair_that_the_digest_reads():

@@ -402,6 +402,7 @@ const I18N = {
     "flag.new": "новинка за 7 дней",
     "style.inferred": "определено по названию",
     "badge.menu": "меню",
+    "badge.delivery": "доставка buy.am",
     "badge.seen": "видели",
     "badge.seen.ago": "видели {ago}",
     "badge.checkin": "чекин",
@@ -517,6 +518,7 @@ const I18N = {
     "flag.new": "new in the last 7 days",
     "style.inferred": "guessed from the name",
     "badge.menu": "menu",
+    "badge.delivery": "delivery (buy.am)",
     "badge.seen": "seen",
     "badge.seen.ago": "seen {ago}",
     "badge.checkin": "check-in",
@@ -866,7 +868,7 @@ function shopNameLine(r, name) {   // v1.2: what the shop calls a matched beer, 
 const SOURCE_ICON = { menu: "✅", manual: "✍️", shop: "🛒" };   // a check-in's 👀 goes with its "seen" note instead
 function sourceLabel(r) {
   switch (r.badge) {
-    case "menu": return t("badge.menu");
+    case "menu": return r.source === "buyam" ? t("badge.delivery") : t("badge.menu");
     case "checkin": return t("badge.checkin");
     case "manual": return r.by ? t("badge.manual.by", { by: r.by }) : t("badge.manual");
     case "shop": return t("shop.in");

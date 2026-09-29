@@ -126,6 +126,14 @@ def test_a_checkin_has_a_source_badge_of_its_own_in_both_languages():
     assert "menu.on" not in dictionaries["ru"] and "menu.on" not in dictionaries["en"]   # the icon-only status is gone
 
 
+def test_a_buyam_delivery_row_has_its_own_badge_in_both_languages():
+    """A buy.am delivery listing (Dargett) is not the taproom's own tap list, so its rows must not read
+    as a plain "menu" badge."""
+    dictionaries = _dictionaries()
+    assert dictionaries["ru"]["badge.delivery"] == "доставка buy.am"
+    assert dictionaries["en"]["badge.delivery"] == "delivery (buy.am)"
+
+
 def test_static_markup_holds_the_russian_text_the_dictionary_has_under_its_key():
     """The Russian text stays in the HTML (no blank page before the script runs); a key that drifts from it fails here."""
     soup, ru = _soup(), _dictionaries()["ru"]
