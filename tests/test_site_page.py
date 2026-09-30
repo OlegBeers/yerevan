@@ -446,7 +446,7 @@ def test_the_rating_is_a_chip_of_one_size_with_the_fire_inside_it_when_hot():
     rating_fn = re.search(r"function ratingNode\(r\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "chip chip-rating hot" in rating_fn and "chip chip-rating" in rating_fn
     assert 'iconSpan(hot ? "🔥" : "★")' in rating_fn and "toFixed(2)" in rating_fn
-    assert re.search(r"\.chip-rating\s*\{[^}]*min-width:[^}]*justify-content:\s*center", css)   # hot and plain chips alike
+    assert re.search(r"\.chip-rating\s*\{[^}]*(?<![-\w])width:[^}]*justify-content:\s*center", css)   # hot and plain chips alike
     assert re.search(r"\.hot\s*\{[^}]*color:\s*var\(--hot\)", css)
     slot_fn = re.search(r"function cardNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert re.search(r'flags\.length \|\| rating \? el\("div", \{ class: "rate-slot" \}, \.\.\.flags, rating\) : null', slot_fn)

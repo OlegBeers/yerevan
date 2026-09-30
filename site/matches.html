@@ -156,7 +156,7 @@
   .out-title { font-size: .95rem; margin: 16px 0 4px; }
   .note { min-height: 1.4em; margin: 0 0 6px; color: var(--muted); font-size: .85rem; line-height: 1.4; }
   .sheet-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-  .sheet-head > span { flex: 1 1 auto; }
+  .sheet-head > span { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* the count gives way, the buttons keep their words: one row in any font */
   .sheet-head > span, .sheet-head .act { white-space: nowrap; }   /* never break "Сбросить" in the middle of the word */
   .chips {
     list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto;
@@ -186,9 +186,9 @@
     border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text);
   }
   .place-filter[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-  @media (max-width: 340px) {   /* an old phone: the count and both buttons still share one row */
+  @media (max-width: 480px) {   /* a phone: the count and both buttons share one row, in a wide font too */
     .sheet-head { gap: 6px; }
-    .sheet-head .act { padding: 9px 8px; font-size: .9rem; }
+    .sheet-head .act { padding: 9px 10px; font-size: .9rem; }
   }
   @media (max-width: 640px) {
     .pair { grid-template-columns: 1fr; gap: 6px; }
