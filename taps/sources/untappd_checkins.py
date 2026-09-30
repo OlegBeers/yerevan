@@ -130,6 +130,29 @@ def parse_checkins(html: str) -> list[Checkin]:
     return out
 
 
+def parse_compact_checkins(html: str, venue_id: int, venue_name: str, venue_url: str) -> list[Checkin]:
+    """Fallback for a VERIFIED venue's main page, which shows the drink menu instead of the check-in stream:
+    only the compact div.venue-activity list (the 5 latest check-ins) is there. It has no venue, serving,
+    logo or user handle, so the page's own venue is filled in; the rest stays empty."""
+    soup = BeautifulSoup(html, "html.parser")
+    out = []
+    for li in soup.select("div.venue-activity li"):
+        time_link = li.select_one("span.time a")
+        beer_link = li.find("a", href=BEER_HREF_RE)
+        checkin_id = time_link["href"].rsplit("/", 1)[-1] if time_link is not None else ""
+        created_at = _created_at(time_link.get("data-gregtime", "")) if time_link is not None else None
+        if beer_link is None or created_at is None or not checkin_id.isdigit():
+            continue
+        brewery = _text(li.select_one("h5:not(:has(a))"))
+        out.append(Checkin(
+            checkin_id=int(checkin_id), beer_id=int(BEER_HREF_RE.match(beer_link["href"]).group(1)),
+            beer_name=_text(beer_link), brewery=brewery, venue_id=venue_id, venue_name=venue_name, serving=None,
+            at_home=False, created_at=created_at, venue_url=venue_url,
+            beer_url=f"https://untappd.com{beer_link['href']}", rating=parse_rating(li),
+        ))
+    return out
+
+
 def checkins_to_venue_checkins(checkins: list[Checkin]) -> list[VenueCheckin]:
     """Every venue seen in check-ins (v1.1 discovery), tracked or not; "Untappd at Home" is skipped."""
     return [
@@ -258,7 +281,7 @@ def fetch_venue_checkins(client: UntappdClient, place: Place, config: Config, no
         except FetchError as e:
             result.error = e.kind
             return result
-        checkins = parse_checkins(html)
+        checkins = parse_checkins(html) or parse_compact_checkins(html, v["venue_id"], place.name, url)
         if not checkins:
             result.error = "empty"
             return result

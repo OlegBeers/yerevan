@@ -8,7 +8,7 @@ from taps.fetch import FetchError
 from taps.model import VenueCheckin
 from taps.sources.untappd_checkins import (
     Checkin, checkins_to_sightings, checkins_to_venue_checkins, fetch_venue_checkins, is_armenia_location,
-    is_yerevan_city, parse_checkins, parse_venue_location, parse_venue_meta,
+    is_yerevan_city, parse_checkins, parse_compact_checkins, parse_venue_location, parse_venue_meta,
 )
 from tests.helpers import fixture_text
 
@@ -454,3 +454,40 @@ def test_checkin_time_prefers_data_gregtime_over_relative_text():
     [c] = parse_checkins(html)
     assert c.checkin_id == 1603604272 and c.venue_id == 4640403 and c.serving == "Draft"
     assert c.created_at.isoformat() == "2026-09-24T11:24:43+00:00"
+
+
+# A verified venue's main page (Gargoyle, redacted real page) shows the drink menu instead of the check-in
+# stream: no div.item, only the compact left-column div.venue-activity list (5 latest check-ins).
+GARGOYLE = place("gargoyle", 12252462)
+GARGOYLE_URL = "https://untappd.com/v/gargoyle/12252462"
+
+
+def test_verified_venue_menu_page_has_no_stream_items():
+    assert parse_checkins(fixture_text("untappd/gargoyle_verified_main.html")) == []
+
+
+def test_parse_compact_checkins_verified_venue():
+    checkins = parse_compact_checkins(fixture_text("untappd/gargoyle_verified_main.html"), 12252462, "Gargoyle Bar",
+                                      "https://untappd.com/v/gargoyle-bar/12252462")
+    assert [c.checkin_id for c in checkins] == [1604660080, 1604422118, 1604322106, 1604279097, 1604264075]
+    first = checkins[0]
+    assert (first.beer_id, first.beer_name, first.brewery) == (6745209, "Rare Bird. Mosaic / Motueka", "Plan B Brewery")
+    assert (first.venue_id, first.venue_name, first.serving, first.at_home) == (12252462, "Gargoyle Bar", None, False)
+    assert first.created_at == datetime(2026, 9, 27, 17, 7, 27, tzinfo=timezone.utc)
+    assert first.beer_url == "https://untappd.com/b/plan-b-brewery-rare-bird-mosaic-motueka/6745209"
+    assert first.rating == 3.75   # the check-in's own rating
+
+
+def test_parse_compact_checkins_without_the_list_is_empty():
+    assert parse_compact_checkins("<html></html>", 1, "X", "u") == []
+
+
+def test_fetch_verified_venue_falls_back_to_compact_list_in_one_page():
+    client = FakeClient(fixture_text("untappd/gargoyle_verified_main.html"))
+    config = Config(places={"gargoyle": GARGOYLE}, breweries=(), settings=Settings())
+    result = fetch_venue_checkins(client, GARGOYLE, config, NOW, {})
+    assert client.urls == [GARGOYLE_URL]                     # no second page (Untappd budget)
+    assert result.ok and result.error is None
+    assert len(result.sightings) == 5 and {s.place_id for s in result.sightings} == {"gargoyle"}
+    assert len(result.checkins) == 5
+    assert result.venue_meta["verified"] is True             # the header of the same page
