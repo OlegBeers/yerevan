@@ -97,7 +97,8 @@ def test_run_sets_bot_git_identity():
 def test_run_step_command_and_env_from_secrets_and_vars():
     steps = only_job(load("run.yml"))["steps"]
     step = steps[step_index(steps, run="python -m taps run")]
-    assert step["run"].strip() == "python -m taps run"
+    assert step["id"] == "taps"
+    assert step["run"].strip() == "python -m taps run --no-digest"   # the digest waits for the deploy
     env = step["env"]
     assert set(env) == {*TELEGRAM_SECRETS, "SITE_URL", "TAPS_DEBUG_DIR"}
     for name in TELEGRAM_SECRETS:
@@ -128,6 +129,19 @@ def test_run_deploys_site_even_after_failed_run_if_data_exists():
         assert "hashFiles('site/data.json') != ''" in step["if"]
 
 
+def test_digest_is_sent_after_the_deploy_and_only_if_the_run_step_succeeded():
+    steps = only_job(load("run.yml"))["steps"]
+    step = steps[step_index(steps, run="python -m taps send-digest")]
+    assert step["run"].strip() == "python -m taps send-digest"
+    assert step["if"] == "always() && steps.taps.outcome == 'success'"   # a failed deploy still sends
+    assert step_index(steps, uses="actions/deploy-pages@v4") < steps.index(step)
+    env = step["env"]
+    assert set(env) == {*TELEGRAM_SECRETS, "SITE_URL"}
+    for name in TELEGRAM_SECRETS:
+        assert env[name] == f"${{{{ secrets.{name} }}}}"
+    assert env["SITE_URL"] == "${{ vars.SITE_URL }}"
+
+
 def test_run_step_order():
     steps = only_job(load("run.yml"))["steps"]
     order = [
@@ -140,6 +154,7 @@ def test_run_step_order():
         step_index(steps, uses="actions/configure-pages@v5"),
         step_index(steps, uses="actions/upload-pages-artifact@v3"),
         step_index(steps, uses="actions/deploy-pages@v4"),
+        step_index(steps, run="python -m taps send-digest"),
         step_index(steps, uses="actions/upload-artifact@v4"),
     ]
     assert order == sorted(order)

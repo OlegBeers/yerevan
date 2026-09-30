@@ -18,7 +18,7 @@ from taps.breaker import STALE_DAYS
 from taps.checkin_log import load_checkin_log, record_checkins, save_checkin_log
 from taps.config import Config, ConfigError, load_config
 from taps.corrections import Corrections, load_corrections
-from taps.digest import Digest, build_digest, drop_stale_events, is_due, mark_sent, rollback
+from taps.digest import Digest, SentMark, build_digest, drop_stale_events, is_due, mark_sent, rollback
 from taps.fetch import (
     FetchError, Http, PageFetcher, UntappdClient, dump_debug_html, playwright_fetcher, untappd_due,
 )
@@ -1210,6 +1210,13 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     digest = None
     if not no_digest and (dry_run or is_due(state, config.settings, now)):
         digest = build_digest(state, config, config.settings, now)
+    if no_digest and not dry_run and is_due(state, config.settings, now):
+        # `send-digest` announces these rows after the deploy: the site shows them as new already
+        announced = copy.deepcopy(state)
+        preview = build_digest(announced, config, config.settings, now)
+        if preview:
+            mark_sent(announced, preview, now)
+            write_site_data(repo / SITE_DATA, build_site_data(announced, config, now))
     if dry_run:   # the digest that would go out now, ignoring the time gate; nothing saved or sent
         print(digest.html if digest else "нет сводки")
         text = alerter.pending_text()
@@ -1239,35 +1246,89 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     if discovery_msg:
         discovery_alerts(alerter, to_admin(discovery_msg))
     if digest:
-        chat = env["TELEGRAM_ADMIN_CHAT_ID"] if digest.to_admin else env["TELEGRAM_CHAT_ID"]
-        sent = deps.send(env["TELEGRAM_BOT_TOKEN"], chat, digest.html, button=(BUTTON_TEXT, env["SITE_URL"]))
-        if sent.status == "rejected":   # surely not delivered: undo the mark (spec §7 step 4)
-            rollback(state, mark)
-            if not _save_push(repo, state, deps, f"state {iso(now)}: сводка не принята, отметка отменена"):
-                return 1
-            pushed = state.to_dict()
-        elif sent.status == "sent":   # remembered so `edit-last-digest` can find and edit this message later
-            prev = mark.digest   # the digest record as it stood before this run's mark_sent (spec: owner's
-                                  # decision -- replace the group's previous digest, unless someone replied)
-            if (polled_ok and not digest.to_admin and not prev.last_to_admin and prev.last_message_id is not None
-                    and prev.last_message_id != sent.message_id and not prev.last_replied
-                    and prev.last_sent_at is not None
-                    and age_days(parse_iso(prev.last_sent_at), now) * 24 < DELETE_WINDOW_HOURS):
-                deleted = deps.delete_message(env["TELEGRAM_BOT_TOKEN"], env["TELEGRAM_CHAT_ID"], prev.last_message_id)
-                if deleted.status != "sent":
-                    print(f"не удалось удалить прошлую сводку: {deleted.description}", file=sys.stderr)
-            state.digest.last_message_id = sent.message_id
-            state.digest.last_to_admin = digest.to_admin
-            state.digest.last_replied = False
-        digest_alerts(alerter, sent)
+        pushed = _announce(repo, state, digest, mark, env, deps, alerter, polled_ok, pushed, now)
+        if pushed is None:
+            return 1
         # the marks are settled now: rebuild so the rows just announced carry 🆕/⭐
         write_site_data(repo / SITE_DATA, build_site_data(state, config, now))
+    return _finish(repo, state, deps, alerter, to_admin, pushed, now)
+
+
+def _announce(repo: Path, state: State, digest: Digest, mark: SentMark, env: Mapping[str, str], deps: Deps,
+              alerter: Alerter, polled_ok: bool, pushed: dict, now: datetime) -> dict | None:
+    """Send a digest whose mark is already pushed; settle the outcome in `state` (rollback if rejected,
+    else remember the message and delete the unreplied previous one). Returns the state as last pushed
+    (`pushed`, or the rolled-back state), or None when the rollback push failed."""
+    chat = env["TELEGRAM_ADMIN_CHAT_ID"] if digest.to_admin else env["TELEGRAM_CHAT_ID"]
+    sent = deps.send(env["TELEGRAM_BOT_TOKEN"], chat, digest.html, button=(BUTTON_TEXT, env["SITE_URL"]))
+    if sent.status == "rejected":   # surely not delivered: undo the mark (spec §7 step 4)
+        rollback(state, mark)
+        if not _save_push(repo, state, deps, f"state {iso(now)}: сводка не принята, отметка отменена"):
+            return None
+        pushed = state.to_dict()
+    elif sent.status == "sent":   # remembered so `edit-last-digest` can find and edit this message later
+        prev = mark.digest   # the digest record as it stood before this run's mark_sent (spec: owner's
+                             # decision -- replace the group's previous digest, unless someone replied)
+        if (polled_ok and not digest.to_admin and not prev.last_to_admin and prev.last_message_id is not None
+                and prev.last_message_id != sent.message_id and not prev.last_replied
+                and prev.last_sent_at is not None
+                and age_days(parse_iso(prev.last_sent_at), now) * 24 < DELETE_WINDOW_HOURS):
+            deleted = deps.delete_message(env["TELEGRAM_BOT_TOKEN"], env["TELEGRAM_CHAT_ID"], prev.last_message_id)
+            if deleted.status != "sent":
+                print(f"не удалось удалить прошлую сводку: {deleted.description}", file=sys.stderr)
+        state.digest.last_message_id = sent.message_id
+        state.digest.last_to_admin = digest.to_admin
+        state.digest.last_replied = False
+    digest_alerts(alerter, sent)
+    return pushed
+
+
+def _finish(repo: Path, state: State, deps: Deps, alerter: Alerter, to_admin: Callable[[str], SendOutcome],
+            pushed: dict, now: datetime) -> int:
+    """Flush the admin alerts and push what changed since `pushed`; the exit code of a run."""
     alert_outcome = alerter.flush(to_admin)
     # alert hashes changed after the last push: push them too
     if state.to_dict() != pushed and not _save_push(repo, state, deps, f"state {iso(now)}: предупреждения"):
         return 1
     # an admin alert that surely or possibly did not arrive: fail the job so GitHub emails
     return 1 if alert_outcome is not None and alert_outcome.status != "sent" else 0
+
+
+def send_digest(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps) -> int:
+    """CLI: the digest half of a run, for after the site is deployed (`run --no-digest` came first): reply
+    tracking, the due check, the sent mark, the send, deleting the unreplied previous digest.
+    0 done (or nothing due); 1 git failed / an admin alert did not arrive; 2 cannot run."""
+    missing = [k for k in ENV_KEYS if not env.get(k)]
+    if missing:
+        print(f"не заданы переменные окружения: {', '.join(missing)}", file=sys.stderr)
+        return 2
+    try:
+        deps.pull(repo)
+        state = load_state(repo / STATE_FILE, now)
+        config = load_config(repo / "places.yaml")
+    except GitError as e:
+        print(f"git pull не прошёл: {e}", file=sys.stderr)
+        return 1
+    except (ValueError, ConfigError) as e:
+        print(str(e), file=sys.stderr)
+        return 2
+
+    def to_admin(text: str) -> SendOutcome:
+        return deps.send(env["TELEGRAM_BOT_TOKEN"], env["TELEGRAM_ADMIN_CHAT_ID"], text)
+
+    alerter = Alerter(state)
+    polled_ok = track_digest_replies(state, env, deps)
+    drop_stale_events(state, now)
+    digest = build_digest(state, config, config.settings, now) if is_due(state, config.settings, now) else None
+    mark = mark_sent(state, digest, now) if digest else None
+    if not _save_push(repo, state, deps, f"state {iso(now)}: сводка"):   # the mark is pushed before sending
+        return 1
+    pushed = state.to_dict()
+    if digest:
+        pushed = _announce(repo, state, digest, mark, env, deps, alerter, polled_ok, pushed, now)
+        if pushed is None:
+            return 1
+    return _finish(repo, state, deps, alerter, to_admin, pushed, now)
 
 
 # --- edit-last-digest: edit an already-sent digest message in place, no new message -----------
@@ -1338,8 +1399,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     cmd = commands.add_parser("run", help="один прогон: сбор, сайт, сводка")
     cmd.add_argument("--dry-run", action="store_true", help="ничего не отправлять и не коммитить")
-    cmd.add_argument("--no-digest", action="store_true", help="не слать сводку")
+    cmd.add_argument("--no-digest", action="store_true", help="не слать сводку (её шлёт send-digest)")
     cmd.add_argument("--repo", type=Path, default=Path("."), help="папка репозитория")
+    send_cmd = commands.add_parser("send-digest", help="послать сводку, если пора (после публикации сайта)")
+    send_cmd.add_argument("--repo", type=Path, default=Path("."), help="папка репозитория")
     edit_cmd = commands.add_parser("edit-last-digest", help="править в чате последнюю уже отправленную сводку")
     edit_cmd.add_argument("--message-id", type=int, default=None,
                           help="номер сообщения (иначе последнее отправленное)")
@@ -1347,4 +1410,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "run":
         return run(args.repo, utcnow(), os.environ, Deps(), dry_run=args.dry_run, no_digest=args.no_digest)
+    if args.command == "send-digest":
+        return send_digest(args.repo, utcnow(), os.environ, Deps())
     return edit_last_digest(args.repo, args.message_id, os.environ)

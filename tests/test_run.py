@@ -12,10 +12,10 @@ from taps import run as run_mod
 from taps.config import Config, ConfigError, Place, Settings
 from taps.digest import build_digest
 from taps.fetch import FetchError, HttpResponse, UntappdClient
-from taps.gitsync import CheckoutError, commit_and_push, pull_ff
+from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
 from taps.rules import MergeOutcome
-from taps.run import Deps, edit_last_digest, main, run, update_alerts
+from taps.run import Deps, edit_last_digest, main, run, send_digest, update_alerts
 from taps.sources.local_match import KnownBeer
 from taps.sources.parma import fetch_parma as real_fetch_parma
 from taps.state import (
@@ -208,6 +208,9 @@ class World:
 
     def run(self, now, **kw):
         return run(self.repo, now, ENV, self.deps(), **kw)
+
+    def send_digest(self, now, env=ENV):
+        return send_digest(self.repo, now, env, self.deps())
 
     def state(self):
         return load_state(self.repo / "state.json", NOW)
@@ -3246,6 +3249,130 @@ def test_no_digest_flag_skips_the_digest(world):
     assert world.state().pairs["beatles"]["u:999001"].notified_at is None
 
 
+def test_no_digest_run_sends_nothing_but_the_site_already_shows_the_rows_send_digest_will_announce(world):
+    first_run(world)
+    assert world.run(NEXT_EVENING, no_digest=True) == 0
+
+    assert world.sends == [] and world.deletes == []
+    state = world.state()
+    assert state.digest.sent_count == 0 and state.digest.last_message_id is None
+    assert state.pairs["beatles"]["u:999001"].notified_at is None      # still pending for send-digest
+    data = json.loads((world.repo / "site" / "data.json").read_text(encoding="utf-8"))
+    row = next(r for r in data["rows"] if r["place_id"] == "beatles" and r["beer_key"] == "u:999001")
+    assert row["new"] is True and row["star"] is True
+
+
+def _pending_digest(world, sent_count=0):
+    """The run step of the workflow (`run --no-digest`) has left a pending event; the digest is not sent yet."""
+    first_run(world)
+    world.edit_state(lambda s: setattr(s.digest, "sent_count", sent_count))
+    assert world.run(NEXT_EVENING, no_digest=True) == 0
+    world.next_run()
+    return NEXT_EVENING + timedelta(minutes=20)   # send-digest starts after the scrape and the deploy
+
+
+def test_send_digest_sends_when_due_marks_it_and_remembers_the_message(world):
+    later = _pending_digest(world)
+    world.send_outcomes = [SendOutcome("sent", message_id=4242)]
+
+    assert world.send_digest(later) == 0
+
+    assert world.http.urls == [] and world.untappd.started == 0            # nothing is scraped again
+    assert world.pulls == [world.repo]
+    assert len(world.sends) == 1
+    sent = world.sends[0]
+    assert sent["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]                    # the first digests are previews
+    assert sent["button"] == ("Открыть список", ENV["SITE_URL"])
+    assert "Black Sails" in sent["text"]
+    state = world.state()
+    assert state.digest.sent_count == 1 and state.digest.last_sent_at == iso(later)
+    assert state.pairs["beatles"]["u:999001"].notified_at == iso(later)
+    assert (state.digest.last_message_id, state.digest.last_to_admin) == (4242, True)
+    assert world.pushes[0]["state"]["digest"]["sent_count"] == 1            # the mark is pushed before sending
+    assert world.pushes[-1]["state"]["digest"]["last_message_id"] == 4242   # and the message id after it
+
+
+def test_send_digest_does_nothing_when_no_digest_is_due(world):
+    first_run(world)                                                        # nothing pending, nothing due
+    assert world.send_digest(NEXT_EVENING) == 0
+    assert world.sends == [] and world.deletes == []
+    assert world.state().digest.sent_count == 0
+
+
+def test_send_digest_sends_at_most_one_digest_a_day(world):
+    later = _pending_digest(world)
+    assert world.send_digest(later) == 0
+    world.next_run()
+    assert world.send_digest(later + timedelta(minutes=5)) == 0
+    assert world.sends == []
+
+
+def test_send_digest_rolls_back_a_rejected_digest_and_alerts_admin(world):
+    later = _pending_digest(world, sent_count=2)
+    world.send_outcomes = [SendOutcome("rejected", "Bad Request: chat not found"), SendOutcome("sent")]
+
+    assert world.send_digest(later) == 0
+
+    state = world.state()
+    assert state.digest.sent_count == 2 and state.digest.last_message_id is None
+    assert state.pairs["beatles"]["u:999001"].notified_at is None           # goes out with the next run
+    assert [s["chat"] for s in world.sends] == [ENV["TELEGRAM_CHAT_ID"], ENV["TELEGRAM_ADMIN_CHAT_ID"]]
+    assert "Telegram не принял сводку" in world.sends[1]["text"]
+
+
+def test_send_digest_deletes_the_unreplied_previous_group_digest(world):
+    _send_first_group_digest(world, message_id=100)
+    world.edit_state(lambda s: _add_pending_event(s, DELETE_T2 - timedelta(hours=1)))
+    world.next_run(send=[SendOutcome("sent", message_id=200)])
+
+    assert world.send_digest(DELETE_T2) == 0
+
+    assert world.deletes == [{"token": "tok", "chat": ENV["TELEGRAM_CHAT_ID"], "message_id": 100}]
+    assert world.state().digest.last_message_id == 200
+
+
+def test_send_digest_keeps_the_previous_digest_that_got_a_reply(world):
+    _send_first_group_digest(world, message_id=100)
+    world.edit_state(lambda s: _add_pending_event(s, DELETE_T2 - timedelta(hours=1)))
+    reply = {"update_id": 5001, "message": {"chat": {"id": ENV["TELEGRAM_CHAT_ID"]},
+                                            "reply_to_message": {"message_id": 100}}}
+    world.next_run(send=[SendOutcome("sent", message_id=200)], get_updates=[[reply]])
+
+    assert world.send_digest(DELETE_T2) == 0
+
+    assert world.deletes == []
+    assert world.state().telegram_offset == 5002
+    assert world.state().digest.last_message_id == 200
+
+
+def test_send_digest_needs_all_the_telegram_settings(world):
+    env = {k: ENV[k] for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_ADMIN_CHAT_ID")}
+    assert world.send_digest(NOW, env=env) == 2
+    assert world.pulls == world.sends == []
+
+
+def test_send_digest_exits_1_and_sends_nothing_when_git_pull_fails(world):
+    def broken(repo):
+        raise GitError("network")
+    deps = world.deps()
+    deps.pull = broken
+    assert send_digest(world.repo, NOW, ENV, deps) == 1
+    assert world.sends == world.pushes == []
+
+
+def test_send_digest_with_a_corrupt_state_file_exits_2(world):
+    (world.repo / "state.json").write_text("{not json", encoding="utf-8")
+    assert world.send_digest(NOW) == 2
+    assert world.sends == world.pushes == []
+
+
+def test_send_digest_exits_1_and_sends_nothing_when_the_mark_cannot_be_pushed(world):
+    later = _pending_digest(world)
+    world.push_results = [False]
+    assert world.send_digest(later) == 1
+    assert world.sends == []
+
+
 def test_missing_env_stops_before_anything(world):
     assert run(world.repo, NOW, {"TELEGRAM_BOT_TOKEN": "tok"}, world.deps()) == 2
     assert world.pulls == [] and world.http.urls == [] and not (world.repo / "state.json").exists()
@@ -3581,3 +3708,14 @@ def test_main_parses_edit_last_digest_args(monkeypatch, tmp_path):
 
     assert main(["edit-last-digest"]) == 5
     assert calls[1][:2] == (Path("."), None)
+
+
+def test_main_parses_send_digest_args(monkeypatch, tmp_path):
+    calls = []
+    monkeypatch.setattr(run_mod, "send_digest", lambda repo, now, env, deps: calls.append((repo, now, env, deps)) or 3)
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "-100chat")
+
+    assert main(["send-digest", "--repo", str(tmp_path)]) == 3
+    repo, now, env, deps = calls[0]
+    assert repo == tmp_path and now.tzinfo is not None and env["TELEGRAM_CHAT_ID"] == "-100chat"
+    assert (deps.send, deps.pull, deps.push) == (send_message, pull_ff, commit_and_push)
