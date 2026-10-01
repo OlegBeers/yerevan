@@ -32336,6 +32336,7 @@
     "first_seen": "2026-09-24T10:17:40+00:00",
     "in_stock": true,
     "info": {
+     "abv": 7.0,
      "brewery": "Dargett",
      "container": "bottle",
      "country": "Armenia",
@@ -32347,10 +32348,14 @@
      "shop_item_id": "194967",
      "shop_url": "https://yerevan-city.am/shop/product-details/194967",
      "source": "yerevan_city",
+     "style": "IPA - American",
      "title": "Beer \"Dargett\" IPA g/b 0.33l",
      "u_brewery": "Dargett Brewery",
      "u_name": "IPA",
-     "u_overlay": {},
+     "u_overlay": {
+      "abv": 7.0,
+      "style": "IPA - American"
+     },
      "url": "https://untappd.com/beer/6795069",
      "volume_ml": 330
     },
@@ -39225,7 +39230,7 @@
    "weak": false
   },
   "n:dargett ipa g b": {
-   "abv": null,
+   "abv": 7.0,
    "brewery": "Dargett Brewery",
    "checked_at": null,
    "logo": null,
@@ -39233,7 +39238,7 @@
    "name": "IPA",
    "rating": null,
    "search_v": null,
-   "style": null,
+   "style": "IPA - American",
    "suggest_brewery": null,
    "suggest_id": null,
    "suggest_name": null,

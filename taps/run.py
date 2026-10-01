@@ -558,6 +558,13 @@ def apply_same_as(state: State, corrections: Corrections, now: datetime) -> None
             continue
         known = catalog.get(untappd_id) if untappd_id is not None else None
         own_name, own_brewery = corrections.same_as_names.get((place_id, key), (None, None))
+        old = state.shop_matches.get(key)
+        if untappd_id is not None and old is not None and old.via == "manual" and old.untappd_beer_id == untappd_id:
+            # the same override as last run: keep what was fetched for it (rating/style/abv/logo,
+            # checked_at), so the beer page isn't refetched every run and nothing is lost meanwhile
+            old.name = own_name or (known.name if known else None) or old.name
+            old.brewery = own_brewery or (known.brewery if known else None) or old.brewery
+            continue
         state.shop_matches[key] = ShopMatchRec(
             untappd_beer_id=untappd_id,
             url=f"https://untappd.com/beer/{untappd_id}" if untappd_id is not None else None,

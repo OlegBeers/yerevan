@@ -3727,3 +3727,29 @@ def test_refresh_shop_matches_keeps_the_label_from_a_real_beer_page():
     client = _untappd_client({BEER_URL: fixture_text("untappd/beer_page_real.html")})
     run_mod.refresh_shop_matches(state, client, NOW)
     assert state.shop_matches["n:fruitage"].logo == "https://assets.untappd.com/site/beer_logos/beer-1715344_b8fec_sm.jpeg"
+
+
+def test_apply_same_as_keeps_what_was_fetched_for_an_unchanged_override():
+    state = empty_state(NOW)
+    state.pairs = {"yerevan-city": {"n:x": _shop_pair("X", "X")}}
+    state.shop_matches["n:x"] = ShopMatchRec(
+        untappd_beer_id=12345, url="https://untappd.com/beer/12345", via="manual", name="IPA", brewery="Dargett",
+        rating=3.7, style="IPA - American", abv=7.0, logo="https://x/l.jpg",
+        matched_at=iso(NOW - timedelta(days=2)), checked_at=iso(NOW - timedelta(days=1)))
+    corrections = run_mod.Corrections(same_as={("yerevan-city", "n:x"): 12345},
+                                      same_as_names={("yerevan-city", "n:x"): ("IPA", "Dargett Brewery")})
+    run_mod.apply_same_as(state, corrections, NOW)
+    m = state.shop_matches["n:x"]
+    assert (m.rating, m.style, m.abv, m.logo) == (3.7, "IPA - American", 7.0, "https://x/l.jpg")
+    assert m.checked_at == iso(NOW - timedelta(days=1))   # not refetched every run
+    assert m.brewery == "Dargett Brewery"                 # the entry's own names still apply
+
+
+def test_apply_same_as_starts_over_when_the_override_points_to_another_beer():
+    state = empty_state(NOW)
+    state.pairs = {"yerevan-city": {"n:x": _shop_pair("X", "X")}}
+    state.shop_matches["n:x"] = ShopMatchRec(untappd_beer_id=1, url="u", via="manual", rating=3.7,
+                                             checked_at=iso(NOW))
+    run_mod.apply_same_as(state, run_mod.Corrections(same_as={("yerevan-city", "n:x"): 2}), NOW)
+    m = state.shop_matches["n:x"]
+    assert (m.untappd_beer_id, m.rating, m.checked_at) == (2, None, None)
