@@ -3719,3 +3719,11 @@ def test_main_parses_send_digest_args(monkeypatch, tmp_path):
     repo, now, env, deps = calls[0]
     assert repo == tmp_path and now.tzinfo is not None and env["TELEGRAM_CHAT_ID"] == "-100chat"
     assert (deps.send, deps.pull, deps.push) == (send_message, pull_ff, commit_and_push)
+
+
+def test_refresh_shop_matches_keeps_the_label_from_a_real_beer_page():
+    state = empty_state(NOW)
+    state.shop_matches = {"n:fruitage": ShopMatchRec(untappd_beer_id=1715344, url=BEER_URL, checked_at=None)}
+    client = _untappd_client({BEER_URL: fixture_text("untappd/beer_page_real.html")})
+    run_mod.refresh_shop_matches(state, client, NOW)
+    assert state.shop_matches["n:fruitage"].logo == "https://assets.untappd.com/site/beer_logos/beer-1715344_b8fec_sm.jpeg"

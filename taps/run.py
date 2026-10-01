@@ -764,7 +764,7 @@ def refresh_shop_matches(state: State, client: UntappdClient, now: datetime) -> 
             data = None
         match = state.shop_matches[key]
         if data:
-            for field in ("rating", "style", "abv"):
+            for field in ("rating", "style", "abv", "logo"):
                 if data[field] is not None:
                     setattr(match, field, data[field])
         match.checked_at = iso(now)
