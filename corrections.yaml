@@ -342,6 +342,13 @@ hide:
     beer: "n:bronx black cherry"
 
 same_as:                         # магазинное пиво == пиво с Untappd; untappd_id: null = "не то же"
+  # Yerevan City «Dargett IPA g/b 0.33l» (товар 194967): поиск склеил с Black IPA (Milestones), это другое пиво;
+  # правильное — Dargett IPA (ссылка от Олега)
+  - place: yerevan-city
+    beer: "n:dargett ipa g b"
+    untappd_id: 6795069
+    name: "IPA"
+    brewery: "Dargett Brewery"
   # Beer City "Bronx" и "Bronx black cherry" — пивные коктейли (Украина, 8%, банка), на Untappd их нет;
   # поиск склеил первый с американским The Bronx Brewery (77455)
   - place: beer-city
