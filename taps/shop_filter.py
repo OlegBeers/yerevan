@@ -10,8 +10,6 @@ STYLE_RE = re.compile(
 )
 # "non alco" with a space: real Beer City title 'Beer "Pure wave" IPA non alco 0.45 l'
 NONALC_RE = re.compile(r"(\bcero\b|\bzero\b|\b0[.,]0\b|non[- ]?alc|alcohol[- ]free|безалког|ոչ ալկ|զերո)", re.I)
-# "Ռադլեր": real Yerevan City name "Գարեջրային ըմպելիք «Կրոմբախեր» Ռադլեր թ/տ 0.5լ"
-RADLER_RE = re.compile(r"(radler|радлер|ռադլեր|lemon|grapefruit|лимон|грейпфрут|կիտրոն|թուրինջ)", re.I)
 CIDER_COCKTAIL_RE = re.compile(r"(cider|cidre|сидр|cocktail|коктейл|սիդր|կոկտեյլ)", re.I)
 
 
@@ -22,13 +20,13 @@ def brand_matches(text: str, brand: str) -> bool:
 
 
 def classify(title: str, brand: str | None, not_craft: Sequence[str], category: str | None = None) -> tuple[bool, str]:
-    """(keep, reason); reason is cider_cocktail | nonalc | radler | style | not_craft | keep."""
+    """(keep, reason); reason is cider_cocktail | nonalc | style | not_craft | keep.
+    Radlers and lemon/grapefruit beer drinks are beer and pass like any other (Oleg, 2026-10-01);
+    a mass brand's radler is still hidden by not_craft."""
     if CIDER_COCKTAIL_RE.search(category or "") or CIDER_COCKTAIL_RE.search(title):
         return False, "cider_cocktail"
     if NONALC_RE.search(title):
         return False, "nonalc"
-    if RADLER_RE.search(title):
-        return False, "radler"
     if STYLE_RE.search(title):
         return True, "style"
     for name in not_craft:
