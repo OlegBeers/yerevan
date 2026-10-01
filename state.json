@@ -10330,10 +10330,10 @@
  "digest": {
   "last_message_id": 278,
   "last_replied": false,
-  "last_sent_at": "2026-09-30T06:52:53+00:00",
-  "last_sent_date": "2026-09-30",
+  "last_sent_at": "2026-10-01T07:03:11+00:00",
+  "last_sent_date": "2026-10-01",
   "last_to_admin": false,
-  "sent_count": 8
+  "sent_count": 9
  },
  "discovery": {
   "last_report_date": "2026-10-01",
@@ -22537,7 +22537,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-01T06:54:21+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-01T07:03:11+00:00",
     "star": true
    },
    "u:4713": {
@@ -22643,7 +22643,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-01T06:54:21+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-01T07:03:11+00:00",
     "star": true
    },
    "u:5325": {
@@ -30834,7 +30834,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-01T06:54:21+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-01T07:03:11+00:00",
     "star": true
    }
   },
