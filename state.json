@@ -10636,10 +10636,10 @@
  "digest": {
   "last_message_id": 279,
   "last_replied": false,
-  "last_sent_at": "2026-10-01T07:03:11+00:00",
-  "last_sent_date": "2026-10-01",
+  "last_sent_at": "2026-10-02T06:55:09+00:00",
+  "last_sent_date": "2026-10-02",
   "last_to_admin": false,
-  "sent_count": 9
+  "sent_count": 10
  },
  "discovery": {
   "last_report_date": "2026-10-02",
@@ -21631,7 +21631,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-02T06:54:01+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-02T06:55:09+00:00",
     "star": true
    },
    "u:3136914": {
@@ -21702,7 +21702,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-02T06:54:01+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-02T06:55:09+00:00",
     "star": true
    }
   },
@@ -21775,7 +21775,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-01T21:21:13+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-02T06:55:09+00:00",
     "star": true
    },
    "u:3391972": {
@@ -21895,7 +21895,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-02T06:54:01+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-02T06:55:09+00:00",
     "star": true
    },
    "u:5226755": {
@@ -34933,7 +34933,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-02T06:54:01+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-02T06:55:09+00:00",
     "star": true
    },
    "n:paderborner pilger light": {
