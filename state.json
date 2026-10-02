@@ -10635,7 +10635,7 @@
  },
  "digest": {
   "last_message_id": 286,
-  "last_replied": false,
+  "last_replied": true,
   "last_sent_at": "2026-10-02T06:55:09+00:00",
   "last_sent_date": "2026-10-02",
   "last_to_admin": false,
@@ -44486,7 +44486,7 @@
   }
  },
  "started_at": "2026-09-24T10:17:40+00:00",
- "telegram_offset": 388240126,
+ "telegram_offset": 388240132,
  "untappd": {
   "brewery_list_cursor": 0,
   "last_attempt": "2026-10-01T21:21:13+00:00",
