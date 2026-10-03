@@ -858,6 +858,19 @@ same_as:                         # магазинное пиво == пиво с 
   - place: parma
     beer: "n:dargett imperial stout dark"
     untappd_id: 2508041
+  # Claude, 03.10: радлеры — найдено через поисковик, совпали пивоварня, название и крепость
+  - place: beer-city
+    beer: "n:krombacher radler lemon"
+    untappd_id: 19814
+  - place: beer-city
+    beer: "n:mythos lemon flavor"
+    untappd_id: 697417
+  - place: beer-city
+    beer: "n:schofferhofer hefewizen grapefruit"
+    untappd_id: 21857
+  - place: parma
+    beer: "n:warsteiner naturradler lemon light"
+    untappd_id: 5374482
 
 aliases:
 
