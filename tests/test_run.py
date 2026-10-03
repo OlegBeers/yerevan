@@ -934,18 +934,52 @@ def _nameless_match(**kw):
                         matched_at=iso(NOW), **kw)
 
 
+def _manual_match_with_name(**kw):
+    """A corrections.yaml same_as link that carries the Untappd name (same_as_names): named, but nothing read."""
+    return ShopMatchRec(untappd_beer_id=6795069, url="https://untappd.com/beer/6795069", via="manual",
+                        name="IPA", brewery="Dargett Brewery", matched_at=iso(NOW), **kw)
+
+
+def test_matched_detail_candidates_pick_a_named_manual_link_whose_page_was_never_read():
+    """Dargett IPA at Yerevan City: same_as with the name, never fetched -- no rating/label on the site."""
+    state = empty_state(NOW)
+    state.shop_matches["n:dargett ipa g b"] = _manual_match_with_name(style="IPA - American", abv=7.0)
+    assert run_mod._matched_detail_candidates(state, NOW) == [("u:6795069", "https://untappd.com/beer/6795069")]
+
+
 @pytest.mark.parametrize("match, beer", [
-    (_nameless_match(name="Rodenbach Fruitage"), None),                                        # name known
-    (_nameless_match(), BeerRec(first_seen_city="x", name="Rodenbach Fruitage")),              # page already read
-    (_nameless_match(), BeerRec(first_seen_city="x", rating_at=iso(NOW - timedelta(days=2)))),   # fetched recently
+    (_manual_match_with_name(rating=3.7, logo="https://x/l.jpg"), None),                       # all known on the match
+    (_manual_match_with_name(), BeerRec(first_seen_city="x", rating=3.7, logo="https://x/l.jpg")),   # ...or on the beer
+    (_manual_match_with_name(), BeerRec(first_seen_city="x", rating_at=iso(NOW - timedelta(days=2)))),   # just read
     (ShopMatchRec(untappd_beer_id=None, matched_at=iso(NOW)), None),                           # no_match / blocked
 ])
-def test_matched_name_candidates_skip_matches_that_need_no_page(match, beer):
+def test_matched_detail_candidates_skip_a_link_with_its_details_or_a_recent_read(match, beer):
     state = empty_state(NOW)
     state.shop_matches["n:x"] = match
     if beer:
-        state.beers["u:1715344"] = beer
-    assert run_mod._matched_name_candidates(state, NOW) == []
+        state.beers["u:6795069"] = beer
+    assert run_mod._matched_detail_candidates(state, NOW) == []
+
+
+def test_fetch_shop_beer_pages_reads_a_named_manual_link_and_fills_its_row():
+    state = empty_state(NOW)
+    state.pairs = {"yerevan-city": {"n:x": _shop_pair("Dargett", "Dargett IPA")}}
+    state.shop_matches["n:x"] = _manual_match_with_name()
+    config = _config(places={"yerevan-city": Place(id="yerevan-city", name="Yerevan City", kind="shop", sources={})})
+    url = "https://untappd.com/beer/6795069"
+    client = _untappd_client({url: BEER_PAGE_HTML})
+    run_mod.fetch_shop_beer_pages(state, config, client, NOW)
+    run_mod.apply_shop_matches(state)
+    assert state.beers["u:6795069"].rating == 3.82
+    assert state.pairs["yerevan-city"]["n:x"].info["rating"] == 3.82
+
+
+def test_shop_match_refresh_candidates_skip_a_beer_whose_page_was_just_read():
+    """Tier B reads into state.beers; the refresh must not spend a second page on the same beer."""
+    state = empty_state(NOW)
+    state.shop_matches = {"n:x": ShopMatchRec(untappd_beer_id=6795069, url="https://untappd.com/beer/6795069")}
+    state.beers["u:6795069"] = BeerRec(first_seen_city="x", rating_at=iso(NOW - timedelta(days=1)))
+    assert run_mod._shop_match_refresh_candidates(state, NOW) == []
 
 
 def test_country_candidates_ask_for_a_country_once_per_brewery():

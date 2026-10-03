@@ -412,15 +412,19 @@ def _beer_url(key: str, info: dict) -> str:
     return info.get("url") or f"https://untappd.com/beer/{key[2:]}"
 
 
-def _matched_name_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
-    """Untappd beers a shop beer is matched to (local/search/manual) that no bar ever showed: the match has
-    no canonical name and no beer page was read yet, so the page gives the name and brewery."""
+def _matched_detail_candidates(state: State, now: datetime) -> list[tuple[str, str]]:
+    """Untappd beers a shop beer is matched to (local/search/manual) whose canonical name, label or
+    rating is still unknown -- on the match and on the cached beer alike, so a bar that already
+    showed the beer or an earlier page read counts -- and whose page was not read within
+    BEER_RATING_MAX_AGE_DAYS. A same_as link carrying its own name still needs its label and rating."""
     out: dict[str, str] = {}
     for match in state.shop_matches.values():
+        if match.untappd_beer_id is None:
+            continue
         key = f"u:{match.untappd_beer_id}"
         beer = state.beers.get(key)
-        if (match.untappd_beer_id is not None and match.name is None and not (beer and beer.name)
-                and not _fetched_recently(state, key, now)):
+        known = all(getattr(match, f) or (beer and getattr(beer, f)) for f in ("name", "logo", "rating"))
+        if not known and not _fetched_recently(state, key, now):
             out.setdefault(key, f"https://untappd.com/beer/{match.untappd_beer_id}")
     return list(out.items())
 
@@ -454,10 +458,10 @@ def _shop_checkin_candidates(state: State, config: Config, now: datetime) -> lis
 
 
 def _shop_beer_page_candidates(state: State, config: Config, now: datetime) -> list[tuple[str, str]]:
-    """Tier B: the existing matched-name candidates (shop matches lacking a canonical name) plus
+    """Tier B: matched shop beers still lacking a name, label or rating plus
     shop-place check-in beers lacking details; deduplicated and capped at SHOP_BEER_PAGES_PER_RUN."""
     out: dict[str, str] = {}
-    for key, url in _matched_name_candidates(state, now) + _shop_checkin_candidates(state, config, now):
+    for key, url in _matched_detail_candidates(state, now) + _shop_checkin_candidates(state, config, now):
         out.setdefault(key, url)
     return list(out.items())[:SHOP_BEER_PAGES_PER_RUN]
 
@@ -751,7 +755,8 @@ def _shop_match_refresh_candidates(state: State, now: datetime) -> list[tuple[st
     SHOP_MATCH_MAX_AGE_DAYS, oldest checked first, capped at SHOP_MATCH_REFRESH_PER_RUN."""
     due = [(key, m) for key, m in state.shop_matches.items()
            if m.untappd_beer_id is not None and m.url
-           and (m.checked_at is None or age_days(parse_iso(m.checked_at), now) > SHOP_MATCH_MAX_AGE_DAYS)]
+           and (m.checked_at is None or age_days(parse_iso(m.checked_at), now) > SHOP_MATCH_MAX_AGE_DAYS)
+           and not _fetched_recently(state, f"u:{m.untappd_beer_id}", now)]   # tier B just read this page
     due.sort(key=lambda kv: kv[1].checked_at or "")
     return [(key, m.url) for key, m in due[:SHOP_MATCH_REFRESH_PER_RUN]]
 
