@@ -6,7 +6,7 @@
 # Новое место: скопируйте блок похожего места, поменяйте id, name, slug и venue_id
 #   (они видны в адресе untappd.com/v/<slug>/<venue_id>). Первый прогон по нему пройдёт молча.
 # id — строчная латиница, цифры и дефис. id существующего места не меняйте: бот примет его за новое.
-# Источники: untappd_menu и untappd_checkins {slug, venue_id}, buyam {url}, beercity / yerevan_city / parma / sas {}.
+# Источники: untappd_menu и untappd_checkins {slug, venue_id}, buyam {url}, beercity / yerevan_city / parma / sas / carrefour {}.
 # Место с несколькими барами на Untappd: untappd_checkins: {venues: [{slug, venue_id, address}, ...]} — см. beer-academy.
 # Адрес: address: "Арама 72" (улица и номер, как пишут в Ереване) — на сайте у места появится адрес и кнопка 🗺 на Яндекс Картах.
 #   Без адреса кнопка ищет место по названию: сетям с несколькими точками (магазинам) адрес не нужен.
@@ -220,6 +220,13 @@ places:
     enabled: true
     sources:
       sas: {}
+
+  - id: carrefour
+    name: Carrefour
+    kind: shop
+    enabled: true
+    sources:
+      carrefour: {}
 
   - id: houl
     name: Houl

@@ -17,6 +17,7 @@ SOURCE_PARAMS: dict[str, dict[str, type]] = {
     "yerevan_city": {},
     "parma": {},
     "sas": {},
+    "carrefour": {},
 }
 ID_RE = re.compile(r"[a-z0-9][a-z0-9-]*")
 CHECKIN_VENUE_FIELDS = ("slug", "venue_id", "address")

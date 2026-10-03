@@ -138,6 +138,7 @@ def test_sighting_kind_for_every_source():
         "yerevan_city": "shop",
         "parma": "shop",
         "sas": "shop",
+        "carrefour": "shop",
         "manual": "manual",
     }
 

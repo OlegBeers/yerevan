@@ -13,7 +13,7 @@ SOURCE_KINDS: dict[str, str] = {
     "untappd_menu": "menu", "buyam": "menu",
     "untappd_checkins": "checkin", "untappd_brewery": "checkin",
     "untappd_brewery_list": "brewery_list",
-    "beercity": "shop", "yerevan_city": "shop", "parma": "shop", "sas": "shop",
+    "beercity": "shop", "yerevan_city": "shop", "parma": "shop", "sas": "shop", "carrefour": "shop",
     "manual": "manual",
 }
 

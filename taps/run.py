@@ -28,6 +28,7 @@ from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
 from taps.stats_data import build_stats_data, write_stats_data
 from taps.sources.beercity import fetch_beercity
+from taps.sources.carrefour import fetch_carrefour
 from taps.sources.buyam import fetch_buyam
 from taps.sources.local_match import (
     KnownBeer, clean_query, clean_query_fallback, has_russian_name, local_match_with_confidence,
@@ -297,7 +298,7 @@ def _beercity_full(state: State, place_id: str, now: datetime) -> bool:
 
 def collect_shops(state: State, config: Config, corrections: Corrections, now: datetime,
                   http: Http) -> list[SourceResult]:
-    """Every run: Beer City, Yerevan City, Parma, SAS, then buy.am."""
+    """Every run: Beer City, Yerevan City, Parma, SAS, Carrefour, then buy.am."""
     ba = corrections.brewery_aliases
 
     def known(p) -> set[str]:
@@ -310,12 +311,19 @@ def collect_shops(state: State, config: Config, corrections: Corrections, now: d
                 if key in pairs and not pairs[key].info.get("hidden")
                 and not pairs[key].info.get("country") and not pairs[key].info.get("country_checked")}
 
+    def known_brands(p) -> dict[str, str | None]:
+        """Known shop items with the brand their pair shows: a shop whose titles omit it needs it for the name."""
+        pairs = state.pairs.get(p.id, {})
+        return {item_id: pairs[key].info.get("brewery") if key in pairs else None
+                for item_id, key in state.shop_items.get(p.id, {}).items()}
+
     fetchers = {
         "beercity": lambda p: fetch_beercity(http, p, known(p), country_todo(p), _beercity_full(state, p.id, now),
                                              now, ba),
         "yerevan_city": lambda p: fetch_yerevan_city(http, p, now, ba),
         "parma": lambda p: fetch_parma(http, p, known(p), country_todo(p), now, ba),
         "sas": lambda p: fetch_sas(http, p, known(p), now, ba),
+        "carrefour": lambda p: fetch_carrefour(http, p, known_brands(p), now, ba),
         "buyam": lambda p: fetch_buyam(http, p, now, ba),
     }
     return [_guard(f"{name}:{p.id}", p.id, lambda: fetch(p))

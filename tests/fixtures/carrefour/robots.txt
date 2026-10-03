@@ -1,0 +1,22 @@
+User-agent: *
+Disallow: /index.php/
+Disallow: /*?
+Disallow: /checkout/
+Disallow: /app/
+Disallow: /lib/
+Disallow: /*.php$
+Disallow: /pkginfo/
+Disallow: /report/
+Disallow: /var/
+Disallow: /catalog/
+Disallow: /customer/
+Disallow: /sendfriend/
+Disallow: /review/
+Disallow: /*SID=
+
+Host: https://carrefour.am
+
+Sitemap:  https://carrefour.am/sitemap_hy.xml
+Sitemap: https://carrefour.am/sitemap_ru.xml
+Sitemap: https://carrefour.am/sitemap_en.xml
+Sitemap: https://carrefour.am/sitemap_fr.xml
