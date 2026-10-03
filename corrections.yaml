@@ -871,6 +871,19 @@ same_as:                         # магазинное пиво == пиво с 
   - place: parma
     beer: "n:warsteiner naturradler lemon light"
     untappd_id: 5374482
+  # Олег, 03.10: проверено глазами (радлеры)
+  - place: beer-city
+    beer: "n:ambar radler lemon"
+    untappd_id: 1519572
+  - place: beer-city
+    beer: "n:moritz radler lemon"
+    untappd_id: 2759399
+  - place: yerevan-city
+    beer: "n:գարեջրային ըմպելիք պաուլաներ կիտրոն թ տ"
+    untappd_id: 2548713
+  - place: yerevan-city
+    beer: "n:գարեջրային ըմպելիք պաուլաներ թուրինջ թ տ"
+    untappd_id: 3150600
 
 aliases:
 
