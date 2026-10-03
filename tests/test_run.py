@@ -2145,6 +2145,86 @@ def test_collect_untappd_topup_rereads_only_overflowed_checkin_sources_capped_at
     assert fetcher.started == fetcher.closed == 1
 
 
+def _topup_beer_state(n, pages_today, overflow=False):
+    """An evening state: today's regular collection ran (pages_today spent), n bar check-in beers await details."""
+    state = empty_state(NOW)
+    state.untappd.last_attempt = iso(NOW)
+    state.untappd.pages_today, state.untappd.pages_date = pages_today, "2026-09-24"
+    state.pairs = {"gargoyle": {
+        f"u:{i}": _checkin_pair(iso(NOW - timedelta(days=1)), url=f"https://untappd.com/b/x/{i}")
+        for i in range(1, n + 1)}}
+    places = {"gargoyle": Place(id="gargoyle", name="Gargoyle", kind="bar", sources={})}
+    if overflow:
+        places["bar"] = Place(id="bar", name="Bar", kind="bar",
+                              sources={"untappd_checkins": {"slug": "bar", "venue_id": 1}})
+        state.source("untappd_checkins:bar").checkin_overflow = True
+    return state, places
+
+
+def _run_topup(state, config):
+    pages = {f"https://untappd.com/b/x/{i}": "<html><body>Nothing found.</body></html>" for i in range(1, 100)}
+    pages["https://untappd.com/v/bar/1"] = "<html><body>Nothing found.</body></html>"
+    fetcher = FakeUntappd(pages)
+    deps = Deps(untappd_fetcher=fetcher, sleep=lambda s: None)
+    run_mod.collect_untappd_topup(state, config, run_mod.Corrections(), NOW, deps, run_mod.Alerter(state))
+    return fetcher
+
+
+def test_collect_untappd_topup_spends_leftover_budget_on_beer_pages():
+    state, places = _topup_beer_state(n=20, pages_today=30)   # 10 of the 40 pages are left
+    fetcher = _run_topup(state, _config(places=places, untappd_daily_pages=40))
+    assert len(fetcher.urls) == 10
+    assert all(u.startswith("https://untappd.com/b/x/") for u in fetcher.urls)
+    assert state.untappd.pages_today == 40
+    assert fetcher.started == fetcher.closed == 1
+
+
+def test_collect_untappd_topup_beer_pages_never_exceed_the_daily_cap_even_when_boosted():
+    state, places = _topup_beer_state(n=25, pages_today=75)   # boost: 80 a day, 5 left
+    fetcher = _run_topup(state, _config(places=places, untappd_daily_pages=40,
+                                        boost_daily_pages=80, boost_until="2026-09-30"))
+    assert len(fetcher.urls) == 5
+    assert state.untappd.pages_today == 80
+
+
+def test_collect_untappd_topup_reuses_the_morning_per_tier_caps_with_a_boosted_budget():
+    state, places = _topup_beer_state(n=45, pages_today=10)   # 70 pages left, but tier A is capped
+    fetcher = _run_topup(state, _config(places=places, untappd_daily_pages=40,
+                                        boost_daily_pages=80, boost_until="2026-09-30"))
+    assert len(fetcher.urls) == run_mod.BAR_BEER_PAGES_PER_RUN
+
+
+def test_collect_untappd_topup_fetches_no_beer_pages_when_the_budget_is_exhausted():
+    state, places = _topup_beer_state(n=20, pages_today=40)
+    fetcher = _run_topup(state, _config(places=places, untappd_daily_pages=40))
+    assert fetcher.started == 0 and fetcher.urls == []
+
+
+def test_collect_untappd_topup_beer_pages_run_once_per_evening():
+    state, places = _topup_beer_state(n=20, pages_today=30)
+    config = _config(places=places, untappd_daily_pages=40)
+    _run_topup(state, config)
+    assert _run_topup(state, config).urls == []   # topup_date is set: nothing more this evening
+
+
+def test_collect_untappd_topup_overflowed_checkins_go_before_beer_pages():
+    state, places = _topup_beer_state(n=20, pages_today=36, overflow=True)   # 4 pages left
+    fetcher = _run_topup(state, _config(places=places, untappd_daily_pages=40))
+    assert fetcher.urls[0] == "https://untappd.com/v/bar/1"
+    assert len(fetcher.urls) == 4 and state.untappd.pages_today == 40
+
+
+def test_collect_untappd_topup_does_not_run_the_morning_only_search_or_menus():
+    state, places = _topup_beer_state(n=1, pages_today=0)
+    places["parma"] = Place(id="parma", name="Parma", kind="shop", sources={})
+    state.pairs["parma"] = {"n:kilikia": PairRec(first_seen=iso(NOW), last_seen=iso(NOW), last_in_result=True,
+                                                 info={"kind": "shop", "name": "Kilikia", "brewery": "Kilikia"})}
+    places["menu-bar"] = Place(id="menu-bar", name="Menu Bar", kind="bar",
+                               sources={"untappd_menu": {"slug": "menu-bar", "venue_id": 7}})
+    fetcher = _run_topup(state, _config(places=places, untappd_daily_pages=40))
+    assert fetcher.urls == ["https://untappd.com/b/x/1"]   # no search page, no menu page
+
+
 def test_shop_match_refresh_candidates_oldest_checked_first_capped_at_three():
     state = empty_state(NOW)
     state.shop_matches = {
@@ -2712,7 +2792,8 @@ def test_second_run_same_evening_sends_nothing(world):
     assert world.run(later) == 0
 
     assert world.sends == []
-    assert world.untappd.started == 0            # Untappd was fetched 2 h ago
+    # the regular collection ran 2 h ago: only the evening top-up's beer pages may follow, no menus or search
+    assert all(u.startswith("https://untappd.com/b/") for u in world.untappd.urls)
     assert world.state().digest.sent_count == 1
 
 
@@ -3048,7 +3129,8 @@ def test_untappd_is_not_fetched_before_20_hours(world):
     assert world.run(NEXT_EVENING) == 0
 
     state = world.state()
-    assert world.untappd.started == 0 and world.untappd.urls == []
+    # no regular collection (no menu, search or check-in pages); only the evening top-up's beer pages may follow
+    assert all(u.startswith("https://untappd.com/b/") for u in world.untappd.urls)
     assert state.sources["untappd_menu:beatles"].last_ok == iso(NOW)          # not a failure either
     assert state.sources["untappd_menu:beatles"].fail_streak == 0
     assert state.sources["parma:parma"].last_ok == iso(NEXT_EVENING)          # shops ran

@@ -191,13 +191,8 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
         # check-ins (above) already got the full budget; only the lower-priority tiers below yield.
         client.daily_pages = max(daily_pages - TOPUP_MAX_PAGES, 0)
         discover_venue_locations(state, config, client, now)   # v1.1 city check, same client/budget
-        # v1.3 owner priority: bars, then shops, then search, then countries (limited daily page budget)
-        sampled = fetch_bar_beer_pages(state, config, client, now)      # tier A: bar/brewpub beers
-        sampled = fetch_shop_beer_pages(state, config, client, now, sampled)   # tier B: shop-matched/checkin beers
         search_limit = config.settings.effective_search_per_run(yerevan_date(now), SHOP_SEARCH_CANDIDATES_PER_RUN)
-        match_shop_beers(state, client, now, search_limit)     # v1.1 §3: search shop beers on Untappd
-        refresh_shop_matches(state, client, now)               # v1.1 §3: refresh matched shop ratings
-        fetch_country_beer_pages(state, client, now, sampled)  # tier D: one beer per brewery of unknown country
+        fetch_beer_page_tiers(state, config, client, now, search_limit)
     finally:
         close()
     if client.responded:
@@ -207,6 +202,23 @@ def collect_untappd(state: State, config: Config, corrections: Corrections, now:
         state.untappd.brewery_list_cursor = (cursor + done) % len(lists)
     # out of budget: skipped without a failure status (spec §10)
     return [r for r in results if r.error != "budget"], client
+
+
+def fetch_beer_page_tiers(state: State, config: Config, client: UntappdClient, now: datetime,
+                          search_limit: int) -> None:
+    """v1.3 owner priority, within whatever budget the client has left: bars, then shops, then search,
+    then countries. search_limit 0 skips the search tier (the evening top-up reads beer pages only)."""
+    sampled = fetch_bar_beer_pages(state, config, client, now)      # tier A: bar/brewpub beers
+    sampled = fetch_shop_beer_pages(state, config, client, now, sampled)   # tier B: shop-matched/checkin beers
+    match_shop_beers(state, client, now, search_limit)     # v1.1 §3: search shop beers on Untappd
+    refresh_shop_matches(state, client, now)               # v1.1 §3: refresh matched shop ratings
+    fetch_country_beer_pages(state, client, now, sampled)  # tier D: one beer per brewery of unknown country
+
+
+def _beer_pages_pending(state: State, config: Config, now: datetime) -> bool:
+    """Whether any beer-page tier has a candidate, so the evening top-up knows a browser is worth starting."""
+    return bool(_bar_beer_candidates(state, config, now) or _shop_beer_page_candidates(state, config, now)
+                or _shop_match_refresh_candidates(state, now) or _country_beer_page_candidates(state, now))
 
 
 def _topup_due(untappd: UntappdRec, now: datetime) -> bool:
@@ -243,13 +255,16 @@ def _overflowed_checkin_jobs(state: State, config: Config, corrections: Correcti
 
 def collect_untappd_topup(state: State, config: Config, corrections: Corrections, now: datetime, deps: Deps,
                           alerter: Alerter) -> tuple[list[SourceResult], UntappdClient | None]:
-    """Phase 2a: evening top-up -- re-reads ONLY the check-in sources that overflowed at today's
-    (morning's) regular read, within the same daily Untappd budget, nothing else from Untappd."""
+    """Phase 2a: evening top-up, within the same daily Untappd budget (the hard cap, never exceeded).
+    First re-reads the check-in sources that overflowed at today's (morning's) regular read; then spends
+    whatever budget is left on the beer-page tiers (same selection and per-tier caps as the morning, so
+    a boosted day can read another batch) to clear the backlog of beers without Untappd details. The
+    rest of the daily pass (menus, check-ins, brewery lists, city checks, shop search) stays morning-only."""
     if not _topup_due(state.untappd, now):
         return [], None
     state.untappd.topup_date = yerevan_date(now)
     jobs = _overflowed_checkin_jobs(state, config, corrections, now)
-    if not jobs:
+    if not jobs and not _beer_pages_pending(state, config, now):
         return [], None
     daily_pages = config.settings.effective_daily_pages(yerevan_date(now))
     if state.untappd.pages_today >= daily_pages:   # the morning run already spent today's whole budget
@@ -268,6 +283,7 @@ def collect_untappd_topup(state: State, config: Config, corrections: Corrections
             result = _guard(key, place_id, lambda: job(client))
             _maybe_dump_debug(result, client)
             results.append(result)
+        fetch_beer_page_tiers(state, config, client, now, search_limit=0)
     finally:
         close()
     return [r for r in results if r.error != "budget"], client
