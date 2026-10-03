@@ -34,6 +34,7 @@ from taps.sources.local_match import (
 )
 from taps.sources.manual import manual_result
 from taps.sources.parma import fetch_parma
+from taps.sources.sas import fetch_sas
 from taps.sources.untappd_beer import parse_beer_page
 from taps.sources.untappd_brewery import fetch_brewery_checkins, fetch_brewery_list
 from taps.sources.untappd_checkins import (
@@ -296,7 +297,7 @@ def _beercity_full(state: State, place_id: str, now: datetime) -> bool:
 
 def collect_shops(state: State, config: Config, corrections: Corrections, now: datetime,
                   http: Http) -> list[SourceResult]:
-    """Every run: Beer City, Yerevan City, Parma, then buy.am."""
+    """Every run: Beer City, Yerevan City, Parma, SAS, then buy.am."""
     ba = corrections.brewery_aliases
 
     def known(p) -> set[str]:
@@ -314,6 +315,7 @@ def collect_shops(state: State, config: Config, corrections: Corrections, now: d
                                              now, ba),
         "yerevan_city": lambda p: fetch_yerevan_city(http, p, now, ba),
         "parma": lambda p: fetch_parma(http, p, known(p), country_todo(p), now, ba),
+        "sas": lambda p: fetch_sas(http, p, known(p), now, ba),
         "buyam": lambda p: fetch_buyam(http, p, now, ba),
     }
     return [_guard(f"{name}:{p.id}", p.id, lambda: fetch(p))
