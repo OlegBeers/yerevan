@@ -224,7 +224,7 @@ places:
   - id: carrefour
     name: Carrefour
     kind: shop
-    enabled: true
+    enabled: false   # 04.10: сайт за Cloudflare не пускает GitHub Actions; обходить не будем
     sources:
       carrefour: {}
 
