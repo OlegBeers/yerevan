@@ -6,6 +6,9 @@ on:
     # must start after settings.digest_time (10:30): it is the one that sends the daily digest.
     - cron: "35 6 * * *"
     - cron: "17 14 * * *"
+    # 11:35 backup: GitHub sometimes skips or delays a scheduled run; does nothing if the morning run
+    # already collected Untappd today (the gate job below)
+    - cron: "35 7 * * *"
   workflow_dispatch:
 
 # One run at a time; a queued run waits, a running one is never cancelled
@@ -19,7 +22,34 @@ permissions:
   id-token: write
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.check.outputs.go }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout: state.json
+          sparse-checkout-cone-mode: false
+
+      - id: check
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          if [ "$SCHEDULE" != "35 7 * * *" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          python3 - >> "$GITHUB_OUTPUT" <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          yerevan = timezone(timedelta(hours=4))
+          last = json.load(open("state.json"))["untappd"].get("last_attempt")
+          ran = bool(last) and datetime.fromisoformat(last).astimezone(yerevan).date() == datetime.now(yerevan).date()
+          print("go=false" if ran else "go=true")
+          PY
+
   run:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment:

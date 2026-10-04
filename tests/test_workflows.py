@@ -36,9 +36,17 @@ def test_run_schedule_and_manual_trigger():
     wf = load("run.yml")
     assert wf["name"] == "taps"
     on = triggers(wf)
-    assert [s["cron"] for s in on["schedule"]] == ["35 6 * * *", "17 14 * * *"]
+    assert [s["cron"] for s in on["schedule"]] == ["35 6 * * *", "17 14 * * *", "35 7 * * *"]
     assert "workflow_dispatch" in on
     assert "push" not in on and "pull_request" not in on
+
+
+def test_backup_run_skips_when_the_morning_run_already_happened():
+    wf = load("run.yml")
+    gate = wf["jobs"]["gate"]["steps"][-1]["run"]
+    assert '"35 7 * * *"' in gate and "last_attempt" in gate
+    assert wf["jobs"]["run"]["needs"] == "gate"
+    assert wf["jobs"]["run"]["if"] == "needs.gate.outputs.go == 'true'"
 
 
 def test_run_never_overlaps_and_never_cancels_a_running_job():
@@ -52,7 +60,7 @@ def test_run_permissions_allow_state_push_and_pages_deploy():
 
 
 def test_run_job_environment_and_timeout():
-    job = only_job(load("run.yml"))
+    job = load("run.yml")["jobs"]["run"]
     assert job["runs-on"] == "ubuntu-latest"
     assert job["environment"]["name"] == "github-pages"
     assert "steps.deploy.outputs.page_url" in job["environment"]["url"]
@@ -60,14 +68,14 @@ def test_run_job_environment_and_timeout():
 
 
 def test_run_checks_out_tip_of_main_with_history():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     checkout = steps[step_index(steps, uses="actions/checkout@v4")]
     assert checkout["with"]["ref"] == "main"
     assert checkout["with"]["fetch-depth"] == 0
 
 
 def test_run_installs_python_deps_and_chromium():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     setup = steps[step_index(steps, uses="actions/setup-python@v5")]
     assert str(setup["with"]["python-version"]) == "3.12"
     assert setup["with"]["cache"] == "pip"
@@ -76,7 +84,7 @@ def test_run_installs_python_deps_and_chromium():
 
 
 def test_playwright_install_failure_does_not_stop_the_run():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     assert steps[step_index(steps, run="playwright install")]["continue-on-error"] is True
 
 
@@ -88,14 +96,14 @@ def test_requirements_are_pinned_to_exact_versions():
 
 
 def test_run_sets_bot_git_identity():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     script = steps[step_index(steps, run="git config user.name")]["run"]
     assert 'git config user.name "taps-bot"' in script
     assert 'git config user.email "taps-bot@users.noreply.github.com"' in script
 
 
 def test_run_step_command_and_env_from_secrets_and_vars():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     step = steps[step_index(steps, run="python -m taps run")]
     assert step["id"] == "taps"
     assert step["run"].strip() == "python -m taps run --no-digest"   # the digest waits for the deploy
@@ -108,7 +116,7 @@ def test_run_step_command_and_env_from_secrets_and_vars():
 
 
 def test_run_uploads_untappd_debug_html_if_any_was_captured():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     step = steps[step_index(steps, uses="actions/upload-artifact@v4")]
     assert step["if"] == "always()"
     assert step["name"] == "taps-debug"
@@ -118,7 +126,7 @@ def test_run_uploads_untappd_debug_html_if_any_was_captured():
 
 
 def test_run_deploys_site_even_after_failed_run_if_data_exists():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     configure = steps[step_index(steps, uses="actions/configure-pages@v5")]
     upload = steps[step_index(steps, uses="actions/upload-pages-artifact@v3")]
     deploy = steps[step_index(steps, uses="actions/deploy-pages@v4")]
@@ -130,7 +138,7 @@ def test_run_deploys_site_even_after_failed_run_if_data_exists():
 
 
 def test_digest_is_sent_after_the_deploy_and_only_if_the_run_step_succeeded():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     step = steps[step_index(steps, run="python -m taps send-digest")]
     assert step["run"].strip() == "python -m taps send-digest"
     assert step["if"] == "always() && steps.taps.outcome == 'success'"   # a failed deploy still sends
@@ -143,7 +151,7 @@ def test_digest_is_sent_after_the_deploy_and_only_if_the_run_step_succeeded():
 
 
 def test_run_step_order():
-    steps = only_job(load("run.yml"))["steps"]
+    steps = load("run.yml")["jobs"]["run"]["steps"]
     order = [
         step_index(steps, uses="actions/checkout@v4"),
         step_index(steps, uses="actions/setup-python@v5"),
