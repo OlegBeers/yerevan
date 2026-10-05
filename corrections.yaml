@@ -884,6 +884,10 @@ same_as:                         # магазинное пиво == пиво с 
   - place: yerevan-city
     beer: "n:գարեջրային ըմպելիք պաուլաներ թուրինջ թ տ"
     untappd_id: 3150600
+  # Олег, 05.10: SAS Bentley — это Bentley Earl Beer (Laote Bahe), поиск ошибочно дал March of the Gladiators
+  - place: sas
+    beer: "n:bentley"
+    untappd_id: 6064237
 
 aliases:
 
