@@ -327,6 +327,9 @@ sightings:
     date: 2026-09-28
 
 hide:
+  # SAS: имбирный лимонад, не пиво
+  - place: sas
+    beer: "n:fever tree"
   # напитки на спиртовой основе (Parma, Очаково): не пиво
   - place: parma
     beer: "n:carribay cuba libre"
@@ -888,6 +891,16 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:bentley"
     untappd_id: 6064237
+  # Claude, 05.10: проверка склеек SAS после находки Олега
+  - place: sas
+    beer: "n:krombacher 0"
+    untappd_id: 84798      # Krombacher Pils Alkoholfrei, не обычный Pils
+  - place: sas
+    beer: "n:warsteiner 0"
+    untappd_id: null       # безалкогольный, а склеилось с Premium Pilsener
+  - place: sas
+    beer: "n:mythos ice"
+    untappd_id: null       # склеилось с медовухой Mythos Meadery
 
 aliases:
 
