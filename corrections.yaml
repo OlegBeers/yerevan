@@ -327,6 +327,11 @@ sightings:
     date: 2026-09-28
 
 hide:
+  # SAS: напитки на спиртовой основе, как в Parma
+  - place: sas
+    beer: "n:carribay cuba libre"
+  - place: sas
+    beer: "n:glanmorris cola irish style"
   # SAS: имбирный лимонад, не пиво
   - place: sas
     beer: "n:fever tree"
@@ -901,6 +906,52 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:mythos ice"
     untappd_id: null       # склеилось с медовухой Mythos Meadery
+  # Claude, 06.10: SAS — то же пиво, что уже связано в других магазинах (совпали пивоварня, название, крепость)
+  - place: sas
+    beer: "n:duvel belgian strong bold"
+    untappd_id: 6868
+  - place: sas
+    beer: "n:erdinger weibbier"
+    untappd_id: 7420
+  - place: sas
+    beer: "n:flensburger pilsner"
+    untappd_id: 5311
+  - place: sas
+    beer: "n:herbwurzig frisch flensburger pilsener"
+    untappd_id: 5311
+  - place: sas
+    beer: "n:grevensteiner g a veltins original"
+    untappd_id: 540889
+  - place: sas
+    beer: "n:hofbrauhaus hb"
+    untappd_id: 5987598
+  - place: sas
+    beer: "n:hofbrau munchen"
+    untappd_id: 38001
+  - place: sas
+    beer: "n:schofferhofer"
+    untappd_id: 7489
+  - place: sas
+    beer: "n:volfas engelman apa pale ale"
+    untappd_id: 4992480
+  - place: sas
+    beer: "n:volfas engelman blanc wheat ale"
+    untappd_id: 3777934
+  - place: sas
+    beer: "n:volkovskaya pivovarnya apa"
+    untappd_id: 4463971
+  - place: sas
+    beer: "n:volkovskaya pivovarnya ipa"
+    untappd_id: 1941326
+  - place: sas
+    beer: "n:weihenstephaner hefe weissbier"
+    untappd_id: 8745
+  - place: sas
+    beer: "n:weihenstephaner hefeweissbier dunkel"
+    untappd_id: 6273
+  - place: sas
+    beer: "n:weihenstephaner original bayrisch mild"
+    untappd_id: 2716
 
 aliases:
 
