@@ -905,7 +905,7 @@ same_as:                         # магазинное пиво == пиво с 
     untappd_id: null       # безалкогольный, а склеилось с Premium Pilsener
   - place: sas
     beer: "n:mythos ice"
-    untappd_id: null       # склеилось с медовухой Mythos Meadery
+    untappd_id: 3716994    # Mythos Ice (Olympic); поиск давал медовуху Mythos Meadery
   # Claude, 06.10: SAS — то же пиво, что уже связано в других магазинах (совпали пивоварня, название, крепость)
   - place: sas
     beer: "n:duvel belgian strong bold"
@@ -965,6 +965,34 @@ same_as:                         # магазинное пиво == пиво с 
   - place: yerevan-city
     beer: "n:գարեջրային ըմպելիք կրոմբախեր ռադլեր թ տ"
     untappd_id: 19814
+  # Claude, 07.10: найдено через поисковик, совпали пивоварня, название и крепость
+  - place: sas
+    beer: "n:augustijn blonde"
+    untappd_id: 65056
+  - place: sas
+    beer: "n:augustijn donker brune"
+    untappd_id: 28243
+  - place: sas
+    beer: "n:augustijn grand cru"
+    untappd_id: 28283
+  - place: sas
+    beer: "n:bavaria"
+    untappd_id: 16010
+  - place: sas
+    beer: "n:bavaria premium"
+    untappd_id: 16010
+  - place: sas
+    beer: "n:erdinger brauhaus helles lagerbier"
+    untappd_id: 4762537
+  - place: sas
+    beer: "n:faxe"
+    untappd_id: 19807
+  - place: sas
+    beer: "n:mythos 0"
+    untappd_id: 3716921
+  - place: beer-city
+    beer: "n:mythos ice"
+    untappd_id: 3716994
 
 aliases:
 
