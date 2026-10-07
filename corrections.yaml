@@ -952,6 +952,19 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:weihenstephaner original bayrisch mild"
     untappd_id: 2716
+  # Claude, 07.10: то же пиво, что уже связано в SAS / Beer City (Duvel, Weihenstephaner, Krombacher Radler)
+  - place: parma
+    beer: "n:duvel the original dark"
+    untappd_id: 6868
+  - place: parma
+    beer: "n:weihenstephaner hefe weissbier light"
+    untappd_id: 8745
+  - place: parma
+    beer: "n:weihenstephaner bayrisch mild light"
+    untappd_id: 2716
+  - place: yerevan-city
+    beer: "n:գարեջրային ըմպելիք կրոմբախեր ռադլեր թ տ"
+    untappd_id: 19814
 
 aliases:
 
