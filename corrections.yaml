@@ -901,9 +901,6 @@ same_as:                         # магазинное пиво == пиво с 
     beer: "n:krombacher 0"
     untappd_id: 84798      # Krombacher Pils Alkoholfrei, не обычный Pils
   - place: sas
-    beer: "n:warsteiner 0"
-    untappd_id: null       # безалкогольный, а склеилось с Premium Pilsener
-  - place: sas
     beer: "n:mythos ice"
     untappd_id: 3716994    # Mythos Ice (Olympic); поиск давал медовуху Mythos Meadery
   # Claude, 06.10: SAS — то же пиво, что уже связано в других магазинах (совпали пивоварня, название, крепость)
