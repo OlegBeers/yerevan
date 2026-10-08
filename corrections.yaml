@@ -183,7 +183,8 @@ sightings:
     date: 2026-10-08
   - place: ferment
     brewery: "Moscow Brewing Company"
-    beer: "Ballantine Nitro Ale"
+    beer: "Ballantine Ale"
+    untappd: 4808237
     container: розлив
     style: "Nitro Ale"
     abv: 4.7
