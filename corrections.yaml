@@ -993,6 +993,9 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:el aguila sin filtrar"
     untappd_id: 3129119   # El Águila Sin Filtrar 5.5%, как в магазине
+  - place: sas
+    beer: "n:warsteiner 0"
+    untappd_id: 95254     # Warsteiner Alkoholfrei; поиск снова дал обычный Premium Pilsener
 
 aliases:
 
