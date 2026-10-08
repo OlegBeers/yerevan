@@ -30,6 +30,174 @@
 #   Если в названии есть стиль (IPA, Stout, Porter…), пиво показывается всё равно.
 
 sightings:
+  # Ferment: доска кранов из Instagram-сторис бара, 08.10 (WEEKEND LINE UP), цена — меньшая порция
+  - place: ferment
+    brewery: "Two Hills"
+    beer: "Nitro Lager"
+    container: розлив
+    style: "Nitro Lager"
+    abv: 5.5
+    ibu: 25
+    price: 1700
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Panzer Brewery"
+    beer: "Sour Flow"
+    container: розлив
+    style: "Sour Ale"
+    abv: 4.2
+    ibu: 10
+    price: 1600
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Dahook"
+    beer: "Red IPA"
+    untappd: 5817002
+    container: розлив
+    style: "Red IPA"
+    abv: 6
+    ibu: 45
+    price: 1600
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Dortmunder Actien-Brauerei"
+    beer: "DAB Export"
+    untappd: 30445
+    container: розлив
+    style: "Lager"
+    abv: 5
+    ibu: 23
+    price: 1500
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Леший"
+    untappd: 2260907
+    container: розлив
+    style: "IPA"
+    abv: 6.2
+    ibu: 70
+    price: 2000
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Brewmen"
+    beer: "Пряный мёд"
+    untappd: 5138327
+    container: розлив
+    style: "Mead"
+    abv: 4.5
+    price: 1600
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "379 Torch & Brew"
+    beer: "Weizen"
+    untappd: 4775562
+    container: розлив
+    style: "Wheat Beer"
+    abv: 5
+    ibu: 11
+    price: 1500
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Brewlok Brewery"
+    beer: "Wild Ale Blueberry"
+    untappd: 6166058
+    container: розлив
+    style: "Wild Ale"
+    abv: 8
+    price: 3200
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Bullevie"
+    beer: "Semi Dry"
+    container: розлив
+    style: "Cider"
+    abv: 5.5
+    price: 2000
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "379 Torch & Brew"
+    beer: "Barley Wine"
+    untappd: 5953168
+    container: розлив
+    style: "Barley Wine"
+    abv: 10
+    ibu: 50
+    price: 2000
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Wingman"
+    container: розлив
+    style: "Session IPA"
+    abv: 4.3
+    ibu: 30
+    price: 2400
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "BrewDog"
+    beer: "Punk IPA"
+    untappd: 5702
+    container: розлив
+    style: "IPA"
+    abv: 5.2
+    ibu: 35
+    price: 2400
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Baladin"
+    beer: "Baladin 4.8"
+    untappd: 3679980
+    container: розлив
+    style: "Golden Ale"
+    abv: 4.8
+    ibu: 30
+    price: 2000
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Rodenbach"
+    beer: "Fruitage"
+    untappd: 1715344
+    container: розлив
+    style: "Cherry Ale"
+    abv: 3.4
+    ibu: 7
+    price: 2800
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "Moscow Brewing Company"
+    beer: "Ballantine Nitro Ale"
+    container: розлив
+    style: "Nitro Ale"
+    abv: 4.7
+    price: 1700
+    by: Instagram бара
+    date: 2026-10-08
+  - place: ferment
+    brewery: "De Halve Maan"
+    beer: "Brugse Zot"
+    untappd: 4713
+    container: розлив
+    style: "Blonde"
+    abv: 6
+    ibu: 23
+    price: 1900
+    by: Instagram бара
+    date: 2026-10-08
   # Ferment: доска кранов из Instagram-сторис бара, 24.09, сверено с Untappd (цена — меньшая порция)
   - place: ferment
     brewery: "Moscow Brewing Company"
