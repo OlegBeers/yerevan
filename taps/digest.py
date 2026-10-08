@@ -147,6 +147,7 @@ def _section(rec: PairRec, place_kind: str) -> str:
 
 
 def _cap_lines(lines: list[str]) -> list[str]:
+    lines = list(dict.fromkeys(lines))   # one shop's can and bottle of the same beer read as one line
     if len(lines) <= MAX_PER_PLACE:
         return lines
     hidden = len(lines) - MAX_PER_PLACE

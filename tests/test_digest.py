@@ -149,6 +149,14 @@ def test_a_shop_pair_matched_to_untappd_shows_the_canonical_name_and_brewery():
     assert "Shop Name" not in d.html
 
 
+def test_a_shops_can_and_bottle_of_the_same_beer_make_one_line():
+    s = new_state(pairs={"parma": {
+        "n:tsingtao light": pair(yv(24, 10), kind="shop", name="Tsingtao light", brewery="Tsingtao"),
+        "n:tsingtao light g b": pair(yv(24, 10), kind="shop", name="Tsingtao light", brewery="Tsingtao")}})
+    d = build_digest(s, CONFIG, SETTINGS, NOW)
+    assert d.html.count("• Tsingtao light — Tsingtao") == 1
+
+
 def test_the_brewery_is_dropped_when_it_is_the_place_itself():
     s = new_state(pairs={"dors": {"u:8": pair(yv(24, 9), kind="checkin", brewery="DORS", name="Pils", serving="Draft",
                                              checkin_at=iso(yv(24, 9)))},
