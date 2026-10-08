@@ -32,8 +32,9 @@
 sightings:
   # Ferment: доска кранов из Instagram-сторис бара, 08.10 (WEEKEND LINE UP), цена — меньшая порция
   - place: ferment
-    brewery: "Two Hills"
-    beer: "Nitro Lager"
+    brewery: "Moscow Brewing Company"
+    beer: "Хамовники Нитро Лагер"   # на доске Ferment пишут «Two Hills Nitro Lager» — это он (Олег, 08.10)
+    untappd: 5579736
     container: розлив
     style: "Nitro Lager"
     abv: 5.5
@@ -117,7 +118,8 @@ sightings:
     date: 2026-10-08
   - place: ferment
     brewery: "Bullevie"
-    beer: "Semi Dry"
+    beer: "Rustiq Semi Dry"
+    untappd: 4061644
     container: розлив
     style: "Cider"
     abv: 5.5
@@ -138,6 +140,7 @@ sightings:
   - place: ferment
     brewery: "BrewDog"
     beer: "Wingman"
+    untappd: 5521405
     container: розлив
     style: "Session IPA"
     abv: 4.3
