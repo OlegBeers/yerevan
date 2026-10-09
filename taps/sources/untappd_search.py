@@ -14,7 +14,7 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup, Tag
 
 from taps.model import normalize_base
-from taps.sources.local_match import clean_text
+from taps.sources.local_match import _GENERIC_BREWERY_WORDS, clean_text
 
 SEARCH_URL = "https://untappd.com/search?q={query}&type=beer"
 BEER_HREF_RE = re.compile(r"^/b/([^/]+)/(\d+)/?$")
@@ -89,24 +89,88 @@ def _result_tokens(text: str) -> set[str]:
     return set(normalize_base(text).split())
 
 
-def matches(shop_brand: str, shop_name: str, result: SearchResult) -> bool:
+# Acceptance guards (production false matches): a result that adds a distinguishing word the shop's
+# own title lacks is another beer, however well the rest overlaps.
+_QUALIFIERS = {"black", "white", "red", "dark", "double", "imperial", "triple", "tripel", "quadrupel",
+               "barrel", "smoked", "sour", "session", "hazy", "nitro"}
+_BREWERY_KINDS = {"meadery", "cidery", "winery", "distillery", "mead", "cider", "wine", "wines",
+                  "vineyard", "vineyards", "spirits"}   # a mead/cider/wine maker is never the shop's beer brand
+_NON_ALCOHOLIC_RE = re.compile(
+    r"(?<![\d.,])0(?:[.,]0+)?\s*%|\b0[.,]0\b|alkoholfrei|alcohol[\s-]*free|non[\s-]*alcoholic|безалкогол",
+    re.IGNORECASE)
+_PAREN_RE = re.compile(r"\([^()]*\)")
+
+
+def is_brand_only(shop_brand: str, shop_name: str) -> bool:
+    """The shop name says nothing beyond its brand ("Krombacher 0%" under Krombacher): any beer of that
+    brewery would pass matches(), so such a match can only be a guess at the flagship -- flag it weak."""
+    brand_tokens = _shop_tokens(shop_brand)
+    return bool(brand_tokens) and not _shop_tokens(shop_name) - brand_tokens
+
+
+def _non_alcoholic_conflict(shop_text: str, shop_abv: float | None, result: SearchResult) -> bool:
+    """The shop beer and the result disagree on being non-alcoholic (name words 0%/alkoholfrei/..., or
+    ABV under 1 when the shop's own ABV is known too, or the shop already says it is non-alcoholic)."""
+    shop_na = bool(_NON_ALCOHOLIC_RE.search(shop_text)) or (shop_abv is not None and shop_abv < 1)
+    low_abv = result.abv is not None and result.abv < 1 and (shop_abv is not None or shop_na)
+    result_na = bool(_NON_ALCOHOLIC_RE.search(result.name)) or low_abv
+    return shop_na != result_na
+
+
+def _unnamed_variant(shop_text: str, shop_name_tokens: set[str], result: SearchResult) -> bool:
+    """The result's own name carries a variant word (Black, Imperial, Barrel...) neither the shop's
+    title nor the result's brewery has. A parenthesised nickname is not counted, nor is the name
+    outside it when the whole shop name is spelled inside it ("Dr. White (Bière Blanche)")."""
+    if shop_name_tokens and shop_name_tokens <= _result_tokens(" ".join(_PAREN_RE.findall(result.name))):
+        return False
+    extra = _result_tokens(_PAREN_RE.sub(" ", result.name)) & _QUALIFIERS
+    return bool(extra - set(normalize_base(shop_text).split()) - _result_tokens(result.brewery))
+
+
+def _plausible(shop_text: str, shop_abv: float | None, result: SearchResult) -> bool:
+    """Guards shared by matches() and matches_russian_name(): non-alcoholic agreement, and the result's
+    brewery is not a meadery/cidery/winery the shop text does not name."""
+    if _non_alcoholic_conflict(shop_text, shop_abv, result):
+        return False
+    return not (_result_tokens(result.brewery) & _BREWERY_KINDS) - set(normalize_base(shop_text).split())
+
+
+def _brewery_is_brand(brand_tokens: set[str], result: SearchResult) -> bool:
+    """For a brand-only shop name: the result's brewery (parenthesised aside and generic words like
+    Brewing/Co/Gruppe aside) has no distinctive word beyond the shop brand ("The Bentley Brook Brewing
+    Co." is not "Bentley")."""
+    tokens = _result_tokens(_PAREN_RE.sub(" ", result.brewery)) - _GENERIC_BREWERY_WORDS
+    return tokens <= brand_tokens
+
+
+def matches(shop_brand: str, shop_name: str, result: SearchResult, shop_abv: float | None = None) -> bool:
     """Accept only if the shop brand's tokens overlap the result's brewery, and at least half of the
-    shop name's remaining tokens (brand words removed) are found in the result's own name."""
+    shop name's remaining tokens (brand words removed) are found in the result's own name -- and the
+    result adds no variant word (_unnamed_variant) the shop title lacks, agrees on being
+    non-alcoholic, and is not a meadery/cidery (_plausible). A brand-only shop name needs a brewery
+    with no distinctive word beyond the brand (_brewery_is_brand)."""
     brand_tokens = _shop_tokens(shop_brand)
     if not brand_tokens or not brand_tokens & _result_tokens(result.brewery):
         return False
+    shop_text = f"{shop_brand} {shop_name}"
+    if not _plausible(shop_text, shop_abv, result):
+        return False
     name_tokens = _shop_tokens(shop_name) - brand_tokens
     if not name_tokens:
-        return True
+        return _brewery_is_brand(brand_tokens, result)
+    if _unnamed_variant(shop_text, name_tokens, result):
+        return False
     return len(name_tokens & _result_tokens(result.name)) / len(name_tokens) >= MIN_NAME_OVERLAP
 
 
 _RU_COLOURS = {"светлое", "светлый", "темное", "темный"}   # the shop's colour suffix; Untappd names rarely carry it
 
 
-def matches_russian_name(shop_name: str, result: SearchResult) -> bool:
+def matches_russian_name(shop_name: str, result: SearchResult, shop_abv: float | None = None) -> bool:
     """For a Russian shop name whose Latin brewery is only a transliteration: its first word (the brand)
     must be in the result's brewery or name, and at least half of the remaining words (colour suffix aside) in the result's name."""
+    if not _plausible(shop_name, shop_abv, result):
+        return False
     words = normalize_base(clean_text(shop_name)).split()
     own = _result_tokens(result.brewery) | _result_tokens(result.name)
     if not words or words[0] not in own:

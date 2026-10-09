@@ -43,7 +43,7 @@ from taps.sources.untappd_checkins import (
 )
 from taps.sources.untappd_menu import fetch_menu
 from taps.sources.untappd_search import (
-    SearchResult, best_candidate, matches, matches_russian_name, parse_search_results, search_url,
+    SearchResult, best_candidate, is_brand_only, matches, matches_russian_name, parse_search_results, search_url,
 )
 from taps.sources.yerevan_city import fetch_yerevan_city
 from taps.state import (
@@ -709,7 +709,8 @@ def _best_match(results: list[SearchResult], brand: str, name: str, russian: boo
     """The first result whose brewery/name pass matches()/matches_russian_name() -- existing rules,
     unchanged, so no loosening -- but when several pass and the shop's own ABV is known (v1.3 search
     fix), prefer one whose ABV agrees, as extra evidence to disambiguate."""
-    passing = [r for r in results if (matches_russian_name(name, r) if russian else matches(brand, name, r))]
+    passing = [r for r in results
+               if (matches_russian_name(name, r, shop_abv) if russian else matches(brand, name, r, shop_abv))]
     if not passing:
         return None
     if shop_abv is not None:
@@ -771,7 +772,8 @@ def match_shop_beers(state: State, client: UntappdClient, now: datetime,
             state.shop_matches[key] = ShopMatchRec(
                 untappd_beer_id=found.beer_id, url=found.url, rating=found.rating, style=found.style,
                 abv=found.abv, logo=found.logo, name=found.name, brewery=found.brewery,
-                matched_at=iso(now), checked_at=iso(now), via="search", search_v=SEARCH_LOGIC_VERSION)
+                matched_at=iso(now), checked_at=iso(now), via="search", search_v=SEARCH_LOGIC_VERSION,
+                weak=not russian and is_brand_only(brand, name))   # a bare brand can only guess the flagship
         if stop_after:
             break
 

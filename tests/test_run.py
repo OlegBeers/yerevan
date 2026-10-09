@@ -1580,6 +1580,36 @@ def test_match_shop_beers_records_a_match():
     assert match.matched_at == iso(NOW) and match.checked_at == iso(NOW)
 
 
+def test_match_shop_beers_flags_a_brand_only_search_match_weak():
+    """The shop says nothing beyond the brand, so the accepted beer is a guess at the flagship."""
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:kilikia": _shop_pair("Kilikia", "Kilikia")}}
+    run_mod.match_shop_beers(state, _untappd_client({KILIKIA_SEARCH_URL: KILIKIA_RESULT_HTML}), NOW)
+    assert state.shop_matches["n:kilikia"].weak is True
+
+
+def test_match_shop_beers_does_not_flag_a_named_search_match_weak():
+    state = empty_state(NOW)
+    state.pairs = {"parma": {"n:dahook hell": _shop_pair("Dahook", "Hell")}}
+    html = KILIKIA_RESULT_HTML.replace("Kilikia Brewery", "Dahook").replace(">Kilikia<", ">Hell<")
+    run_mod.match_shop_beers(state, _untappd_client({"https://untappd.com/search?q=Dahook%20Hell&type=beer": html}), NOW)
+    assert state.shop_matches["n:dahook hell"].untappd_beer_id == 1547626
+    assert state.shop_matches["n:dahook hell"].weak is False
+
+
+def test_match_shop_beers_rejects_black_ipa_for_a_plain_dargett_ipa_but_keeps_it_as_suggestion():
+    """Production: Beer City "Dargett IPA" was matched to "Black IPA (Milestones)"."""
+    state = empty_state(NOW)
+    state.pairs = {"beer-city": {"n:dargett ipa": _shop_pair("Dargett", "Dargett IPA")}}
+    html = (KILIKIA_RESULT_HTML.replace("Kilikia Brewery", "Dargett Brewery")
+            .replace(">Kilikia<", ">Black IPA (Milestones)<"))
+    client = _untappd_client({"https://untappd.com/search?q=Dargett%20IPA&type=beer": html,
+                              "https://untappd.com/search?q=Dargett&type=beer": html})
+    run_mod.match_shop_beers(state, client, NOW)
+    match = state.shop_matches["n:dargett ipa"]
+    assert match.untappd_beer_id is None and match.suggest_id == 1547626
+
+
 def test_match_shop_beers_records_via_and_canonical_name_brewery():
     """v1.2 beer identity: a search match is tagged via="search" and carries the Untappd beer's own
     name/brewery too, exactly like a local match does."""
