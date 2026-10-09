@@ -1172,6 +1172,10 @@ same_as:                         # магазинное пиво == пиво с 
   - place: beer-city
     beer: "n:dargett ipa"
     untappd_id: 6795069
+  # Олег, 09.10: Yerevan City Duvel Blond 0,33 — обычный Duvel, не Imperial Blond
+  - place: yerevan-city
+    beer: "n:duvel blond g b"
+    untappd_id: 6868
 
 aliases:
 
