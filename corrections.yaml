@@ -1168,6 +1168,10 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:warsteiner 0"
     untappd_id: 95254     # Warsteiner Alkoholfrei; поиск снова дал обычный Premium Pilsener
+  # Олег, 09.10: Beer City «Dargett IPA 0,33» — это Dargett IPA, как в Yerevan City; поиск снова дал Black IPA (Milestones)
+  - place: beer-city
+    beer: "n:dargett ipa"
+    untappd_id: 6795069
 
 aliases:
 
