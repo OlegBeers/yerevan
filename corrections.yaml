@@ -1176,6 +1176,10 @@ same_as:                         # магазинное пиво == пиво с 
   - place: yerevan-city
     beer: "n:duvel blond g b"
     untappd_id: 6868
+  # Олег, 07.10: SAS Clausthaler
+  - place: sas
+    beer: "n:clausthaler"
+    untappd_id: 297658
 
 aliases:
 
