@@ -1214,6 +1214,9 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:reserva especial"
     untappd_id: 7848
+  - place: parma
+    beer: "n:zhigulyevskoe light"
+    untappd_id: 248074
 
 aliases:
 
