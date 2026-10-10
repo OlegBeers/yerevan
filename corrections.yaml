@@ -1180,6 +1180,9 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:clausthaler"
     untappd_id: 297658
+  - place: sas
+    beer: "n:el aguila dorada"
+    untappd_id: 5429032   # El Águila Dorada (Heineken España); поиск дал её только подсказкой
 
 aliases:
 
