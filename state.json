@@ -13145,10 +13145,10 @@
  "digest": {
   "last_message_id": 299,
   "last_replied": false,
-  "last_sent_at": "2026-10-09T07:03:20+00:00",
-  "last_sent_date": "2026-10-09",
+  "last_sent_at": "2026-10-10T06:58:48+00:00",
+  "last_sent_date": "2026-10-10",
   "last_to_admin": false,
-  "sent_count": 17
+  "sent_count": 18
  },
  "discovery": {
   "last_report_date": "2026-10-05",
@@ -26547,7 +26547,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-10T06:54:22+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-10T06:58:48+00:00",
     "star": true
    },
    "u:4362370": {
@@ -27085,7 +27085,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-10T06:54:22+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-10T06:58:48+00:00",
     "star": true
    },
    "u:6349728": {
