@@ -1183,6 +1183,37 @@ same_as:                         # магазинное пиво == пиво с 
   - place: sas
     beer: "n:el aguila dorada"
     untappd_id: 5429032   # El Águila Dorada (Heineken España); поиск дал её только подсказкой
+  # Олег, 10.10: со страницы проверки (Найти на Untappd)
+  - place: yerevan-city
+    beer: "n:prazacka zlata light"
+    untappd_id: 5013570
+  - place: yerevan-city
+    beer: "n:գարեջրային ըմպ պրիմատոր չիփ թուրինջ ա տ"
+    untappd_id: 360988
+  - place: parma
+    beer: "n:379 weizen light"
+    untappd_id: 4775562
+  - place: parma
+    beer: "n:estense munich b e lager light"
+    untappd_id: 113502
+  - place: parma
+    beer: "n:la chouffe dark"
+    untappd_id: 52593
+  - place: parma
+    beer: "n:liefmans fruitesse on the rocks fruit"
+    untappd_id: 9085
+  - place: parma
+    beer: "n:warsteiner fresh light"
+    untappd_id: 4144228
+  - place: parma
+    beer: "n:warsteiner light"
+    untappd_id: 10703
+  - place: sas
+    beer: "n:mr p"
+    untappd_id: 5138467
+  - place: sas
+    beer: "n:reserva especial"
+    untappd_id: 7848
 
 aliases:
 
