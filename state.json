@@ -8565,17 +8565,17 @@
    "style": "Non-Alcoholic - Shandy / Radler"
   },
   "u:4225742": {
-   "abv": null,
-   "brewery": null,
-   "country": null,
+   "abv": 4.5,
+   "brewery": "Brewmen",
+   "country": "Russia",
    "first_seen_city": "2026-10-10T06:54:22+00:00",
-   "ibu": null,
-   "logo": null,
+   "ibu": 5,
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-4225742_0cf49_sm.jpeg",
    "n_key": "n:brewmen харизма black currant",
-   "name": null,
-   "rating": null,
-   "rating_at": null,
-   "style": null
+   "name": "Харизма Black Currant",
+   "rating": 3.95265,
+   "rating_at": "2026-10-10T14:33:31+00:00",
+   "style": "Sour - Fruited Berliner Weisse"
   },
   "u:4225855": {
    "abv": null,
@@ -10203,17 +10203,17 @@
    "style": "Lager - Vienna"
   },
   "u:6308888": {
-   "abv": null,
-   "brewery": null,
-   "country": null,
+   "abv": 7.0,
+   "brewery": "Brewlok Brewery",
+   "country": "Russia",
    "first_seen_city": "2026-10-10T06:54:22+00:00",
    "ibu": null,
-   "logo": null,
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-6308888_1a36a_sm.jpeg",
    "n_key": "n:brewlok овсяномир",
-   "name": null,
-   "rating": null,
-   "rating_at": null,
-   "style": null
+   "name": "Овсяномир",
+   "rating": 3.73826,
+   "rating_at": "2026-10-10T14:33:31+00:00",
+   "style": "IPA - Other"
   },
   "u:6318870": {
    "abv": null,
@@ -17854,7 +17854,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -17879,7 +17879,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -18164,7 +18164,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -18483,7 +18483,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -18557,7 +18557,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-07T07:01:59+00:00",
     "star": true
    },
@@ -19266,7 +19266,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19376,7 +19376,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19450,7 +19450,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19585,7 +19585,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19758,7 +19758,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19832,7 +19832,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19906,7 +19906,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19980,7 +19980,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20153,7 +20153,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20424,7 +20424,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20610,7 +20610,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21500,7 +21500,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22153,7 +22153,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22495,7 +22495,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22532,7 +22532,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23849,7 +23849,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23883,7 +23883,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23917,7 +23917,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23951,7 +23951,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23985,7 +23985,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24019,7 +24019,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24053,7 +24053,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24087,7 +24087,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24121,7 +24121,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24155,7 +24155,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24190,7 +24190,7 @@
      "url": "https://untappd.com/beer/4522683"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-29T10:50:46+00:00",
     "star": true
    },
@@ -24224,7 +24224,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24258,7 +24258,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24292,7 +24292,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24326,7 +24326,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24360,7 +24360,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24395,7 +24395,7 @@
      "url": "https://untappd.com/beer/3136914"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-29T10:50:46+00:00",
     "star": true
    },
@@ -25783,7 +25783,7 @@
      "url": "https://untappd.com/b/panzer-brewery-sour-flow-brusnika-klyukva/2067276"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-09T07:03:20+00:00",
     "star": true
    },
@@ -26030,7 +26030,7 @@
      "url": "https://untappd.com/beer/1715344"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26060,7 +26060,7 @@
      "url": "https://untappd.com/b/brewlok-brewery-liho/1802346"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26135,7 +26135,7 @@
      "url": "https://untappd.com/b/brewlok-brewery-leshij/2260907"
     },
     "last_in_result": false,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-05T07:03:02+00:00",
     "star": true
    },
@@ -26160,7 +26160,7 @@
      "url": "https://untappd.com/b/zagovor-brewery-street-justice-citra/2449774"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -26313,7 +26313,7 @@
      "url": "https://untappd.com/b/dortmunder-actien-brauerei-dab-dortmunder-lager-export/30445"
     },
     "last_in_result": false,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26448,7 +26448,7 @@
      "url": "https://untappd.com/beer/3679980"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26525,7 +26525,7 @@
      "url": "https://untappd.com/beer/4061644"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-09T07:03:20+00:00",
     "star": true
    },
@@ -26534,19 +26534,23 @@
     "first_seen": "2026-10-10T06:54:22+00:00",
     "in_stock": null,
     "info": {
+     "abv": 4.5,
      "brewery": "Brewmen",
      "checkin_at": "2026-10-09T18:38:04+00:00",
      "country": "Russia",
+     "ibu": 5,
      "kind": "checkin",
      "logo": "https://assets.untappd.com/site/beer_logos/beer-4225742_0cf49_sm.jpeg",
      "name": "Харизма Black Currant",
+     "rating": 3.95265,
      "serving": "Can",
      "source": "untappd_checkins",
+     "style": "Sour - Fruited Berliner Weisse",
      "title": "Brewmen Харизма Black Currant",
      "url": "https://untappd.com/b/brewmen-harizma-black-currant/4225742"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-10T06:58:48+00:00",
     "star": true
    },
@@ -26624,7 +26628,7 @@
      "url": "https://untappd.com/beer/4713"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26654,7 +26658,7 @@
      "url": "https://untappd.com/b/379-torch-and-brew-weizen/4775562"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -26681,7 +26685,7 @@
      "url": "https://untappd.com/beer/4808237"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-09T07:03:20+00:00",
     "star": true
    },
@@ -26710,7 +26714,7 @@
      "url": "https://untappd.com/b/brewmen-pryanyj-myod/5138327"
     },
     "last_in_result": false,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26815,7 +26819,7 @@
      "url": "https://untappd.com/beer/5521405"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-09T07:03:20+00:00",
     "star": true
    },
@@ -26867,7 +26871,7 @@
      "url": "https://untappd.com/beer/5579736"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -26897,7 +26901,7 @@
      "url": "https://untappd.com/b/brewdog-punk-ipa/5702"
     },
     "last_in_result": false,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -26927,7 +26931,7 @@
      "url": "https://untappd.com/b/dahook-red-ipa/5817002"
     },
     "last_in_result": false,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -27009,7 +27013,7 @@
      "url": "https://untappd.com/b/379-torch-and-brew-barley-wine/5953168"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": false
    },
@@ -27063,7 +27067,7 @@
      "url": "https://untappd.com/b/brewlok-brewery-wild-ale-blueberry/6166058"
     },
     "last_in_result": false,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -27072,19 +27076,22 @@
     "first_seen": "2026-10-10T06:54:22+00:00",
     "in_stock": null,
     "info": {
+     "abv": 7.0,
      "brewery": "Brewlok Brewery",
      "checkin_at": "2026-10-09T19:06:32+00:00",
      "country": "Russia",
      "kind": "checkin",
      "logo": "https://assets.untappd.com/site/beer_logos/beer-6308888_1a36a_sm.jpeg",
      "name": "Овсяномир",
+     "rating": 3.73826,
      "serving": "Can",
      "source": "untappd_checkins",
+     "style": "IPA - Other",
      "title": "Brewlok Brewery Овсяномир",
      "url": "https://untappd.com/b/brewlok-brewery-ovsyanomir/6308888"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-10T06:58:48+00:00",
     "star": true
    },
@@ -27323,7 +27330,7 @@
      "url": "https://untappd.com/beer/673144"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-29T10:50:46+00:00",
     "star": true
    },
@@ -30819,7 +30826,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -30855,7 +30862,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -30891,7 +30898,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -30927,7 +30934,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -30952,7 +30959,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -30965,7 +30972,7 @@
      "brewery": "Gyumri Garejour LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/06262(1)/thumb_06262(1).jpg?v=11791601563",
+     "logo": "https://static.parma.am/cache/product/06262(1)/thumb_06262(1).jpg?v=11791633962",
      "name": "Alexandrapol light",
      "price_amd": 670,
      "shop_item_id": "6262",
@@ -30976,7 +30983,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31012,7 +31019,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31048,7 +31055,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31084,7 +31091,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31097,7 +31104,7 @@
      "brewery": "Gyumri Garejour LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/27313(2)/thumb_27313(2).jpg?v=11791601565",
+     "logo": "https://static.parma.am/cache/product/27313(2)/thumb_27313(2).jpg?v=11791641525",
      "name": "Ararat light",
      "price_amd": 560,
      "shop_item_id": "27313",
@@ -31108,7 +31115,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31120,7 +31127,7 @@
      "abv": 5.0,
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/13579/thumb_13579.jpg?v=11791597922",
+     "logo": "https://static.parma.am/cache/product/13579/thumb_13579.jpg?v=11791630383",
      "name": "Asahi Super Dry light",
      "price_amd": 690,
      "shop_item_id": "13579",
@@ -31131,7 +31138,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31155,7 +31162,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31179,7 +31186,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31192,7 +31199,7 @@
      "brewery": "ОАО Пивоваренная компания Балтика",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/28839/thumb_28839.jpg?v=11791597847",
+     "logo": "https://static.parma.am/cache/product/28839/thumb_28839.jpg?v=11791637026",
      "name": "Baltika №1 light",
      "price_amd": 620,
      "shop_item_id": "28839",
@@ -31203,7 +31210,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31227,7 +31234,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31251,7 +31258,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31275,7 +31282,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31299,7 +31306,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31322,7 +31329,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31345,7 +31352,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31369,7 +31376,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31392,7 +31399,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31428,7 +31435,7 @@
      "volume_ml": 5000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31464,7 +31471,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31500,7 +31507,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31524,7 +31531,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31548,7 +31555,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31561,7 +31568,7 @@
      "brewery": "San Imbev Ukraina LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/43599(1)/thumb_43599(1).jpg?v=11791599523",
+     "logo": "https://static.parma.am/cache/product/43599(1)/thumb_43599(1).jpg?v=11791637922",
      "name": "Bud",
      "price_amd": 750,
      "shop_item_id": "43599",
@@ -31572,7 +31579,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31596,7 +31603,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31609,7 +31616,7 @@
      "brewery": "Carlsberg Group A/S",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/07140/thumb_07140.jpg?v=11791603125",
+     "logo": "https://static.parma.am/cache/product/07140/thumb_07140.jpg?v=11791640626",
      "name": "Carlsberg light",
      "price_amd": 720,
      "shop_item_id": "7140",
@@ -31620,7 +31627,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31646,7 +31653,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31682,7 +31689,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31718,7 +31725,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31754,7 +31761,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31790,7 +31797,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31813,7 +31820,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31849,7 +31856,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31885,7 +31892,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31898,7 +31905,7 @@
      "brewery": "Gruppo Modelo AOB",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/28721/thumb_28721.jpg?v=11791597847",
+     "logo": "https://static.parma.am/cache/product/28721/thumb_28721.jpg?v=11791630387",
      "name": "Corona Cero light",
      "price_amd": 890,
      "shop_item_id": "28721",
@@ -31909,7 +31916,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31922,7 +31929,7 @@
      "brewery": "Gruppo Modelo AOB",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/17023(1)/thumb_17023(1).jpg?v=11791603603",
+     "logo": "https://static.parma.am/cache/product/17023(1)/thumb_17023(1).jpg?v=11791630374",
      "name": "Corona Extra light",
      "price_amd": 820,
      "shop_item_id": "17023",
@@ -31933,7 +31940,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -31969,7 +31976,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32005,7 +32012,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32041,7 +32048,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32077,7 +32084,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32113,7 +32120,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32149,7 +32156,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32185,7 +32192,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32221,7 +32228,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32257,7 +32264,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32293,7 +32300,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32329,7 +32336,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32365,7 +32372,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32401,7 +32408,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32437,7 +32444,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32462,7 +32469,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32485,7 +32492,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32509,7 +32516,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32532,7 +32539,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32568,7 +32575,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32604,7 +32611,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32628,7 +32635,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32664,7 +32671,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32700,7 +32707,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32725,7 +32732,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32761,7 +32768,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32785,7 +32792,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32821,7 +32828,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32857,7 +32864,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32893,7 +32900,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32928,7 +32935,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32964,7 +32971,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -32990,7 +32997,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33014,7 +33021,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33037,7 +33044,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33073,7 +33080,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33097,7 +33104,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33110,7 +33117,7 @@
      "brewery": "Gyumri Garejour LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/07207(2)/thumb_07207(2).jpg?v=11791604087",
+     "logo": "https://static.parma.am/cache/product/07207(2)/thumb_07207(2).jpg?v=11791637382",
      "name": "Gyumri Gold light",
      "price_amd": 560,
      "shop_item_id": "7207",
@@ -33121,7 +33128,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33134,7 +33141,7 @@
      "brewery": "Gyumri Garejour LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/15170/thumb_15170.jpg?v=11791597854",
+     "logo": "https://static.parma.am/cache/product/15170/thumb_15170.jpg?v=11791635762",
      "name": "Gyumri Premium light",
      "price_amd": 450,
      "shop_item_id": "15170",
@@ -33145,7 +33152,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33181,7 +33188,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33217,7 +33224,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33230,7 +33237,7 @@
      "brewery": "Obyedinyennie Pivovarni Heineken LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/84839/thumb_84839.jpg?v=11791600382",
+     "logo": "https://static.parma.am/cache/product/84839/thumb_84839.jpg?v=11791640626",
      "name": "Heineken light",
      "price_amd": 570,
      "shop_item_id": "84839",
@@ -33241,7 +33248,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33264,7 +33271,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33287,7 +33294,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33311,7 +33318,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33335,7 +33342,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33348,7 +33355,7 @@
      "brewery": "Yerevan Beer CJSC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/77711/thumb_77711.jpg?v=11791603740",
+     "logo": "https://static.parma.am/cache/product/77711/thumb_77711.jpg?v=11791642427",
      "name": "Kilikia light",
      "price_amd": 350,
      "shop_item_id": "77711",
@@ -33359,7 +33366,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33383,7 +33390,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33407,7 +33414,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33431,7 +33438,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33455,7 +33462,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33478,7 +33485,7 @@
      "url": "https://parma.am/en/product/product?slug=beer-kozel-500m_1794"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33502,7 +33509,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33525,7 +33532,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33561,7 +33568,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33597,7 +33604,7 @@
      "volume_ml": 5000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33633,7 +33640,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33656,7 +33663,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33668,7 +33675,7 @@
      "abv": 5.0,
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/23294/thumb_23294.png?v=11791598340",
+     "logo": "https://static.parma.am/cache/product/23294/thumb_23294.png?v=11791636128",
      "name": "Kronenbourg Lager light",
      "price_amd": 530,
      "shop_item_id": "23294",
@@ -33679,7 +33686,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33703,7 +33710,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33739,7 +33746,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33764,7 +33771,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33800,7 +33807,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33836,7 +33843,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33872,7 +33879,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33908,7 +33915,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33933,7 +33940,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -33969,7 +33976,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34005,7 +34012,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34018,7 +34025,7 @@
      "brewery": "ЗАО САБМиллер РУС",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/01798(1)/thumb_01798(1).png?v=11791603125",
+     "logo": "https://static.parma.am/cache/product/01798(1)/thumb_01798(1).png?v=11791640987",
      "name": "Miller Genuine Draft Lager light",
      "price_amd": 650,
      "shop_item_id": "1798",
@@ -34029,7 +34036,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34053,7 +34060,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34077,7 +34084,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34101,7 +34108,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34125,7 +34132,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34149,7 +34156,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34173,7 +34180,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34209,7 +34216,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34245,7 +34252,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34269,7 +34276,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34281,7 +34288,7 @@
      "abv": 4.1,
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/01804(2)/thumb_01804(2).jpg?v=11791601336",
+     "logo": "https://static.parma.am/cache/product/01804(2)/thumb_01804(2).jpg?v=11791641888",
      "name": "Pilsner Urquell light",
      "price_amd": 790,
      "shop_item_id": "1804",
@@ -34292,7 +34299,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34315,7 +34322,7 @@
      "volume_ml": 400
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34351,7 +34358,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34374,7 +34381,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34410,7 +34417,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34446,7 +34453,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34459,7 +34466,7 @@
      "brewery": "San Imbev Ukraina LLC",
      "hidden": true,
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/27938(1)/thumb_27938(1).jpg?v=11791603846",
+     "logo": "https://static.parma.am/cache/product/27938(1)/thumb_27938(1).jpg?v=11791633067",
      "name": "Stella Artois light",
      "price_amd": 640,
      "shop_item_id": "27938",
@@ -34470,7 +34477,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34506,7 +34513,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34542,7 +34549,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34578,7 +34585,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34601,7 +34608,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34624,7 +34631,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34647,7 +34654,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34671,7 +34678,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34695,7 +34702,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34731,7 +34738,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34754,7 +34761,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34790,7 +34797,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34826,7 +34833,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34862,7 +34869,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34887,7 +34894,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34923,7 +34930,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34948,7 +34955,7 @@
      "volume_ml": 5000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -34984,7 +34991,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35020,7 +35027,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35056,7 +35063,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35092,7 +35099,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35128,7 +35135,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35164,7 +35171,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35200,7 +35207,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35236,7 +35243,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35272,7 +35279,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35308,7 +35315,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35344,7 +35351,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35380,7 +35387,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35403,7 +35410,7 @@
      "volume_ml": 480
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35426,7 +35433,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35450,7 +35457,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35474,7 +35481,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35499,7 +35506,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35535,7 +35542,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35571,7 +35578,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -35634,7 +35641,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35670,7 +35677,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -35706,7 +35713,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35742,7 +35749,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35778,7 +35785,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -35814,7 +35821,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35829,18 +35836,18 @@
      "country_checked": true,
      "hidden": true,
      "kind": "shop",
-     "logo": "https://www.sas.am/upload/Sh/imageCache/154/266/266262487070225.webp",
+     "logo": "https://www.sas.am/upload/Sh/imageCache/404/309/309635517873767.webp",
      "name": "Aleksandrapol",
-     "price_amd": 670,
-     "shop_item_id": "3861",
-     "shop_url": "https://www.sas.am/en/catalog/armyanskoe/3861/",
+     "price_amd": 560,
+     "shop_item_id": "135478",
+     "shop_url": "https://www.sas.am/en/catalog/armyanskoe/135478/",
      "source": "sas",
-     "title": "Beer \"Aleksandrapol\" 0.5l",
-     "url": "https://www.sas.am/en/catalog/armyanskoe/3861/",
-     "volume_ml": 500
+     "title": "Beer \"Aleksandrapol\" 0.33l",
+     "url": "https://www.sas.am/en/catalog/armyanskoe/135478/",
+     "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35876,7 +35883,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35912,7 +35919,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35948,7 +35955,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -35974,7 +35981,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36000,7 +36007,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -36036,7 +36043,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36072,7 +36079,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36108,7 +36115,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36133,7 +36140,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36158,7 +36165,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36184,7 +36191,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36210,7 +36217,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36246,7 +36253,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36282,7 +36289,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36354,7 +36361,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36390,7 +36397,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36426,7 +36433,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36462,7 +36469,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36498,7 +36505,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36523,7 +36530,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36549,7 +36556,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36574,7 +36581,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36599,7 +36606,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36635,7 +36642,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36671,7 +36678,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36707,7 +36714,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36732,7 +36739,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36758,7 +36765,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36794,7 +36801,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36830,7 +36837,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36866,7 +36873,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36902,7 +36909,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -36938,7 +36945,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36974,7 +36981,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37010,7 +37017,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37046,7 +37053,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37082,7 +37089,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37118,7 +37125,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37154,7 +37161,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37190,7 +37197,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37226,7 +37233,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37252,7 +37259,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37278,7 +37285,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37314,7 +37321,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37339,7 +37346,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-09T07:03:20+00:00",
     "star": true
    },
@@ -37375,7 +37382,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-07T07:01:59+00:00",
     "star": true
    },
@@ -37411,7 +37418,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37447,7 +37454,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37483,7 +37490,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37508,7 +37515,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37534,7 +37541,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37570,7 +37577,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37605,7 +37612,7 @@
      "volume_ml": 200
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37641,7 +37648,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37677,7 +37684,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37713,7 +37720,7 @@
      "volume_ml": 2000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37749,7 +37756,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37785,7 +37792,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37821,7 +37828,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -37857,7 +37864,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37893,7 +37900,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37918,7 +37925,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37954,7 +37961,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37990,7 +37997,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38026,7 +38033,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38062,7 +38069,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -38098,7 +38105,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38134,7 +38141,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38170,7 +38177,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -38196,7 +38203,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38222,7 +38229,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38237,18 +38244,18 @@
      "country_checked": true,
      "hidden": true,
      "kind": "shop",
-     "logo": "https://www.sas.am/upload/Sh/imageCache/330/352/3527693796263542.webp",
+     "logo": "https://www.sas.am/upload/Sh/imageCache/735/445/4459713123205001.webp",
      "name": "Gyumri Gold",
-     "price_amd": 470,
-     "shop_item_id": "135800",
-     "shop_url": "https://www.sas.am/en/catalog/armyanskoe/135800/",
+     "price_amd": 370,
+     "shop_item_id": "604918",
+     "shop_url": "https://www.sas.am/en/catalog/armyanskoe/604918/",
      "source": "sas",
-     "title": "Beer \"Gyumri Gold\" 0.33l",
-     "url": "https://www.sas.am/en/catalog/armyanskoe/135800/",
-     "volume_ml": 330
+     "title": "Beer \"Gyumri Gold\" 0.25l",
+     "url": "https://www.sas.am/en/catalog/armyanskoe/604918/",
+     "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38274,7 +38281,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38299,7 +38306,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38324,7 +38331,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38349,7 +38356,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38385,7 +38392,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38421,7 +38428,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38457,7 +38464,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -38493,7 +38500,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38519,7 +38526,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38545,7 +38552,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38582,7 +38589,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -38607,7 +38614,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38633,7 +38640,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38659,7 +38666,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38685,7 +38692,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38711,7 +38718,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38737,7 +38744,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38763,7 +38770,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38789,7 +38796,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38815,7 +38822,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38851,7 +38858,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38887,7 +38894,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38923,7 +38930,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -38959,7 +38966,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38995,7 +39002,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39021,7 +39028,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39057,7 +39064,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -39093,7 +39100,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-06T07:03:23+00:00",
     "star": true
    },
@@ -39129,7 +39136,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-06T07:03:23+00:00",
     "star": true
    },
@@ -39155,7 +39162,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39179,7 +39186,7 @@
      "volume_ml": 980
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39215,7 +39222,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -39251,7 +39258,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39287,7 +39294,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -39323,7 +39330,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39359,7 +39366,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39395,7 +39402,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -39431,7 +39438,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -39467,7 +39474,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39503,7 +39510,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39539,7 +39546,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39565,7 +39572,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39591,7 +39598,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39616,7 +39623,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39642,7 +39649,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39678,7 +39685,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39704,7 +39711,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39730,7 +39737,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39755,7 +39762,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39781,7 +39788,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39806,7 +39813,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39842,7 +39849,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -39878,7 +39885,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39903,7 +39910,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39928,7 +39935,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39964,7 +39971,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40000,7 +40007,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40036,7 +40043,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -40072,7 +40079,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -40108,7 +40115,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40144,7 +40151,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40180,7 +40187,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -40216,7 +40223,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40252,7 +40259,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -40288,7 +40295,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40324,7 +40331,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40360,7 +40367,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40396,7 +40403,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40421,7 +40428,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40447,7 +40454,7 @@
      "volume_ml": 310
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -40585,7 +40592,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40621,7 +40628,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40645,7 +40652,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40669,7 +40676,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40705,7 +40712,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40741,7 +40748,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40777,7 +40784,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40800,7 +40807,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40824,7 +40831,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40847,7 +40854,7 @@
      "volume_ml": 1500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40882,7 +40889,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40917,7 +40924,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40952,7 +40959,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40976,7 +40983,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -41012,7 +41019,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41047,7 +41054,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41071,7 +41078,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41095,7 +41102,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41132,7 +41139,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41156,7 +41163,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41193,7 +41200,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41217,7 +41224,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41241,7 +41248,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41265,7 +41272,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41302,7 +41309,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41326,7 +41333,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41350,7 +41357,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41374,7 +41381,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41398,7 +41405,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41434,7 +41441,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41469,7 +41476,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -41505,7 +41512,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41541,7 +41548,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -41576,7 +41583,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -41612,7 +41619,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41648,7 +41655,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41672,7 +41679,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41696,7 +41703,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41720,7 +41727,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41744,7 +41751,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41768,7 +41775,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41792,7 +41799,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41828,7 +41835,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41863,7 +41870,7 @@
      "volume_ml": 1200
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41899,7 +41906,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41923,7 +41930,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41947,7 +41954,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41971,7 +41978,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42007,7 +42014,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42043,7 +42050,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42079,7 +42086,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42115,7 +42122,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-01T10:09:37+00:00",
     "star": true
    },
@@ -42151,7 +42158,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42187,7 +42194,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42223,7 +42230,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42259,7 +42266,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42283,7 +42290,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42307,7 +42314,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42331,7 +42338,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42355,7 +42362,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42378,7 +42385,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42414,7 +42421,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42450,7 +42457,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42474,7 +42481,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42498,7 +42505,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42534,7 +42541,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42570,7 +42577,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42606,7 +42613,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42642,7 +42649,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42678,7 +42685,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42714,7 +42721,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42750,7 +42757,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42774,7 +42781,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42798,7 +42805,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42822,7 +42829,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42846,7 +42853,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42870,7 +42877,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42906,7 +42913,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42942,7 +42949,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42966,7 +42973,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42990,7 +42997,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43014,7 +43021,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43050,7 +43057,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43086,7 +43093,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43122,7 +43129,7 @@
      "volume_ml": 310
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43157,7 +43164,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43193,7 +43200,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43229,7 +43236,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43265,7 +43272,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43288,7 +43295,7 @@
      "volume_ml": 2500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43312,7 +43319,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43336,7 +43343,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43360,7 +43367,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43384,7 +43391,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43408,7 +43415,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43431,7 +43438,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43455,7 +43462,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43479,7 +43486,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43503,7 +43510,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43527,7 +43534,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43551,7 +43558,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43575,7 +43582,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43599,7 +43606,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -43623,7 +43630,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43647,7 +43654,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -43671,7 +43678,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43707,7 +43714,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43743,7 +43750,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43767,7 +43774,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43803,7 +43810,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -43839,7 +43846,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43863,7 +43870,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -43899,7 +43906,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43971,7 +43978,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43995,7 +44002,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44031,7 +44038,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44067,7 +44074,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44091,7 +44098,7 @@
      "volume_ml": 480
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44115,7 +44122,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44139,7 +44146,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44163,7 +44170,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44186,7 +44193,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44210,7 +44217,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44245,7 +44252,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44315,7 +44322,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44350,7 +44357,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44386,7 +44393,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44422,7 +44429,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44458,7 +44465,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44494,7 +44501,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44530,7 +44537,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44553,7 +44560,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44588,7 +44595,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44623,7 +44630,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44658,7 +44665,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44694,7 +44701,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44729,7 +44736,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44753,7 +44760,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44789,7 +44796,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44813,7 +44820,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44837,7 +44844,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44861,7 +44868,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44885,7 +44892,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44909,7 +44916,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44945,7 +44952,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44980,7 +44987,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-08T07:01:26+00:00",
     "star": true
    },
@@ -45015,7 +45022,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "2026-10-08T07:01:26+00:00",
     "star": true
    },
@@ -45039,7 +45046,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45075,7 +45082,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45111,7 +45118,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45135,7 +45142,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45171,7 +45178,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45207,7 +45214,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45243,7 +45250,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45279,7 +45286,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45315,7 +45322,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45351,7 +45358,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45387,7 +45394,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45411,7 +45418,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45447,7 +45454,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45483,7 +45490,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45519,7 +45526,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45555,7 +45562,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45591,7 +45598,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45627,7 +45634,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45663,7 +45670,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45699,7 +45706,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45735,7 +45742,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45759,7 +45766,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45783,7 +45790,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45807,7 +45814,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45831,7 +45838,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45855,7 +45862,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45879,7 +45886,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45903,7 +45910,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45927,7 +45934,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45950,7 +45957,7 @@
      "url": "https://yerevan-city.am/shop/product-details/94218"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45973,7 +45980,7 @@
      "url": "https://yerevan-city.am/shop/product-details/94217"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45996,7 +46003,7 @@
      "url": "https://yerevan-city.am/shop/product-details/96903"
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46019,7 +46026,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46055,7 +46062,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46091,7 +46098,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46127,7 +46134,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46163,7 +46170,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46187,7 +46194,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46210,7 +46217,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46234,7 +46241,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46258,7 +46265,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46282,7 +46289,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46306,7 +46313,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46330,7 +46337,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46354,7 +46361,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46378,7 +46385,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46402,7 +46409,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46426,7 +46433,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46450,7 +46457,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46474,7 +46481,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46498,7 +46505,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46522,7 +46529,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46546,7 +46553,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46570,7 +46577,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46594,7 +46601,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46618,7 +46625,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46642,7 +46649,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46666,7 +46673,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46690,7 +46697,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46714,7 +46721,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46738,7 +46745,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-10-10T06:54:22+00:00",
+    "last_seen": "2026-10-10T14:33:31+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -49027,7 +49034,7 @@
    "brewery": null,
    "checked_at": null,
    "logo": null,
-   "matched_at": "2026-10-10T06:54:22+00:00",
+   "matched_at": "2026-10-10T14:33:31+00:00",
    "name": null,
    "rating": null,
    "search_v": null,
@@ -49045,7 +49052,7 @@
    "brewery": null,
    "checked_at": null,
    "logo": null,
-   "matched_at": "2026-10-10T06:54:22+00:00",
+   "matched_at": "2026-10-10T14:33:31+00:00",
    "name": null,
    "rating": null,
    "search_v": null,
@@ -55260,7 +55267,7 @@
    "last_count": 218,
    "last_error": null,
    "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -55275,8 +55282,8 @@
    "last_checkin_id": null,
    "last_count": 15,
    "last_error": null,
-   "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_full": "2026-10-10T14:33:31+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -55307,8 +55314,8 @@
    "last_checkin_id": null,
    "last_count": 19,
    "last_error": null,
-   "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_full": "2026-10-10T14:33:31+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -55323,8 +55330,8 @@
    "last_checkin_id": null,
    "last_count": 166,
    "last_error": null,
-   "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_full": "2026-10-10T14:33:31+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -55339,8 +55346,8 @@
    "last_checkin_id": null,
    "last_count": 149,
    "last_error": null,
-   "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_full": "2026-10-10T14:33:31+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -55606,17 +55613,17 @@
   },
   "untappd_checkins:ferment": {
    "baseline_done": true,
-   "checkin_overflow": true,
+   "checkin_overflow": false,
    "fail_streak": 0,
    "last_checkin_id": 1607182653,
    "last_count": 4,
    "last_error": null,
-   "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_full": "2026-10-10T14:33:31+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
-   "quiet_since": null,
+   "quiet_since": "2026-10-10T14:33:31+00:00",
    "seen_menu_ids": [],
    "trip_streak": 0
   },
@@ -55822,8 +55829,8 @@
    "last_checkin_id": null,
    "last_count": 208,
    "last_error": null,
-   "last_full": "2026-10-10T06:54:22+00:00",
-   "last_ok": "2026-10-10T06:54:22+00:00",
+   "last_full": "2026-10-10T14:33:31+00:00",
+   "last_ok": "2026-10-10T14:33:31+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -55838,8 +55845,8 @@
   "brewery_list_cursor": 0,
   "last_attempt": "2026-10-10T06:54:22+00:00",
   "pages_date": "2026-10-10",
-  "pages_today": 20,
-  "topup_date": "2026-10-09"
+  "pages_today": 23,
+  "topup_date": "2026-10-10"
  },
  "venues": {
   "10274653": {
