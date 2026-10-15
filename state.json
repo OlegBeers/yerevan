@@ -13478,10 +13478,10 @@
  "digest": {
   "last_message_id": 302,
   "last_replied": false,
-  "last_sent_at": "2026-10-13T07:08:40+00:00",
-  "last_sent_date": "2026-10-13",
+  "last_sent_at": "2026-10-15T07:22:13+00:00",
+  "last_sent_date": "2026-10-15",
   "last_to_admin": false,
-  "sent_count": 20
+  "sent_count": 21
  },
  "discovery": {
   "last_report_date": "2026-10-12",
@@ -25374,7 +25374,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-15T07:17:31+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-15T07:22:13+00:00",
     "star": true
    },
    "u:5805075": {
@@ -27015,7 +27015,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-15T07:17:31+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-15T07:22:13+00:00",
     "star": true
    },
    "u:4007076": {
@@ -27325,7 +27325,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-15T07:17:31+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-15T07:22:13+00:00",
     "star": true
    },
    "u:5325": {
@@ -56770,7 +56770,7 @@
   }
  },
  "started_at": "2026-09-24T10:17:40+00:00",
- "telegram_offset": 388240132,
+ "telegram_offset": 388240147,
  "untappd": {
   "brewery_list_cursor": 0,
   "last_attempt": "2026-10-15T07:17:31+00:00",
