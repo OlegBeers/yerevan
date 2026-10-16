@@ -13491,10 +13491,10 @@
  "digest": {
   "last_message_id": 318,
   "last_replied": false,
-  "last_sent_at": "2026-10-15T07:22:13+00:00",
-  "last_sent_date": "2026-10-15",
+  "last_sent_at": "2026-10-16T07:20:56+00:00",
+  "last_sent_date": "2026-10-16",
   "last_to_admin": false,
-  "sent_count": 21
+  "sent_count": 22
  },
  "discovery": {
   "last_report_date": "2026-10-12",
@@ -31266,7 +31266,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-16T07:16:14+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-16T07:20:56+00:00",
     "star": true
    },
    "u:6869959": {
