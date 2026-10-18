@@ -300,6 +300,7 @@
 {"beer_id": 2345623, "brewery": "Dargett Brewery", "id": 1606695975, "rating": 5.0, "time": "2026-10-07T18:37:44+00:00", "username": "Tankerwife", "venue_id": 4640403}
 {"beer_id": 1559917, "brewery": "Dargett Brewery", "id": 1606696725, "rating": 5.0, "time": "2026-10-07T18:40:55+00:00", "username": "Tankerwife", "venue_id": 4640403}
 {"beer_id": 2301685, "brewery": "Dargett Brewery", "id": 1606696872, "rating": 5.0, "time": "2026-10-07T18:41:34+00:00", "username": "Tankerwife", "venue_id": 4640403}
+{"beer_id": 4775604, "brewery": "379 Torch & Brew", "id": 1606721178, "rating": 5.0, "time": "2026-10-07T20:39:41+00:00", "username": "Tankerwife", "venue_id": 6290383}
 {"beer_id": 3404979, "brewery": "Dors", "id": 1606795808, "rating": 3.0, "time": "2026-10-08T13:10:02+00:00", "username": "ho66it", "venue_id": 9312556}
 {"beer_id": 1674726, "brewery": "Dargett Brewery", "id": 1606796242, "rating": 3.5, "time": "2026-10-08T13:15:44+00:00", "username": "aet24", "venue_id": 4640403}
 {"beer_id": 3390735, "brewery": "Dors", "id": 1606796723, "rating": 3.5, "time": "2026-10-08T13:22:32+00:00", "username": "ho66it", "venue_id": 9312556}
@@ -466,6 +467,7 @@
 {"beer_id": 1559917, "brewery": "Dargett Brewery", "id": 1608723937, "rating": 2.25, "time": "2026-10-16T16:50:55+00:00", "username": "Bernd-82110", "venue_id": 4640403}
 {"beer_id": 1188254, "brewery": "Beer Academy", "id": 1608729732, "rating": 4.0, "time": "2026-10-16T17:03:04+00:00", "username": "whippersnapper83", "venue_id": 368914}
 {"beer_id": 2345623, "brewery": "Dargett Brewery", "id": 1608739234, "rating": 3.75, "time": "2026-10-16T17:22:35+00:00", "username": "Bernd-82110", "venue_id": 4640403}
+{"beer_id": 6266160, "brewery": "Pulpulak", "id": 1608762838, "rating": 3.25, "time": "2026-10-16T18:07:26+00:00", "username": "Shortly68", "venue_id": 6290383}
 {"beer_id": 745711, "brewery": "Beer Academy", "id": 1608790941, "rating": 3.5, "time": "2026-10-16T18:56:16+00:00", "username": "ElArk", "venue_id": 10274653}
 {"beer_id": 2260907, "brewery": "Brewlok Brewery", "id": 1608792005, "rating": 4.5, "time": "2026-10-16T18:58:00+00:00", "username": "alexsud", "venue_id": 13510969}
 {"beer_id": 4522683, "brewery": "Dargett Brewery", "id": 1608792727, "rating": 4.25, "time": "2026-10-16T18:59:16+00:00", "username": "Bernd-82110", "venue_id": 4640403}
@@ -475,9 +477,24 @@
 {"beer_id": 5138327, "brewery": "Brewmen", "id": 1608848766, "rating": 5.0, "time": "2026-10-16T20:39:45+00:00", "username": "alexsud", "venue_id": 13510969}
 {"beer_id": 2301685, "brewery": "Dargett Brewery", "id": 1608915570, "rating": 4.5, "time": "2026-10-16T23:27:01+00:00", "username": "Bernd-82110", "venue_id": 4640403}
 {"beer_id": 6599480, "brewery": "Brewlok Brewery", "id": 1608980382, "rating": 4.25, "time": "2026-10-17T06:19:57+00:00", "username": "Paveltitov", "venue_id": 13510969}
+{"beer_id": 1554084, "brewery": "Dargett Brewery", "id": 1608987036, "rating": 3.25, "time": "2026-10-17T08:25:46+00:00", "username": "reg31", "venue_id": 4640403}
+{"beer_id": 1674726, "brewery": "Dargett Brewery", "id": 1608987295, "rating": 3.75, "time": "2026-10-17T08:29:34+00:00", "username": "reg31", "venue_id": 4640403}
 {"beer_id": 1518447, "brewery": "Dargett Brewery", "id": 1608987872, "rating": 3.0, "time": "2026-10-17T08:37:22+00:00", "username": "reg31", "venue_id": 4640403}
 {"beer_id": 1518439, "brewery": "Dargett Brewery", "id": 1608988984, "rating": 3.0, "time": "2026-10-17T08:53:59+00:00", "username": "reg31", "venue_id": 4640403}
 {"beer_id": 3152548, "brewery": "Dargett Brewery", "id": 1608989711, "rating": 3.5, "time": "2026-10-17T09:04:14+00:00", "username": "reg31", "venue_id": 4640403}
 {"beer_id": 1559917, "brewery": "Dargett Brewery", "id": 1608990318, "rating": 3.5, "time": "2026-10-17T09:13:42+00:00", "username": "reg31", "venue_id": 4640403}
 {"beer_id": 6666727, "brewery": "Dargett Brewery", "id": 1608992297, "rating": 3.5, "time": "2026-10-17T09:37:44+00:00", "username": "reg31", "venue_id": 4640403}
 {"beer_id": 6166058, "brewery": "Brewlok Brewery", "id": 1609064232, "rating": 4.25, "time": "2026-10-17T14:38:30+00:00", "username": "Shortly68", "venue_id": 13510969}
+{"beer_id": 1188254, "brewery": "Beer Academy", "id": 1609064544, "rating": 3.25, "time": "2026-10-17T14:39:17+00:00", "username": "ElArk", "venue_id": 10274653}
+{"beer_id": 5817002, "brewery": "Dahook", "id": 1609072586, "rating": 3.25, "time": "2026-10-17T14:58:53+00:00", "username": "Shortly68", "venue_id": 13510969}
+{"beer_id": 1518439, "brewery": "Dargett Brewery", "id": 1609077171, "rating": 3.5, "time": "2026-10-17T15:09:14+00:00", "username": "thiemko", "venue_id": 4282389}
+{"beer_id": 1518439, "brewery": "Dargett Brewery", "id": 1609077227, "rating": 3.25, "time": "2026-10-17T15:09:21+00:00", "username": "BigBallsBart", "venue_id": 4282389}
+{"beer_id": 6673718, "brewery": "Brewlok Brewery", "id": 1609085331, "rating": 3.25, "time": "2026-10-17T15:26:53+00:00", "username": "Neyasith", "venue_id": 13510969}
+{"beer_id": 6808125, "brewery": "Terev", "id": 1609105914, "rating": 3.25, "time": "2026-10-17T16:07:27+00:00", "username": "Shortly68", "venue_id": 12734409}
+{"beer_id": 2152137, "brewery": "BrewDog", "id": 1609106812, "rating": 4.0, "time": "2026-10-17T16:09:01+00:00", "username": "isildurpk", "venue_id": 13510969}
+{"beer_id": 3390607, "brewery": "Dors", "id": 1609109514, "rating": 3.25, "time": "2026-10-17T16:13:33+00:00", "username": "chrisbir", "venue_id": 9312556}
+{"beer_id": 3416471, "brewery": "Dors", "id": 1609123898, "rating": 4.0, "time": "2026-10-17T16:37:55+00:00", "username": "highalpha", "venue_id": 9312556}
+{"beer_id": 4362370, "brewery": "Brewmen", "id": 1609125976, "rating": 4.5, "time": "2026-10-17T16:41:11+00:00", "username": "isildurpk", "venue_id": 13510969}
+{"beer_id": 4522683, "brewery": "Dargett Brewery", "id": 1609132395, "rating": 3.75, "time": "2026-10-17T16:51:38+00:00", "username": "Andyxprime", "venue_id": 4640403}
+{"beer_id": 5817002, "brewery": "Dahook", "id": 1609183731, "rating": null, "time": "2026-10-17T18:09:24+00:00", "username": "Neibery", "venue_id": 13510969}
+{"beer_id": 2507978, "brewery": "Dargett Brewery", "id": 1609202462, "rating": 4.0, "time": "2026-10-17T18:35:30+00:00", "username": "Andyxprime", "venue_id": 4640403}
