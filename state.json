@@ -13660,10 +13660,10 @@
  "digest": {
   "last_message_id": 322,
   "last_replied": false,
-  "last_sent_at": "2026-10-19T07:30:33+00:00",
-  "last_sent_date": "2026-10-19",
+  "last_sent_at": "2026-10-20T07:23:45+00:00",
+  "last_sent_date": "2026-10-20",
   "last_to_admin": false,
-  "sent_count": 25
+  "sent_count": 26
  },
  "discovery": {
   "last_report_date": "2026-10-19",
@@ -37015,7 +37015,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-20T07:18:53+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-20T07:23:45+00:00",
     "star": true
    },
    "u:6693122": {
