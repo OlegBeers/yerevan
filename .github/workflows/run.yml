@@ -6,9 +6,11 @@ on:
     # must start after settings.digest_time (10:30): it is the one that sends the daily digest.
     - cron: "35 6 * * *"
     - cron: "17 14 * * *"
-    # 11:35 backup: GitHub sometimes skips or delays a scheduled run; does nothing if the morning run
-    # already collected Untappd today (the gate job below)
+    # 11:35, 12:35, 14:35 backups: GitHub sometimes skips or delays a scheduled run; each does nothing
+    # if the morning run already collected Untappd today (the gate job below)
     - cron: "35 7 * * *"
+    - cron: "35 8 * * *"
+    - cron: "35 10 * * *"
   workflow_dispatch:
 
 # One run at a time; a queued run waits, a running one is never cancelled
@@ -37,7 +39,7 @@ jobs:
         env:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
-          if [ "$SCHEDULE" != "35 7 * * *" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          case "$SCHEDULE" in "35 7 * * *"|"35 8 * * *"|"35 10 * * *") ;; *) echo "go=true" >> "$GITHUB_OUTPUT"; exit 0;; esac
           python3 - >> "$GITHUB_OUTPUT" <<'PY'
           import json
           from datetime import datetime, timedelta, timezone

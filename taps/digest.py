@@ -59,6 +59,7 @@ def drop_stale_events(state: State, now: datetime) -> int:
 
 
 MORNING_WINDOW = timedelta(hours=2, minutes=30)   # the morning run's own finds still make its digest
+LATE_RUN_MARGIN = timedelta(minutes=30)            # a late morning run: its finds are stamped while it runs
 
 
 def is_due(state: State, settings: Settings, now: datetime) -> bool:
@@ -79,6 +80,10 @@ def is_due(state: State, settings: Settings, now: datetime) -> bool:
     if local.time() >= settings.digest_time:
         # only what was waiting by the morning run: a later find waits for the next morning's digest
         cutoff = datetime.combine(local.date(), settings.digest_time, tzinfo=YEREVAN) + MORNING_WINDOW
+        # GitHub can start the morning run hours late: that run's own finds still make today's digest
+        last = state.untappd.last_attempt
+        if last is not None and yerevan_date(parse_iso(last)) == yerevan_date(now):
+            cutoff = max(cutoff, parse_iso(last) + LATE_RUN_MARGIN)
         return min(times) < cutoff
     yesterday_cutoff = datetime.combine(local.date() - timedelta(days=1), settings.digest_time, tzinfo=YEREVAN)
     return min(times) < yesterday_cutoff

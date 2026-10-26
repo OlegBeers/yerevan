@@ -36,7 +36,7 @@ def test_run_schedule_and_manual_trigger():
     wf = load("run.yml")
     assert wf["name"] == "taps"
     on = triggers(wf)
-    assert [s["cron"] for s in on["schedule"]] == ["35 6 * * *", "17 14 * * *", "35 7 * * *"]
+    assert [s["cron"] for s in on["schedule"]] == ["35 6 * * *", "17 14 * * *", "35 7 * * *", "35 8 * * *", "35 10 * * *"]
     assert "workflow_dispatch" in on
     assert "push" not in on and "pull_request" not in on
 
@@ -44,7 +44,7 @@ def test_run_schedule_and_manual_trigger():
 def test_backup_run_skips_when_the_morning_run_already_happened():
     wf = load("run.yml")
     gate = wf["jobs"]["gate"]["steps"][-1]["run"]
-    assert '"35 7 * * *"' in gate and "last_attempt" in gate
+    assert all(f'"{c}"' in gate for c in ("35 7 * * *", "35 8 * * *", "35 10 * * *")) and "last_attempt" in gate
     assert wf["jobs"]["run"]["needs"] == "gate"
     assert wf["jobs"]["run"]["if"] == "needs.gate.outputs.go == 'true'"
 

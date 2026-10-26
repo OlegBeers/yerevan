@@ -8,7 +8,7 @@ from taps.config import Config, Place, Settings
 from taps.digest import (
     build_digest, drop_stale_events, is_due, mark_sent, pending_brewery, pending_pairs, rollback,
 )
-from taps.state import BreweryNewRec, DigestRec, PairRec, State
+from taps.state import BreweryNewRec, DigestRec, PairRec, State, UntappdRec
 from taps.timeutil import YEREVAN, iso, to_yerevan
 
 NBSP = " "
@@ -615,3 +615,15 @@ def test_is_due_something_found_after_the_morning_waits_for_the_next_morning():
     assert is_due(due_state(event_at=yv(24, 18, 17)), live, yv(24, 18, 20)) is False
     assert is_due(due_state(event_at=yv(24, 10, 36)), live, yv(24, 10, 40)) is True     # the morning run's own find
     assert is_due(due_state(event_at=yv(23, 18, 17)), live, yv(24, 18, 20)) is True     # morning run missed
+
+
+def test_is_due_a_morning_run_github_started_late_still_sends_its_own_finds():
+    """25.10: the morning run started at 15:56 instead of 10:35; its finds waited a whole day."""
+    from datetime import time
+    live = Settings(digest_time=time(10, 30))
+    late = due_state(event_at=yv(25, 15, 57))
+    late.untappd = UntappdRec(last_attempt=iso(yv(25, 15, 56)))
+    assert is_due(late, live, yv(25, 16, 2)) is True
+    evening = due_state(event_at=yv(25, 18, 20))   # the regular morning run already collected Untappd at 10:36
+    evening.untappd = UntappdRec(last_attempt=iso(yv(25, 10, 36)))
+    assert is_due(evening, live, yv(25, 18, 25)) is False
