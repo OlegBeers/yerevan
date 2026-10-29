@@ -13933,10 +13933,10 @@
  "digest": {
   "last_message_id": 333,
   "last_replied": false,
-  "last_sent_at": "2026-10-28T13:33:12+00:00",
-  "last_sent_date": "2026-10-28",
+  "last_sent_at": "2026-10-29T12:36:06+00:00",
+  "last_sent_date": "2026-10-29",
   "last_to_admin": false,
-  "sent_count": 32
+  "sent_count": 33
  },
  "discovery": {
   "last_report_date": "2026-10-26",
@@ -26077,7 +26077,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-10-29T12:30:51+00:00",
-    "notified_at": null,
+    "notified_at": "2026-10-29T12:36:06+00:00",
     "star": true
    },
    "u:6487819": {
