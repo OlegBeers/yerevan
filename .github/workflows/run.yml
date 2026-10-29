@@ -6,8 +6,9 @@ on:
     # must start after settings.digest_time (10:30): it is the one that sends the daily digest.
     - cron: "35 6 * * *"
     - cron: "17 14 * * *"
-    # 11:35, 12:35, 14:35 backups: GitHub sometimes skips or delays a scheduled run; each does nothing
-    # if the morning run already collected Untappd today (the gate job below)
+    # 11:35, 12:35, 14:35 backups: GitHub sometimes skips or delays a scheduled run (by ~6 h in late
+    # October 2026; Oleg's Mac now dispatches the morning and evening runs on time). Every morning slot,
+    # 10:35 included, does nothing if Untappd was already collected today (the gate job below)
     - cron: "35 7 * * *"
     - cron: "35 8 * * *"
     - cron: "35 10 * * *"
@@ -39,7 +40,7 @@ jobs:
         env:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
-          case "$SCHEDULE" in "35 7 * * *"|"35 8 * * *"|"35 10 * * *") ;; *) echo "go=true" >> "$GITHUB_OUTPUT"; exit 0;; esac
+          case "$SCHEDULE" in "35 6 * * *"|"35 7 * * *"|"35 8 * * *"|"35 10 * * *") ;; *) echo "go=true" >> "$GITHUB_OUTPUT"; exit 0;; esac
           python3 - >> "$GITHUB_OUTPUT" <<'PY'
           import json
           from datetime import datetime, timedelta, timezone

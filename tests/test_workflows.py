@@ -44,7 +44,7 @@ def test_run_schedule_and_manual_trigger():
 def test_backup_run_skips_when_the_morning_run_already_happened():
     wf = load("run.yml")
     gate = wf["jobs"]["gate"]["steps"][-1]["run"]
-    assert all(f'"{c}"' in gate for c in ("35 7 * * *", "35 8 * * *", "35 10 * * *")) and "last_attempt" in gate
+    assert all(f'"{c}"' in gate for c in ("35 6 * * *", "35 7 * * *", "35 8 * * *", "35 10 * * *")) and "last_attempt" in gate
     assert wf["jobs"]["run"]["needs"] == "gate"
     assert wf["jobs"]["run"]["if"] == "needs.gate.outputs.go == 'true'"
 
