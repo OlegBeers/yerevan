@@ -3167,6 +3167,18 @@ def test_untappd_is_not_fetched_before_20_hours(world):
     assert world.sends == []                                                  # the new beer was not seen
 
 
+def test_a_late_github_run_at_night_does_not_touch_untappd(world):
+    """02.11: GitHub fired a cron at 00:30 Yerevan; it spent the new day's Untappd budget before the morning."""
+    first_run(world)
+    night = NOW + timedelta(hours=6, minutes=13)          # Fri 00:30 in Yerevan, a new Yerevan date
+    world.untappd.urls.clear()
+    assert world.run(night) == 0
+    state = world.state()
+    assert world.untappd.urls == []
+    assert state.untappd.last_attempt == iso(NOW)                             # the day is still uncollected
+    assert state.sources["parma:parma"].last_ok == iso(night)                 # shops ran
+
+
 def test_first_cloudflare_challenge_stops_untappd_but_not_shops(world):
     world.untappd = FakeUntappd(challenge=True)
     assert world.run(NOW) == 0

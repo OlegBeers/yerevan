@@ -293,11 +293,12 @@ def test_is_due_already_sent_today():
     assert is_due(due_state(event_at=yv(24, 10), last_sent_date="2026-09-24"), SETTINGS, yv(24, 18, 17)) is False
 
 
-def test_is_due_twenty_hour_gap():
+def test_is_due_twelve_hour_gap():
+    """31.10: a digest GitHub sent at 18:23 used to block the next morning's (20 h gap); now 12 h."""
     old = yv(23, 10, 17)
-    s = due_state(event_at=old, last_sent_at=yv(23, 18, 17), last_sent_date="2026-09-23")   # 16h ago
+    s = due_state(event_at=old, last_sent_at=yv(23, 23, 0), last_sent_date="2026-09-23")    # 11h17m ago
     assert is_due(s, SETTINGS, yv(24, 10, 17)) is False
-    s = due_state(event_at=old, last_sent_at=yv(23, 13, 0), last_sent_date="2026-09-23")    # 21h17m ago
+    s = due_state(event_at=old, last_sent_at=yv(23, 18, 17), last_sent_date="2026-09-23")   # 16h ago
     assert is_due(s, SETTINGS, yv(24, 10, 17)) is True
 
 

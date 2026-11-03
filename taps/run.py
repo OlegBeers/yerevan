@@ -10,7 +10,7 @@ import os
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time as clock, timedelta
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
@@ -92,6 +92,7 @@ QUIET_READ_EVERY = 2          # Phase 2b: a quiet source is then read only every
                               # stay under breaker.STALE_DAYS, or a longer gap would fold the source's
                               # next successful read into a silent baseline instead of merging it
 assert QUIET_READ_EVERY < STALE_DAYS
+UNTAPPD_HOURS = (clock(9, 0), clock(22, 0))   # Yerevan: Untappd is read only in the daytime
 TOPUP_MAX_PAGES = 6           # Phase 2a: evening top-up cap on re-read overflowed check-in sources
 REPLY_POLL_MAX_PAGES = 5      # small cap on getUpdates pages per run; one empty page normally ends it
 DELETE_WINDOW_HOURS = 47      # Telegram lets a bot delete its own messages only within 48h; 1h safety margin
@@ -1202,7 +1203,10 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
     merge_places(state, {old: p.id for p in config.places.values() for old in p.merged_from})
     apply_same_as(state, corrections, now)   # v1.2 beer identity: manual override, wins over local/search
     match_shop_beers_locally(state, now)     # v1.2 beer identity: zero-page match, before search
-    if untappd_due(state.untappd, now):
+    if not UNTAPPD_HOURS[0] <= to_yerevan(now).time() < UNTAPPD_HOURS[1]:
+        # a GitHub cron that fires hours late lands at night: it must not spend the day's Untappd budget
+        untappd_results, client = [], None
+    elif untappd_due(state.untappd, now):
         untappd_results, client = collect_untappd(state, config, corrections, now, deps, alerter)
     else:   # Phase 2a: already collected today -- consider a small evening top-up instead
         untappd_results, client = collect_untappd_topup(state, config, corrections, now, deps, alerter)
