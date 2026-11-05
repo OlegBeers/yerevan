@@ -14128,10 +14128,10 @@
  "digest": {
   "last_message_id": 338,
   "last_replied": false,
-  "last_sent_at": "2026-11-04T06:46:05+00:00",
-  "last_sent_date": "2026-11-04",
+  "last_sent_at": "2026-11-05T06:45:57+00:00",
+  "last_sent_date": "2026-11-05",
   "last_to_admin": false,
-  "sent_count": 37
+  "sent_count": 38
  },
  "discovery": {
   "last_report_date": "2026-11-02",
@@ -18848,7 +18848,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-04T20:52:02+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-05T06:45:57+00:00",
     "star": true
    },
    "n:bever vienna lager": {
@@ -26524,7 +26524,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-05T06:41:13+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-05T06:45:57+00:00",
     "star": false
    },
    "u:6800327": {
