@@ -221,10 +221,10 @@ def test_switching_repaints_in_place_and_keeps_the_filters_the_sort_and_the_open
     page.click(".lang [data-lang=ru]")
     assert state() == before and page.evaluate("window.notReloaded") is True
     assert text(page, "#count") == "Показано 1 из 8"
-    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3)] == ["по новизне", "по рейтингу", "по крепости"]
+    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3, 4)] == ["по новизне", "по рейтингу", "по крепости", "по цене за литр"]
     page.click(".lang [data-lang=en]")
     assert state() == before and text(page, "#count") == "Showing 1 of 8"
-    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3)] == ["newest", "rating", "ABV"]
+    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3, 4)] == ["newest", "rating", "ABV", "price per litre"]
     assert problems == []
 
 
@@ -910,4 +910,100 @@ def test_filters_narrow_the_list_and_round_trip_through_the_url(open_page):
     page.click("#filters-reset")
     assert text(page, "#count") == "Beers: 5"
     assert urlsplit(page.url).query == ""
+    assert problems == []
+
+
+def price_data():
+    """Shop offers of the same beers in several shops, at several volumes, for the cheapest-per-litre chip and its sort."""
+    base = make_data(rows=[])
+    now = datetime.now(timezone.utc)
+
+    def offer(place, name, group, price, ml, hours):
+        return {"place_id": place, "section": "shops", "beer_key": group, "group_key": group, "name": name,
+                "brewery": "Test Brewery", "style": None, "style_group": None, "abv": None, "ibu": None, "rating": None,
+                "price_amd": price, "volume_ml": ml, "container": "bottle", "url": None, "serving": None, "shop_url": None,
+                "country": None, "servings": None, "style_inferred": False, "badge": "shop",
+                "since": now.date().isoformat(), "since_at": (now - timedelta(hours=hours)).isoformat(timespec="seconds"),
+                "seen_days_ago": None, "new": False, "star": False, "by": None, "beer_logo": None, "shop_name": None,
+                "match_via": None}
+
+    bar = dict(offer("gargoyle", "Pair Ale", "u:1", 2500, 400, 9), section="bars", badge="menu", container="draft")
+    base["rows"] = [
+        offer("beercity", "Pair Ale", "u:1", 760, 330, 1),          # 2303 per litre
+        offer("parma", "Pair Ale", "u:1", 1100, 500, 2),            # 2200 per litre: cheapest
+        bar,                                                        # draught is another thing: never compared, never marked
+        offer("beercity", "Solo Ale", "u:2", 900, 500, 3),          # one shop offer: nothing to compare with
+        offer("beercity", "Tie Ale", "u:3", 600, 330, 4),           # 1818 per litre
+        offer("parma", "Tie Ale", "u:3", 1000, 550, 5),             # 1818 per litre: tied for cheapest
+        offer("beercity", "Tie Ale", "u:3", 1500, 500, 6),          # 3000
+        offer("beercity", "Gap Ale", "u:4", 500, None, 7),          # no volume: ignored
+        offer("parma", "Gap Ale", "u:4", 1200, 500, 8),             # the only comparable offer
+        offer("parma", "Cheap Ale", "u:5", 1000, 1000, 10),         # 1000 per litre: the cheapest card
+        offer("beercity", "Cheap Ale", "u:5", 1200, 1000, 11),
+    ]
+    return base
+
+
+def cheapest_chips(page):
+    return page.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#rows .card')].map((card) => [
+      card.querySelector('.card-name').textContent.trim(),
+      [...card.querySelectorAll('.place-block')].map((b) => [...b.querySelectorAll('.chip-serving, .chip-cheap')].map((c) => c.textContent).join('|'))
+        .filter(Boolean)]))""")
+
+
+@pytest.mark.parametrize("lang, word", [("en", "cheapest"), ("ru", "дешевле всего")])
+def test_the_shop_offer_with_the_lowest_price_per_litre_carries_a_cheapest_chip(open_page, lang, word):
+    page, problems = open_page(price_data(), width=375, query=f"?lang={lang}")
+    chips = cheapest_chips(page)
+    ml = {"en": "ml", "ru": "мл"}[lang]
+    # 330 ml for 760 is 2303 per litre, 500 ml for 1100 is 2200: the half litre wins; the bar's draught is left out
+    assert [c for c in chips["Pair Ale"] if "|" in c] == [f"bottle 500 {ml} · 1100 ֏|{word}".replace("bottle", {"en": "bottle", "ru": "бутылка"}[lang])]
+    assert page.locator(".chip-cheap").count() == sum(1 for v in chips.values() for c in v if "|" in c) == 4
+    assert not [c for c in chips["Solo Ale"] if "|" in c]                                           # one offer: no chip
+    assert len([c for c in chips["Tie Ale"] if "|" in c]) == 2                                      # a tie marks both
+    assert not [c for c in chips["Gap Ale"] if "|" in c]                                            # no volume: not compared, so only one offer
+    assert problems == []
+
+
+def test_a_cheapest_chip_never_makes_a_phone_scroll_sideways_in_either_language(open_page):
+    for lang in ("ru", "en"):
+        for width in (320, 375):
+            page, problems = open_page(price_data(), width=width, query=f"?lang={lang}")
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), (lang, width)
+            heights = page.eval_on_selector_all(".chip-cheap", "els => els.map((e) => e.getBoundingClientRect().height)")
+            assert heights and max(heights) < 28, (lang, width, heights)                          # one line, like any chip
+            assert problems == []
+
+
+def test_the_table_marks_the_cheapest_offer_too(open_page):
+    page, problems = open_page(price_data(), width=1280)
+    marked = page.evaluate("""() => [...document.querySelectorAll('#rows tbody tr')].map((row) => [
+      row.querySelector('.beer').textContent, [...row.querySelectorAll('.place-block')].filter((b) => b.querySelector('.chip-cheap'))
+        .map((b) => b.querySelector('.chip-serving').textContent)])""")
+    assert dict(marked)["Pair Ale"] == ["bottle 500 ml · 1100 ֏"] and dict(marked)["Solo Ale"] == []
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang, label", [("en", "price per litre"), ("ru", "по цене за литр")])
+def test_sorting_by_price_per_litre_puts_the_cheapest_litre_first_and_unpriced_beers_last(open_page, lang, label):
+    data = price_data()
+    data["rows"].append(dict(data["rows"][0], name="Bar Only", group_key="u:6", beer_key="u:6", section="bars", badge="menu",
+                             price_amd=None, volume_ml=None, place_id="gargoyle"))
+    page, problems = open_page(data, width=375, query=f"?lang={lang}")
+    assert text(page, "#sort option:nth-child(4)") == label
+    page.select_option("#sort", "litre")
+    order = page.eval_on_selector_all(".card .card-name", "els => els.map((e) => e.textContent.trim())")
+    # per litre: Cheap 1000, Solo 1800, Tie 1818, Pair 2200, Gap 2400 (the offer with a volume); no shop price: last
+    assert order == ["Cheap Ale", "Solo Ale", "Tie Ale", "Pair Ale", "Gap Ale", "Bar Only"]
+    assert problems == []
+
+
+@pytest.mark.parametrize("lang", ["ru", "en"])
+@pytest.mark.parametrize("width", [320, 375])
+def test_the_longer_sort_option_keeps_sort_and_filters_on_one_row_of_a_phone(open_page, lang, width):
+    page, problems = open_page(price_data(), width=width, query=f"?lang={lang}")
+    page.select_option("#sort", "litre")
+    sort_box, filters_box = box(page, "#sort"), box(page, "#filters-toggle")
+    assert abs(sort_box["top"] - filters_box["top"]) <= 2 and sort_box["right"] <= filters_box["left"]
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert problems == []

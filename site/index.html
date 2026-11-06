@@ -170,7 +170,7 @@
   .map-pin { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: var(--hit); height: var(--hit); margin: -15px -14px -15px -8px; color: var(--accent); }   /* a 44px hit area around a 14px pin, without taking the room */
   .card-name { gap: var(--s2); }
   .map-link:hover { color: var(--text); text-decoration: none; }
-  .tracked-badge { border-color: var(--accent); background: transparent; }
+  .tracked-badge, .chip-cheap { border-color: var(--accent); background: transparent; }
   .intro { color: var(--muted); margin: 0 0 var(--s4); max-width: 60ch; }
   .count { color: var(--muted); font-size: .85rem; margin: 0 0 var(--s2); }
   .empty { text-align: center; color: var(--muted); padding: 32px var(--s4); }
@@ -265,6 +265,7 @@
           <option value="since" selected data-i18n="sort.since">по новизне</option>
           <option value="rating" data-i18n="sort.rating">по рейтингу</option>
           <option value="abv" data-i18n="sort.abv">по крепости</option>
+          <option value="litre" data-i18n="sort.litre">по цене за литр</option>
         </select>
       </span>
       <button type="button" id="filters-toggle" aria-expanded="false" aria-controls="filters-panel"><span data-i18n="filters.button">Фильтры</span><span id="filters-badge" class="filters-badge" hidden>0</span></button>
@@ -356,6 +357,8 @@ const I18N = {
     "sort.since": "по новизне",
     "sort.rating": "по рейтингу",
     "sort.abv": "по крепости",
+    "sort.litre": "по цене за литр",
+    "badge.cheapest": "дешевле всего",
     "only.new": "только новинки за 7 дней",
     "filters.button": "Фильтры",
     "filters.rating": "Рейтинг",
@@ -473,6 +476,8 @@ const I18N = {
     "sort.since": "newest",
     "sort.rating": "rating",
     "sort.abv": "ABV",
+    "sort.litre": "price per litre",
+    "badge.cheapest": "cheapest",
     "only.new": "only new arrivals (last 7 days)",
     "filters.button": "Filters",
     "filters.rating": "Rating",
@@ -801,6 +806,10 @@ function ratingNode(r) {   // a chip of one size: ★ and the number, or 🔥 an
     iconSpan(hot ? "🔥" : "★"), Number(r.rating).toFixed(2));
 }
 
+function cmpAsc(a, b) {   // ascending, empty values last
+  if (a == null || b == null) return (a == null) - (b == null);
+  return a < b ? -1 : a > b ? 1 : 0;
+}
 function cmpDesc(a, b) {  // descending, empty values last
   if (a == null || b == null) return (a == null) - (b == null);
   return a < b ? 1 : a > b ? -1 : 0;
@@ -847,6 +856,7 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
     map.get(key).push(r);
   }
   return [...map.values()].map((group) => {
+    const offers = shopOffers(group);
     // v1.2 beer identity: prefer the bar's own Untappd sighting over a matched shop row's cached copy
     const r0 = group.find((r) => r.beer_key && r.beer_key.startsWith("u:")) || group[0];
     return {
@@ -861,8 +871,19 @@ function groupBeers(rows) {   // one beer can be on the menu at several places; 
       since: group.map((r) => r.since).sort()[0],
       since_at: group.map((r) => r.since_at).filter(Boolean).sort()[0] || group.map((r) => r.since).sort()[0],
       new: group.some((r) => r.new), star: group.some((r) => r.star),
+      litre: offers.length ? Math.min(...offers.map((o) => o.litre)) : null, cheapest: cheapestOffers(offers),
     };
   });
+}
+// "where is it cheaper": shop offers (a row, or each entry of its `servings`) with a price and a volume, compared per litre;
+// a bar's draught price is another thing and is left out
+function shopOffers(rows) {
+  return rows.filter((r) => r.section === "shops").flatMap((r) => r.servings || [r])
+    .filter((s) => s.price_amd != null && s.volume_ml > 0).map((s) => ({ s, litre: s.price_amd * 1000 / s.volume_ml }));
+}
+function cheapestOffers(offers) {   // the offers at the lowest litre price, once there are two prices to tell apart
+  const lowest = Math.min(...offers.map((o) => o.litre));
+  return new Set(offers.some((o) => o.litre > lowest) ? offers.filter((o) => o.litre === lowest).map((o) => o.s) : []);
 }
 function tabGroups() {   // every beer of the open tab, before any filter -- what the total count and the facet counts are drawn from
   return groupBeers(ui.data.rows.filter(inSection));
@@ -871,9 +892,10 @@ function matchesRating(g) {   // the group's own best rating, same value its rat
   return ui.filters.rating == null || (g.rating != null && g.rating >= Number(ui.filters.rating));
 }
 function visibleGroups() {
-  const key = $("sort").value === "since" ? "since_at" : $("sort").value;   // newest first down to the minute
+  const sort = $("sort").value, key = sort === "since" ? "since_at" : sort;   // newest first down to the minute
+  const order = sort === "litre" ? cmpAsc : cmpDesc;   // the cheapest litre first, the rest highest first
   return groupBeers(filteredRows()).filter(matchesRating)
-    .sort((a, b) => cmpDesc(a[key], b[key]) || cmpDesc(a.since_at, b.since_at)
+    .sort((a, b) => order(a[key], b[key]) || cmpDesc(a.since_at, b.since_at)
       || String(a.name).localeCompare(String(b.name), "ru"));
 }
 
@@ -906,15 +928,20 @@ function seenNote(r) {   // a check-in has no price: what it says instead is whe
   const serving = servingLabel(r.serving);
   return el("span", { class: "chip chip-note" }, iconSpan("👀"), serving ? `${serving}, ${seen}` : seen);
 }
-const servingChips = (r) => (r.servings || [r]).map(servingText).filter(Boolean)
-  .map((text) => el("span", { class: "chip chip-serving" }, text));
+function servingChips(r, cheapest) {   // the cheapest litre among the shops gets a second pill beside its serving
+  return (r.servings || [r]).flatMap((s) => {
+    const text = servingText(s);
+    return text ? [el("span", { class: "chip chip-serving" }, text),
+      ...(cheapest.has(s) ? [el("span", { class: "chip chip-cheap" }, t("badge.cheapest"))] : [])] : [];
+  });
+}
 const chipsNode = (chips) => (chips.length ? el("div", { class: "chips" }, ...chips) : null);
-function placeBlock(r, name, withServings = true) {   // one place a beer is at: who and from where, what it costs and how it is served, where it is
+function placeBlock(r, name, cheapest, withServings = true) {   // one place a beer is at: who and from where, what it costs and how it is served, where it is
   const place = placeObj(r.place_id);
   return el("div", { class: "place-block" },
     el("div", { class: "pb-head" }, logoNode(place.name, place.logo, 20),
       el("span", { class: "pb-name" }, placeNameNode(place), mapPinNode(place)), sourceBadge(r)),
-    chipsNode([...(withServings ? servingChips(r) : []), seenNote(r)].filter(Boolean)),
+    chipsNode([...(withServings ? servingChips(r, cheapest) : []), seenNote(r)].filter(Boolean)),
     shopNameLine(r, name));
 }
 function table(groups) {
@@ -929,8 +956,8 @@ function table(groups) {
     el("td", { class: "num" }, abvText(g)),
     el("td", { class: "num" }, g.ibu ?? ""),
     el("td", { class: "num" }, ratingNode(g)),
-    el("td", { class: "num" }, g.rows.length === 1 ? chipsNode(servingChips(g.rows[0])) : null),
-    el("td", null, el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name, g.rows.length > 1)))),
+    el("td", { class: "num" }, g.rows.length === 1 ? chipsNode(servingChips(g.rows[0], g.cheapest)) : null),
+    el("td", null, el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name, g.cheapest, g.rows.length > 1)))),
     el("td", { class: "nowrap" }, el("div", { class: "since" }, ...flagNodes(g), sinceText(g.since_at)))));
   return el("div", { class: "table-wrap" }, el("table", null, el("thead", null, head), el("tbody", null, ...body)));
 }
@@ -942,7 +969,7 @@ function cardNode(g) {   // the same anatomy for every beer: header, meta line, 
       el("div", { class: "card-name" }, nameNode(g)),
       flags.length || rating ? el("div", { class: "rate-slot" }, ...flags, rating) : null),
     metaNode([g.brewery, styleNode(g), abvText(g), ibuText(g), countryText(g)]),
-    el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name))),
+    el("div", { class: "place-blocks" }, ...g.rows.map((r) => placeBlock(r, g.name, g.cheapest))),
     since ? el("div", { class: "card-foot" }, t("appeared", { date: since })) : null);
 }
 const cards = (groups) => el("ul", { class: "cards" }, ...groups.map(cardNode));

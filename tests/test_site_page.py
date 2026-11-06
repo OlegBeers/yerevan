@@ -77,10 +77,10 @@ def test_venues_section_starts_hidden():
 def test_sort_select_defaults_to_newness():
     soup = _soup()
     options = soup.find("select", id="sort").find_all("option")
-    assert [o["value"] for o in options] == ["since", "rating", "abv"]
-    assert [o.has_attr("selected") for o in options] == [True, False, False]
+    assert [o["value"] for o in options] == ["since", "rating", "abv", "litre"]
+    assert [o.has_attr("selected") for o in options] == [True, False, False, False]
     texts = " ".join(o.get_text() for o in options)
-    assert "новизне" in texts and "рейтингу" in texts and "крепости" in texts
+    assert "новизне" in texts and "рейтингу" in texts and "крепости" in texts and "по цене за литр" in texts
 
 
 def test_only_new_toggle_is_a_checkbox():
@@ -400,13 +400,13 @@ def test_group_since_is_earliest_and_rating_abv_use_best_value():
 
 def test_every_beer_lists_a_block_per_place_with_its_own_source_price_and_address():
     js = _js(_soup())
-    assert "function placeBlock(r, name, withServings = true)" in js
-    block_fn = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    for part in ("sourceBadge(r)", "servingChips(r)", "seenNote(r)", "shopNameLine(r, name)"):
+    assert "function placeBlock(r, name, cheapest, withServings = true)" in js
+    block_fn = re.search(r"function placeBlock\(r, name, cheapest, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    for part in ("sourceBadge(r)", "servingChips(r, cheapest)", "seenNote(r)", "shopNameLine(r, name)"):
         assert part in block_fn, part
     assert "mapLinkNode" not in block_fn                             # the pin is the map link; no address text repeated
-    assert block_fn.index("sourceBadge(r)") < block_fn.index("servingChips(r)") < block_fn.index("shopNameLine(r, name)")
-    assert re.search(r"g\.rows\.map\(\(r\) => placeBlock\(r, g\.name\)\)", js)
+    assert block_fn.index("sourceBadge(r)") < block_fn.index("servingChips(r, cheapest)") < block_fn.index("shopNameLine(r, name)")
+    assert re.search(r"g\.rows\.map\(\(r\) => placeBlock\(r, g\.name, g\.cheapest\)\)", js)
 
 
 def test_single_and_multi_place_beers_share_one_anatomy():
@@ -528,7 +528,7 @@ def test_table_numbers_line_up_on_the_right_in_tabular_figures():
 def test_a_table_row_reads_like_a_card_the_same_chips_in_the_same_style():
     js = _js(_soup())
     table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    for part in ("thumbNode(g.beer_logo)", "ratingNode(g)", "servingChips(g.rows[0])", "placeBlock(r, g.name", "flagNodes(g)"):
+    for part in ("thumbNode(g.beer_logo)", "ratingNode(g)", "servingChips(g.rows[0], g.cheapest)", "placeBlock(r, g.name", "flagNodes(g)"):
         assert part in table_fn, part
     assert 'class: "beer-cell"' in table_fn                            # the photo beside the name and, under the name, the brewery
     assert 'el("div", { class: "since" }, ...flagNodes(g), sinceText(g.since_at))' in table_fn   # the flags go with the date
@@ -597,7 +597,7 @@ def test_shop_name_line_shows_only_when_it_differs_from_the_displayed_name():
     line_fn = re.search(r"function shopNameLine\(r, name\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "r.shop_name" in line_fn and 't("shop.name", { name: r.shop_name })' in line_fn   # «в магазине: {name}», see test_site_i18n
     assert re.search(r"toLowerCase\(\)", line_fn) and r"\s" in line_fn   # case/space-insensitive comparison
-    body = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    body = re.search(r"function placeBlock\(r, name, cheapest, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "shopNameLine(r, name)" in body
     assert len(re.findall(r"placeBlock\(r, g\.name", js)) == 2       # the cards and the table's place column
     assert re.search(r"\.shop-name\s*\{[^}]*color:\s*var\(--muted\)", _css(_soup()))
@@ -616,14 +616,14 @@ def test_a_serving_reads_as_container_and_volume_then_a_dot_and_the_price():
     assert "s.volume_ml" in volume_fn and 't("unit.ml")' in volume_fn
     serving_fn = re.search(r"const servingText = .*", js).group(0)
     assert re.search(r"dot\(\[\[containerText\(s\.container\), volumeText\(s\)\]\.filter\(Boolean\)\.join\(\" \"\), priceText\(s\)\]\)", serving_fn)
-    chips_fn = re.search(r"const servingChips = .*?;\n", js, re.S).group(0)
+    chips_fn = re.search(r"function servingChips\(r, cheapest\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "(r.servings || [r])" in chips_fn and "servingText" in chips_fn and '"chip chip-serving"' in chips_fn
 
 
 def test_servings_are_pills_in_their_place_block_and_nowhere_else_on_a_card():
     js = _js(_soup())
-    body = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert "withServings ? servingChips(r) : []" in body
+    body = re.search(r"function placeBlock\(r, name, cheapest, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    assert "withServings ? servingChips(r, cheapest) : []" in body
     card_fn = re.search(r"function cardNode\(g\)\s*\{(.*?)\n\}", js, re.S).group(1)
     for part in ("servingChips", "servingText", "priceText", "volumeText"):
         assert part not in card_fn, part                             # never next to the beer's own meta line
@@ -632,8 +632,8 @@ def test_servings_are_pills_in_their_place_block_and_nowhere_else_on_a_card():
 def test_a_table_row_of_one_place_shows_its_servings_in_the_price_column_and_several_places_in_their_blocks():
     js = _js(_soup())
     table_fn = re.search(r"function table\(groups\)\s*\{(.*?)\n\}", js, re.S).group(1)
-    assert re.search(r'el\("td", \{ class: "num" \}, g\.rows\.length === 1 \? chipsNode\(servingChips\(g\.rows\[0\]\)\) : null\)', table_fn)
-    assert "placeBlock(r, g.name, g.rows.length > 1)" in table_fn
+    assert re.search(r'el\("td", \{ class: "num" \}, g\.rows\.length === 1 \? chipsNode\(servingChips\(g\.rows\[0\], g\.cheapest\)\) : null\)', table_fn)
+    assert "placeBlock(r, g.name, g.cheapest, g.rows.length > 1)" in table_fn
 
 
 def test_since_shows_the_time_and_sorts_by_it():
@@ -688,7 +688,7 @@ def test_a_style_guessed_from_the_name_is_set_apart_and_says_so():
 def test_the_map_pin_follows_the_place_name_and_the_address_line_follows_the_block():
     """A pin link on the name's line (place blocks of cards and table, the venues tab); the address line under it."""
     js = _js(_soup())
-    block = re.search(r"function placeBlock\(r, name, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
+    block = re.search(r"function placeBlock\(r, name, cheapest, withServings = true\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "placeNameNode(place), mapPinNode(place)" in block and "mapLinkNode" not in block
     venue = re.search(r"function venueNode\(v\)\s*\{(.*?)\n\}", js, re.S).group(1)
     assert "placeNameNode(place), mapPinNode(place)" in venue and "mapLinkNode(place)" in venue
