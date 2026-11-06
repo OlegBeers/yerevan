@@ -155,6 +155,7 @@ class State:
     discovery: DiscoveryRec = field(default_factory=DiscoveryRec)
     shop_matches: dict[str, ShopMatchRec] = field(default_factory=dict)
     telegram_offset: int | None = None   # getUpdates offset (reply tracking), independent of any one digest
+    monthly_last: str | None = None      # "YYYY-MM" of the last month the «итоги месяца» message was sent for
 
     def source(self, key: str) -> SourceRec:
         return self.sources.setdefault(key, SourceRec())
@@ -184,6 +185,7 @@ class State:
             discovery=DiscoveryRec(**d.get("discovery", {})),
             shop_matches={k: ShopMatchRec(**r) for k, r in d.get("shop_matches", {}).items()},
             telegram_offset=d.get("telegram_offset"),
+            monthly_last=d.get("monthly_last"),
         )
 
 

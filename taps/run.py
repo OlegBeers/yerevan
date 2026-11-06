@@ -7,6 +7,7 @@ import hashlib
 import html
 import json
 import os
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -24,6 +25,7 @@ from taps.fetch import (
 )
 from taps.gitsync import CheckoutError, GitError, commit_and_push, pull_ff
 from taps.model import SourceResult
+from taps.monthly import BUTTON_TEXT as MONTHLY_BUTTON, build_monthly, month_pending, monthly_due, previous_month
 from taps.rules import CHECKIN_KEEP_DAYS, MergeOutcome, merge_results
 from taps.site_data import UNTAPPD_BEER_RE, build_site_data, write_site_data
 from taps.stats_data import build_stats_data, write_stats_data
@@ -997,6 +999,16 @@ def digest_alerts(alerter: Alerter, outcome: SendOutcome) -> None:
         alerter.alert("digest", f"сводка, возможно, не дошла ({outcome.description})")
 
 
+def monthly_alerts(alerter: Alerter, outcome: SendOutcome) -> None:
+    if outcome.status == "sent":
+        alerter.resolve("monthly")
+    elif outcome.status == "rejected":
+        alerter.alert("monthly", f"Telegram не принял итоги месяца ({outcome.description}): отметка отменена, "
+                                 "итоги уйдут в следующий прогон")
+    else:
+        alerter.alert("monthly", f"итоги месяца, возможно, не дошли ({outcome.description})")
+
+
 # --- v1.1: weekly admin report of untracked venues seen in check-ins ---------
 
 def _week_start(now: datetime) -> str:
@@ -1263,6 +1275,10 @@ def run(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps, dry_run: 
             write_site_data(repo / SITE_DATA, build_site_data(announced, config, now))
     if dry_run:   # the digest that would go out now, ignoring the time gate; nothing saved or sent
         print(digest.html if digest else "нет сводки")
+        month = month_pending(state, now)
+        monthly = build_monthly(state, config, checkin_log or [], month) if month else None
+        if monthly:
+            print(f"\n{monthly}")
         text = alerter.pending_text()
         if text:
             print(text)
@@ -1338,6 +1354,27 @@ def _finish(repo: Path, state: State, deps: Deps, alerter: Alerter, to_admin: Ca
     return 1 if alert_outcome is not None and alert_outcome.status != "sent" else 0
 
 
+def _send_monthly(repo: Path, state: State, deps: Deps, env: Mapping[str, str], alerter: Alerter, month: str,
+                  text: str, to_admin: bool, now: datetime) -> dict | None:
+    """The «итоги месяца» message, own sent mark (pushed before sending, undone if Telegram rejects it).
+    Returns the state as last pushed, or None when a push failed."""
+    before = state.monthly_last
+    state.monthly_last = month
+    if not _save_push(repo, state, deps, f"state {iso(now)}: итоги месяца"):
+        return None
+    pushed = state.to_dict()
+    chat = env["TELEGRAM_ADMIN_CHAT_ID"] if to_admin else env["TELEGRAM_CHAT_ID"]
+    sent = deps.send(env["TELEGRAM_BOT_TOKEN"], chat, text,
+                     button=(MONTHLY_BUTTON, env["SITE_URL"].rstrip("/") + "/stats.html"))
+    if sent.status == "rejected":
+        state.monthly_last = before
+        if not _save_push(repo, state, deps, f"state {iso(now)}: итоги месяца не приняты, отметка отменена"):
+            return None
+        pushed = state.to_dict()
+    monthly_alerts(alerter, sent)
+    return pushed
+
+
 def send_digest(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps) -> int:
     """CLI: the digest half of a run, for after the site is deployed (`run --no-digest` came first): reply
     tracking, the due check, the sent mark, the send, deleting the unreplied previous digest.
@@ -1364,12 +1401,24 @@ def send_digest(repo: Path, now: datetime, env: Mapping[str, str], deps: Deps) -
     polled_ok = track_digest_replies(state, env, deps)
     drop_stale_events(state, now)
     digest = build_digest(state, config, config.settings, now) if is_due(state, config.settings, now) else None
+    month = monthly_due(state, now)
+    monthly = None
+    if month:
+        try:
+            monthly = build_monthly(state, config, load_checkin_log(repo / CHECKINS_FILE), month)
+        except Exception as e:   # non-essential: the daily digest must not depend on it
+            print(f"итоги месяца не собраны: {type(e).__name__}: {e}", file=sys.stderr)
+    monthly_to_admin = state.digest.sent_count < config.settings.preview_digests   # same preview rule as the digest
     mark = mark_sent(state, digest, now) if digest else None
     if not _save_push(repo, state, deps, f"state {iso(now)}: сводка"):   # the mark is pushed before sending
         return 1
     pushed = state.to_dict()
     if digest:
         pushed = _announce(repo, state, digest, mark, env, deps, alerter, polled_ok, pushed, now)
+        if pushed is None:
+            return 1
+    if monthly:   # right after the daily digest, as its own message
+        pushed = _send_monthly(repo, state, deps, env, alerter, month, monthly, monthly_to_admin, now)
         if pushed is None:
             return 1
     return _finish(repo, state, deps, alerter, to_admin, pushed, now)
@@ -1438,6 +1487,23 @@ def edit_last_digest(repo: Path, message_id: int | None, env: Mapping[str, str],
     return 0 if outcome.status == "sent" else 1
 
 
+def monthly_preview(repo: Path, month: str | None) -> int:
+    """CLI: print the «итоги месяца» HTML for `month` (default: the previous month). Read-only."""
+    month = month or previous_month(utcnow())
+    if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", month):
+        print("--month должен быть вида YYYY-MM", file=sys.stderr)
+        return 2
+    try:
+        config = load_config(repo / "places.yaml")
+        state = load_state(repo / STATE_FILE, utcnow())
+        text = build_monthly(state, config, load_checkin_log(repo / CHECKINS_FILE), month)
+    except (ValueError, ConfigError) as e:
+        print(str(e), file=sys.stderr)
+        return 2
+    print(text or f"нет чекинов за {month}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m taps")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1451,9 +1517,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     edit_cmd.add_argument("--message-id", type=int, default=None,
                           help="номер сообщения (иначе последнее отправленное)")
     edit_cmd.add_argument("--repo", type=Path, default=Path("."), help="папка репозитория")
+    preview_cmd = commands.add_parser("monthly-preview", help="показать итоги месяца, ничего не отправляя")
+    preview_cmd.add_argument("--month", default=None, help="месяц YYYY-MM (иначе прошлый)")
+    preview_cmd.add_argument("--repo", type=Path, default=Path("."), help="папка репозитория")
     args = parser.parse_args(argv)
     if args.command == "run":
         return run(args.repo, utcnow(), os.environ, Deps(), dry_run=args.dry_run, no_digest=args.no_digest)
     if args.command == "send-digest":
         return send_digest(args.repo, utcnow(), os.environ, Deps())
+    if args.command == "monthly-preview":
+        return monthly_preview(args.repo, args.month)
     return edit_last_digest(args.repo, args.message_id, os.environ)

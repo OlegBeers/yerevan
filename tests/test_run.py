@@ -3531,6 +3531,131 @@ def test_send_digest_exits_1_and_sends_nothing_when_the_mark_cannot_be_pushed(wo
     assert world.sends == []
 
 
+# --- monthly summary (итоги месяца) -------------------------------------------------------------
+
+OCT_FIRST = datetime(2026, 11, 1, 6, 0, tzinfo=timezone.utc)    # Sun 1 Nov, 10:00 in Yerevan
+
+
+def _october_log(world):
+    """Three October check-ins at Gargoyle (venue 12252462) of Guinness Draught (u:4473, from the Beatles menu)."""
+    rows = [{"id": 9000 + i, "time": f"2026-10-0{i + 1}T12:00:00+00:00", "venue_id": 12252462, "username": f"u{i}",
+             "beer_id": 4473, "brewery": "Guinness", "rating": 4.0} for i in range(3)]
+    path = world.repo / "data" / "checkins.json"
+    path.parent.mkdir(exist_ok=True)
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+
+def _ready_for_monthly(world):
+    first_run(world)
+    _october_log(world)
+    world.next_run()
+
+
+def test_send_digest_sends_the_monthly_summary_alone_marks_it_and_pushes_the_mark_first(world):
+    _ready_for_monthly(world)
+
+    assert world.send_digest(OCT_FIRST) == 0
+
+    assert len(world.sends) == 1
+    sent = world.sends[0]
+    assert sent["chat"] == ENV["TELEGRAM_ADMIN_CHAT_ID"]                    # no group digest yet: still previews
+    assert sent["text"].startswith("📊 <b>Итоги октября</b>") and "Чекинов: 3 · людей: 3 · мест: 1" in sent["text"]
+    assert sent["button"] == ("Статистика", "https://example.github.io/yerevan-taps/stats.html")
+    assert world.state().monthly_last == "2026-10"
+    assert world.pushes[1]["state"]["monthly_last"] == "2026-10"            # pushed before the send, after the digest's
+
+
+def test_send_digest_sends_the_monthly_summary_right_after_the_daily_digest(world):
+    _ready_for_monthly(world)
+    world.edit_state(lambda s: _add_pending_event(s, OCT_FIRST - timedelta(days=2)))
+    world.send_outcomes = [SendOutcome("sent", message_id=7), SendOutcome("sent", message_id=8)]
+
+    assert world.send_digest(OCT_FIRST) == 0
+
+    assert [s["text"][0] for s in world.sends] == ["🍺", "📊"]
+    state = world.state()
+    assert (state.digest.last_message_id, state.monthly_last) == (7, "2026-10")   # edit/delete still track the digest
+
+
+def test_send_digest_sends_the_monthly_summary_once_per_month(world):
+    _ready_for_monthly(world)
+    assert world.send_digest(OCT_FIRST) == 0
+    world.next_run()
+    assert world.send_digest(OCT_FIRST + timedelta(hours=3)) == 0
+    assert world.send_digest(OCT_FIRST + timedelta(days=14)) == 0
+    assert world.sends == []
+
+
+def test_send_digest_catches_up_the_monthly_summary_mid_month_but_not_at_night(world):
+    _ready_for_monthly(world)
+    assert world.send_digest(datetime(2026, 10, 31, 23, 0, tzinfo=timezone.utc)) == 0   # 03:00 on 1 Nov in Yerevan
+    assert world.sends == []
+    assert world.send_digest(OCT_FIRST + timedelta(days=9)) == 0
+    assert len(world.sends) == 1 and world.state().monthly_last == "2026-10"
+
+
+def test_send_digest_does_not_mark_a_rejected_monthly_summary(world):
+    _ready_for_monthly(world)
+    world.send_outcomes = [SendOutcome("rejected", "Bad Request"), SendOutcome("sent")]
+
+    assert world.send_digest(OCT_FIRST) == 0
+
+    assert world.state().monthly_last is None
+    assert "Telegram не принял итоги месяца" in world.sends[1]["text"]
+    world.next_run()
+    assert world.send_digest(OCT_FIRST + timedelta(hours=1)) == 0
+    assert world.sends[0]["text"].startswith("📊") and world.state().monthly_last == "2026-10"   # retried
+
+
+def test_send_digest_keeps_the_monthly_mark_when_the_outcome_is_unknown(world):
+    _ready_for_monthly(world)
+    world.send_outcomes = [SendOutcome("unknown", "timeout"), SendOutcome("sent")]
+    assert world.send_digest(OCT_FIRST) == 0
+    assert world.state().monthly_last == "2026-10"                          # maybe delivered: not sent twice
+    assert "итоги месяца, возможно, не дошли" in world.sends[1]["text"]
+
+
+def test_send_digest_sends_no_monthly_summary_for_a_month_without_checkins(world):
+    first_run(world)
+    world.next_run()
+    assert world.send_digest(OCT_FIRST) == 0
+    assert world.sends == [] and world.state().monthly_last is None
+
+
+def test_send_digest_sends_nothing_when_the_monthly_mark_cannot_be_pushed(world):
+    _ready_for_monthly(world)
+    world.push_results = [False]
+    assert world.send_digest(OCT_FIRST) == 1
+    assert world.sends == []
+
+
+def test_an_old_state_file_without_the_monthly_field_loads(world):
+    first_run(world)
+    data = json.loads((world.repo / "state.json").read_text(encoding="utf-8"))
+    data.pop("monthly_last")
+    (world.repo / "state.json").write_text(json.dumps(data), encoding="utf-8")
+    assert world.state().monthly_last is None
+
+
+def test_dry_run_prints_the_monthly_summary_when_one_is_due(world, capsys):
+    first_run(world)
+    _october_log(world)
+    capsys.readouterr()
+    assert world.run(OCT_FIRST, dry_run=True) == 0
+    assert "📊 <b>Итоги октября</b>" in capsys.readouterr().out
+
+
+def test_monthly_preview_prints_the_message_for_the_given_month_and_sends_nothing(world, capsys):
+    first_run(world)
+    _october_log(world)
+    capsys.readouterr()
+    assert main(["monthly-preview", "--month", "2026-10", "--repo", str(world.repo)]) == 0
+    assert "Итоги октября" in capsys.readouterr().out
+    assert main(["monthly-preview", "--month", "2026-08", "--repo", str(world.repo)]) == 0
+    assert capsys.readouterr().out.strip() == "нет чекинов за 2026-08"
+    assert main(["monthly-preview", "--month", "oct", "--repo", str(world.repo)]) == 2
+
+
 def test_missing_env_stops_before_anything(world):
     assert run(world.repo, NOW, {"TELEGRAM_BOT_TOKEN": "tok"}, world.deps()) == 2
     assert world.pulls == [] and world.http.urls == [] and not (world.repo / "state.json").exists()
