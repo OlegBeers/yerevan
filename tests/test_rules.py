@@ -1010,3 +1010,35 @@ def test_checkin_source_quiet_since_resets_when_a_newer_checkin_id_appears():
     merge(state, venue_checkins(checkin(1), checkins=[raw_checkin(6, NOW)]))
     rec = state.source("untappd_checkins:tap-station")
     assert (rec.last_checkin_id, rec.quiet_since) == (6, None)
+
+
+# --- shop items: one key sold as several items keeps every item's own volume, price and container -------
+
+KEG, SMALL = dict(container="keg", price_amd=11550, volume_ml=5000), dict(container="bottle", price_amd=750, volume_ml=330)
+
+
+@pytest.mark.parametrize("source, place", [("beercity", "beer-city"), ("parma", "parma")])   # every shop takes this one path
+@pytest.mark.parametrize("order", [(0, 1), (1, 0)])
+def test_shop_items_under_one_key_are_servings_each_with_its_own_volume_price_and_container(source, place, order):
+    state = ready(f"{source}:{place}")
+    # the keg has a price but no bottle data, the bottle another volume: no field may cross over from one item to the other
+    items = [item(1, "n:bitburger", place=place, source=source, **KEG), item(2, "n:bitburger", place=place, source=source, **SMALL)]
+    merge(state, shop(*[items[i] for i in order], place=place, source=source))
+    info = state.pairs[place]["n:bitburger"].info
+    assert info["servings"] == [{**SMALL}, {**KEG}]                                  # smallest first, nothing mixed
+    assert (info["container"], info["price_amd"], info["volume_ml"]) == ("bottle", 750, 330)   # the first serving
+    merge(state, shop(items[0], place=place, source=source), now=NOW + 12 * H)      # the bottle is gone from the list
+    assert "servings" not in state.pairs[place]["n:bitburger"].info
+
+
+def test_an_out_of_stock_item_is_not_a_serving_and_a_partial_run_leaves_the_servings_alone():
+    state = ready("beercity:beer-city")
+    keg, small = item(1, "n:bitburger", **KEG), item(2, "n:bitburger", **SMALL)
+    merge(state, shop(keg, small, item(3, "n:bitburger", in_stock=False, container="can", price_amd=500, volume_ml=500)))
+    info = state.pairs["beer-city"]["n:bitburger"].info
+    assert [s["volume_ml"] for s in info["servings"]] == [330, 5000]
+    # a partial run reads the keg's page for its country: the pair keeps both servings
+    merge(state, shop(replace(keg, country="Germany", country_checked=True), full=False), now=NOW + 12 * H)
+    info = state.pairs["beer-city"]["n:bitburger"].info
+    assert info["country"] == "Germany" and [s["volume_ml"] for s in info["servings"]] == [330, 5000]
+    assert info["volume_ml"] == 330 and info["price_amd"] == 750

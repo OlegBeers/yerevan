@@ -1,12 +1,12 @@
 """Merge source results into state: pairs, events and silent baselines (spec §6)."""
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import date, datetime
 
 from taps.breaker import evaluate, result_keys
 from taps.config import Config, Place
 from taps.corrections import Corrections
-from taps.model import SOURCE_KINDS, Sighting, SourceResult, strip_color, u_key, untappd_n_key
+from taps.model import SOURCE_KINDS, Serving, Sighting, SourceResult, strip_color, u_key, untappd_n_key, with_servings
 from taps.shop_filter import classify
 from taps.state import BeerRec, BreweryNewRec, PairRec, SourceRec, State, resolve_alias
 from taps.timeutil import age_days, iso, parse_iso, to_yerevan
@@ -75,6 +75,19 @@ def _refresh_board_servings(rec: PairRec, s: Sighting) -> None:
     if s.servings or rec.info.get("servings"):
         rec.info.update({f: getattr(s, f) for f in SERVING_FIELDS if getattr(s, f) is not None})
         _set_servings(rec.info, s)
+
+
+def _one_beer(items: list[Sighting]) -> Sighting:
+    """Shop items sold under one beer key (a keg and a bottle, two packs) as one sighting whose servings are the
+    in-stock items, each with its own container, volume and price, the smallest first; the first serving fills the
+    single-serving fields. The beer is in stock when any item is."""
+    stock = [s for s in items if s.in_stock] or items
+    servings = sorted((Serving(s.container, s.price_amd, s.volume_ml) for s in stock),
+                      key=lambda v: (v.volume_ml is None, v.volume_ml or 0, v.price_amd is None, v.price_amd or 0))
+    flags = [s.in_stock for s in items if s.in_stock is not None]
+    country = next((s for s in items if s.country is not None), stock[0])
+    return with_servings(replace(stock[0], in_stock=any(flags) if flags else None, country=country.country,
+                                 country_checked=country.country_checked), servings)
 
 
 def _drop(rec: PairRec) -> None:
@@ -157,18 +170,19 @@ class _Merger:
         # except one whose product page was just read to backfill its country (country_checked)
         partial_shop = result.source == "beercity" and not result.full
         known_items = set(self.state.shop_items.get(result.place_id, {})) if partial_shop else set()
-        for s in result.sightings:
+        for s, key in self._per_beer(result.sightings, group_items=not partial_shop):
             place = self.config.places.get(s.place_id)
             if place is None:
                 continue
-            key = self._key(s)
             if self._ignored_checkin(s, place, key):
                 continue
             silent = (baseline
                       or (s.menu_id is not None and s.menu_id not in tabs)
                       or (place.id in self.new_places and s.source not in place.sources and s.kind != "manual"))
             refresh = not (partial_shop and s.shop_item_id in known_items and not s.country_checked)
-            self._pair(s, place, key, silent, first=(place.id, key) not in touched, refresh=refresh)
+            # a partial run sees only some of a beer's items: the servings the full runs built stay as they are
+            whole = not (partial_shop and list(self.state.shop_items.get(place.id, {}).values()).count(key) > 1)
+            self._pair(s, place, key, silent, first=(place.id, key) not in touched, refresh=refresh, serving=whole)
             touched.add((place.id, key))
         if result.source == "manual":
             self._manual_touched = touched
@@ -176,6 +190,17 @@ class _Merger:
             for key, pair in self.state.pairs.get(result.place_id, {}).items():
                 if pair.info.get("source") == result.source:
                     pair.last_in_result = (result.place_id, key) in touched
+
+    def _per_beer(self, sightings: list[Sighting], group_items: bool) -> list[tuple[Sighting, str]]:
+        """(sighting, beer key) in order; with group_items the shop items of one key become one sighting."""
+        keyed = [(s, self._key(s)) for s in sightings]
+        if not group_items:
+            return keyed
+        groups: dict[tuple, tuple[str, list[Sighting]]] = {}
+        for i, (s, key) in enumerate(keyed):
+            group = (s.place_id, key) if s.kind == "shop" and s.shop_item_id is not None else i
+            groups.setdefault(group, (key, []))[1].append(s)
+        return [(items[0] if len(items) == 1 else _one_beer(items), key) for key, items in groups.values()]
 
     def _ignored_checkin(self, s: Sighting, place: Place, key: str) -> bool:
         """A check-in is ignored when poured at home or too old to matter, or -- per beer, at a place
@@ -211,7 +236,8 @@ class _Merger:
             items[s.shop_item_id] = key
         return items[s.shop_item_id]
 
-    def _pair(self, s: Sighting, place: Place, key: str, silent: bool, first: bool, refresh: bool = True) -> None:
+    def _pair(self, s: Sighting, place: Place, key: str, silent: bool, first: bool, refresh: bool = True,
+              serving: bool = True) -> None:
         pairs = self.state.pairs.setdefault(place.id, {})
         rec = pairs.get(key)
         # a sighting that lacks brand (Beer City/Parma only fetch it for genuinely new items) falls back
@@ -230,7 +256,7 @@ class _Merger:
                 rec.in_stock = s.in_stock
         owner = rec.info.get("kind")
         if owner is None or _rank(s.kind) >= _rank(owner):
-            self._update_info(rec, s, key, refresh)
+            self._update_info(rec, s, key, refresh, serving)
         elif s.kind == "manual" and owner == "checkin":
             _refresh_board_servings(rec, s)
         if drop:
@@ -244,18 +270,19 @@ class _Merger:
                 self.out.events.append((place.id, key))
         self._remember(key, nk)
 
-    def _update_info(self, rec: PairRec, s: Sighting, key: str, refresh: bool = True) -> None:
+    def _update_info(self, rec: PairRec, s: Sighting, key: str, refresh: bool = True, serving: bool = True) -> None:
         """A field the sighting lacks keeps its old value: shop product pages are read only once."""
         rec.last_in_result = True
         if not refresh:   # a partial Beer City resighting of a known item: seen again, but not re-trusted
             return
         old_checkin = rec.info.get("checkin_at")
-        rec.info.update({f: getattr(s, f) for f in INFO_FIELDS if getattr(s, f) is not None})
+        rec.info.update({f: getattr(s, f) for f in INFO_FIELDS
+                         if getattr(s, f) is not None and (serving or f not in SERVING_FIELDS)})
         rec.info.update(source=s.source, kind=s.kind)
         if s.kind == "checkin":
             rec.info["checkin_at"] = iso(max(s.seen_at, parse_iso(old_checkin)) if old_checkin else s.seen_at)
             self._backfill_checkin(rec, key)
-        else:   # a check-in brings no serving data: it must not wipe the list a board gave
+        elif serving:   # a check-in brings no serving data: it must not wipe the list a board gave
             _set_servings(rec.info, s)
         if s.kind == "manual":   # the ids of the merged entries are the board's whole answer too
             _set_list(rec.info, "manual_ids", list(s.manual_ids))
