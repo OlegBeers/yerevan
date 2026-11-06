@@ -368,7 +368,7 @@ def test_display_fields_survive_sightings_that_lack_them():
     assert state.pairs["beer-city"][key].info == {
         "source": "beercity", "kind": "shop", "title": 'Beer "hard root ipa" 0.5 l', "name": "hard root ipa",
         "brewery": "Hard Root", "abv": 6.5, "volume_ml": 450, "container": "can", "price_amd": 1700,
-        "shop_item_id": "1",
+        "shop_item_id": "1", "items": {"1": {"container": "can", "price_amd": 1700, "volume_ml": 450, "in_stock": True}},
     }
 
 
@@ -1042,3 +1042,48 @@ def test_an_out_of_stock_item_is_not_a_serving_and_a_partial_run_leaves_the_serv
     info = state.pairs["beer-city"]["n:bitburger"].info
     assert info["country"] == "Germany" and [s["volume_ml"] for s in info["servings"]] == [330, 5000]
     assert info["volume_ml"] == 330 and info["price_amd"] == 750
+
+
+def bare(sighting):
+    """A known Beer City item on a later run: the listing gives the price, the product page is not read again."""
+    return replace(sighting, volume_ml=None, container=None, brewery=None, abv=None, country=None, country_checked=None)
+
+
+def beercity_pair(items, **kw):
+    """The Beer City pattern: a bottle and a keg of one beer; page-only fields come with the first sighting of an item."""
+    keg = item(1, "n:bitburger", url="https://bc.test/keg", shop_url="https://bc.test/keg", **KEG, **kw)
+    small = item(2, "n:bitburger", url="https://bc.test/small", shop_url="https://bc.test/small", **SMALL, **kw)
+    return {"keg": keg, "small": small}[items[0]], {"keg": keg, "small": small}[items[1]]
+
+
+def test_known_beer_city_items_keep_their_volumes_and_containers_when_a_later_run_does_not_read_their_pages():
+    state = ready("beercity:beer-city")
+    keg, small = beercity_pair(("keg", "small"))
+    merge(state, shop(keg, small))
+    merge(state, shop(bare(replace(keg, price_amd=11900)), bare(small)), now=NOW + 12 * H)       # prices move, pages are not read
+    info = state.pairs["beer-city"]["n:bitburger"].info
+    assert info["servings"] == [SMALL, {**KEG, "price_amd": 11900}]
+    assert (info["container"], info["volume_ml"], info["price_amd"]) == ("bottle", 330, 750)
+    merge(state, shop(bare(small), bare(keg)), now=NOW + 24 * H)                                  # and again, in the other order
+    assert state.pairs["beer-city"]["n:bitburger"].info["servings"] == [SMALL, KEG]
+
+
+def test_a_second_pack_first_seen_in_a_partial_run_is_recorded_with_its_own_data_and_survives_the_next_full_run():
+    state = ready("beercity:beer-city")
+    keg, small = beercity_pair(("keg", "small"), country="Germany", country_checked=True)
+    merge(state, shop(keg))
+    merge(state, shop(small, full=False), now=NOW + 12 * H)                                       # the bottle arrives: its page is read
+    info = state.pairs["beer-city"]["n:bitburger"].info
+    assert info["servings"] == [SMALL, KEG] and info["shop_url"] == "https://bc.test/small"       # the link follows the shown price
+    merge(state, shop(bare(keg), bare(small)), now=NOW + 24 * H)                                  # the next full run reads no pages
+    info = state.pairs["beer-city"]["n:bitburger"].info
+    assert info["servings"] == [SMALL, KEG] and info["country"] == "Germany"
+
+
+def test_the_product_link_and_page_data_follow_the_first_serving_and_a_checked_page_without_a_country_counts():
+    state = ready("beercity:beer-city")
+    keg, small = beercity_pair(("keg", "small"))
+    merge(state, shop(replace(keg, brewery="Bitburger", country_checked=True), small))
+    info = state.pairs["beer-city"]["n:bitburger"].info
+    assert info["shop_item_id"] == "2" and info["shop_url"] == "https://bc.test/small" and info["volume_ml"] == 330
+    assert info["brewery"] == "Bitburger" and info["country_checked"] is True and "country" not in info   # off country_todo

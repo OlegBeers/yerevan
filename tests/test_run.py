@@ -4036,3 +4036,11 @@ def test_apply_same_as_starts_over_when_the_override_points_to_another_beer():
     run_mod.apply_same_as(state, run_mod.Corrections(same_as={("yerevan-city", "n:x"): 2}), NOW)
     m = state.shop_matches["n:x"]
     assert (m.untappd_beer_id, m.rating, m.checked_at) == (2, None, None)
+
+
+def test_items_of_a_multi_item_beer_without_a_stored_item_table_get_their_pages_read_again():
+    state = empty_state(NOW)
+    state.shop_items = {"beer-city": {"1": "n:bitburger", "2": "n:bitburger", "3": "n:solo", "4": "n:pair", "5": "n:pair"}}
+    state.pairs = {"beer-city": {"n:bitburger": PairRec(first_seen="x", last_seen="x"), "n:solo": PairRec(first_seen="x", last_seen="x"),
+                                 "n:pair": PairRec(first_seen="x", last_seen="x", info={"items": {"4": {}, "5": {}}})}}
+    assert run_mod._items_to_reread(state, "beer-city") == {"1", "2"}

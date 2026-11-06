@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import time
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, time as clock, timedelta
 from pathlib import Path
@@ -299,6 +300,15 @@ def _beercity_full(state: State, place_id: str, now: datetime) -> bool:
     return rec is None or rec.last_full is None or yerevan_date(parse_iso(rec.last_full)) != yerevan_date(now)
 
 
+def _items_to_reread(state: State, place_id: str) -> set[str]:
+    """Shop items of a beer sold as several items whose own volume and container were never stored (state from
+    before the per-item table): Beer City reads them only from a product page, so the page is read once more."""
+    items, pairs = state.shop_items.get(place_id, {}), state.pairs.get(place_id, {})
+    several = {key for key, n in Counter(items.values()).items() if n > 1}
+    return {item_id for item_id, key in items.items()
+            if key in several and key in pairs and item_id not in pairs[key].info.get("items", {})}
+
+
 def collect_shops(state: State, config: Config, corrections: Corrections, now: datetime,
                   http: Http) -> list[SourceResult]:
     """Every run: Beer City, Yerevan City, Parma, SAS, Carrefour, then buy.am."""
@@ -321,8 +331,8 @@ def collect_shops(state: State, config: Config, corrections: Corrections, now: d
                 for item_id, key in state.shop_items.get(p.id, {}).items()}
 
     fetchers = {
-        "beercity": lambda p: fetch_beercity(http, p, known(p), country_todo(p), _beercity_full(state, p.id, now),
-                                             now, ba),
+        "beercity": lambda p: fetch_beercity(http, p, known(p) - _items_to_reread(state, p.id), country_todo(p),
+                                             _beercity_full(state, p.id, now), now, ba),
         "yerevan_city": lambda p: fetch_yerevan_city(http, p, now, ba),
         "parma": lambda p: fetch_parma(http, p, known(p), country_todo(p), now, ba),
         "sas": lambda p: fetch_sas(http, p, known(p), now, ba),
