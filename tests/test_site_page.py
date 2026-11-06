@@ -80,7 +80,7 @@ def test_sort_select_defaults_to_newness():
     assert [o["value"] for o in options] == ["since", "rating", "abv", "litre"]
     assert [o.has_attr("selected") for o in options] == [True, False, False, False]
     texts = " ".join(o.get_text() for o in options)
-    assert "новизне" in texts and "рейтингу" in texts and "крепости" in texts and "по цене за литр" in texts
+    assert "новизне" in texts and "рейтингу" in texts and "крепости" in texts and "по цене" in texts
 
 
 def test_only_new_toggle_is_a_checkbox():

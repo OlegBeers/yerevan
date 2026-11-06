@@ -221,10 +221,10 @@ def test_switching_repaints_in_place_and_keeps_the_filters_the_sort_and_the_open
     page.click(".lang [data-lang=ru]")
     assert state() == before and page.evaluate("window.notReloaded") is True
     assert text(page, "#count") == "Показано 1 из 8"
-    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3, 4)] == ["по новизне", "по рейтингу", "по крепости", "по цене за литр"]
+    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3, 4)] == ["по новизне", "по рейтингу", "по крепости", "по цене"]
     page.click(".lang [data-lang=en]")
     assert state() == before and text(page, "#count") == "Showing 1 of 8"
-    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3, 4)] == ["newest", "rating", "ABV", "price per litre"]
+    assert [text(page, f"#sort option:nth-child({i})") for i in (1, 2, 3, 4)] == ["newest", "rating", "ABV", "price"]
     assert problems == []
 
 
@@ -984,7 +984,7 @@ def test_the_table_marks_the_cheapest_offer_too(open_page):
     assert problems == []
 
 
-@pytest.mark.parametrize("lang, label", [("en", "price per litre"), ("ru", "по цене за литр")])
+@pytest.mark.parametrize("lang, label", [("en", "price"), ("ru", "по цене")])
 def test_sorting_by_price_per_litre_puts_the_cheapest_litre_first_and_unpriced_beers_last(open_page, lang, label):
     data = price_data()
     data["rows"].append(dict(data["rows"][0], name="Bar Only", group_key="u:6", beer_key="u:6", section="bars", badge="menu",
