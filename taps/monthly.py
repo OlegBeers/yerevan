@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta
 from taps.checkin_log import CheckinLogEntry
 from taps.config import Config
 from taps.digest import DAY_END, DAY_START, _shorten_brewery, _shorten_name
-from taps.state import State
+from taps.state import MARKERS, State
 from taps.stats_data import _beer_lookup
 from taps.timeutil import YEREVAN, parse_iso, to_yerevan
 
@@ -78,12 +78,17 @@ def _best_beers(entries: list[CheckinLogEntry], lookup: dict) -> tuple[list[tupl
     return [(b, brewery[b], sum(r) / len(r)) for b, r in ranked[:TOP_N]], minimum
 
 
-def _new_beers(state: State, config: Config, start: datetime, end: datetime) -> int:
-    """Distinct beers that became a digest event in our places during the month (baseline and silent
-    first sightings have no event_at)."""
-    keys = {key for pid, recs in state.pairs.items() if pid in config.places
-            for key, rec in recs.items() if rec.event_at is not None and start <= parse_iso(rec.event_at) < end}
-    return len(keys)
+def _new_beers(state: State, config: Config, start: datetime, end: datetime) -> tuple[int, int]:
+    """Distinct (bar, shop) beers that were real news in our places during the month. A silent first
+    sighting (baseline, or suppressed) is not news; the digest's Бары/Магазины split is the place kind."""
+    keys: dict[bool, set[str]] = {False: set(), True: set()}
+    for pid, recs in state.pairs.items():
+        if pid not in config.places:
+            continue
+        is_shop = config.places[pid].kind == "shop"
+        keys[is_shop].update(key for key, rec in recs.items() if rec.event_at is not None
+                             and rec.notified_at not in MARKERS and start <= parse_iso(rec.event_at) < end)
+    return len(keys[False]), len(keys[True])
 
 
 def build_monthly(state: State, config: Config, log: list[CheckinLogEntry], month: str) -> str | None:
@@ -101,7 +106,7 @@ def build_monthly(state: State, config: Config, log: list[CheckinLogEntry], mont
         names[key] = name
     top_places = sorted(by_place, key=lambda k: (-by_place[k], names[k]))[:TOP_N]
     best, minimum = _best_beers(entries, lookup)
-    new_beers = _new_beers(state, config, start, end)
+    new_bars, new_shops = _new_beers(state, config, start, end)
 
     blocks = [f"📊 <b>Итоги {MONTHS_GEN[start.month - 1]}</b>",
               f"Чекинов: {len(entries)} · людей: {len({e.username for e in entries})} · мест: {len(by_place)}",
@@ -114,6 +119,5 @@ def build_monthly(state: State, config: Config, log: list[CheckinLogEntry], mont
             tail = f"{esc(_shorten_brewery(brewery))} · {avg:.2f}".replace(" ", NBSP)
             lines.append(f"{i}. {name} — {tail}")
         blocks.append(f"<b>Лучшее пиво</b> · от {minimum} оценок\n" + "\n".join(lines))
-    if new_beers:
-        blocks.append(f"Новых сортов в наших местах: {new_beers}")
+    blocks.append(f"Новых сортов: в барах {new_bars} · в магазинах {new_shops}")
     return "\n\n".join(blocks)

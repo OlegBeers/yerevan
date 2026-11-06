@@ -21,7 +21,8 @@ def place(pid, name, venue_id, short=None):
 
 CONFIG = Config(
     places={"gargoyle": place("gargoyle", "Gargoyle Bar", 1, short="Gargoyle"),
-            "beatles": place("beatles", "Beatles Pub", 2)},
+            "beatles": place("beatles", "Beatles Pub", 2),
+            "parma": Place(id="parma", name="Parma", kind="shop", sources={"parma": {}})},
     breweries=(), settings=Settings(),
 )
 OTHER_VENUE = 99
@@ -47,8 +48,9 @@ def ck(when, venue=1, user="u1", beer_id=10, rating=4.0, brewery="Zagovor Brewer
                            brewery=brewery, rating=rating)
 
 
-def pair(event_at):
-    return PairRec(first_seen="x", last_seen="x", event_at=iso(event_at) if event_at else None)
+def pair(event_at, notified_at=None):
+    return PairRec(first_seen="x", last_seen="x", event_at=iso(event_at) if event_at else None,
+                   notified_at=notified_at)
 
 
 # --- due logic ------------------------------------------------------------------------------
@@ -157,20 +159,34 @@ def test_best_beers_ignore_unrated_and_unnamed_and_the_section_is_dropped_when_e
     assert "Лучшее пиво" not in text
 
 
-def test_new_beers_count_events_inside_the_month_in_our_places_only():
+def test_new_beers_are_counted_by_place_kind_inside_the_month_in_our_places_only():
     s = state()
     s.pairs = {
         "gargoyle": {"u:1": pair(yv(10, 2)), "u:2": pair(yv(10, 31, 23)), "u:3": pair(yv(11, 1, 1)),
-                     "u:4": pair(yv(9, 30, 23)), "u:5": pair(None)},     # u:5: baseline, no event
-        "beatles": {"u:1": pair(yv(10, 9))},                              # same beer, other place: counted once
+                     "u:4": pair(yv(9, 30, 23)), "u:5": pair(None)},     # u:5: no event
+        "beatles": {"u:1": pair(yv(10, 9))},                              # same beer, other bar: counted once
+        "parma": {"n:a": pair(yv(10, 9)), "n:b": pair(yv(10, 10), notified_at=iso(yv(10, 11))),
+                  "u:1": pair(yv(10, 12))},                               # the same beer in a shop: counted there too
         "gone": {"u:6": pair(yv(10, 9))},                                 # not in the config
     }
     text = build_monthly(s, CONFIG, [ck(yv(10, 3))], "2026-10")
-    assert text.rstrip().endswith("Новых сортов в наших местах: 2")
+    assert text.rstrip().endswith("Новых сортов: в барах 2 · в магазинах 3")
 
 
-def test_no_new_beers_line_when_there_are_none():
-    assert "Новых сортов" not in build_monthly(state(), CONFIG, [ck(yv(10, 3))], "2026-10")
+def test_silent_first_sightings_are_not_new_beers():
+    """A source connected mid-month (SAS) has its whole catalogue as baseline: not news."""
+    s = state()
+    s.pairs = {"parma": {f"n:{i}": pair(None, notified_at="baseline") for i in range(50)},
+               "gargoyle": {"u:1": pair(yv(10, 2), notified_at="baseline"),   # even if an event time was left on it
+                            "u:2": pair(yv(10, 2), notified_at="suppressed"),
+                            "u:3": pair(yv(10, 2), notified_at=iso(yv(10, 3)))}}
+    text = build_monthly(s, CONFIG, [ck(yv(10, 3))], "2026-10")
+    assert text.rstrip().endswith("Новых сортов: в барах 1 · в магазинах 0")
+
+
+def test_a_side_without_new_beers_still_shows_zero():
+    assert build_monthly(state(), CONFIG, [ck(yv(10, 3))], "2026-10").endswith(
+        "Новых сортов: в барах 0 · в магазинах 0")
 
 
 def test_message_stays_short():
