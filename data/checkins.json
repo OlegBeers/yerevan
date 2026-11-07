@@ -754,6 +754,7 @@
 {"beer_id": 2507978, "brewery": "Dargett Brewery", "id": 1613041608, "rating": 4.0, "time": "2026-11-04T14:37:31+00:00", "username": "thegasman", "venue_id": 4640403}
 {"beer_id": 6795069, "brewery": "Dargett Brewery", "id": 1613042228, "rating": 4.0, "time": "2026-11-04T14:48:35+00:00", "username": "thegasman", "venue_id": 4640403}
 {"beer_id": 1518439, "brewery": "Dargett Brewery", "id": 1613043850, "rating": 4.25, "time": "2026-11-04T15:14:01+00:00", "username": "misha_ozz", "venue_id": 13803238}
+{"beer_id": 1518439, "brewery": "Dargett Brewery", "id": 1613161943, "rating": 3.5, "time": "2026-11-05T10:20:53+00:00", "username": "thegasman", "venue_id": 388124}
 {"beer_id": 5535943, "brewery": "Bever", "id": 1613172403, "rating": 3.25, "time": "2026-11-05T14:14:09+00:00", "username": "Arrhenius", "venue_id": 5837228}
 {"beer_id": 5535943, "brewery": "Bever", "id": 1613172493, "rating": 3.5, "time": "2026-11-05T14:15:25+00:00", "username": "DrHopp75", "venue_id": 5837228}
 {"beer_id": 5530164, "brewery": "Bever", "id": 1613173778, "rating": 3.5, "time": "2026-11-05T14:36:44+00:00", "username": "Arrhenius", "venue_id": 5837228}
@@ -763,3 +764,10 @@
 {"beer_id": 5523617, "brewery": "Brewlok Brewery", "id": 1613221807, "rating": 3.5, "time": "2026-11-05T19:24:17+00:00", "username": "MoskovskyShatyn", "venue_id": 13510969}
 {"beer_id": 5817002, "brewery": "Dahook", "id": 1613222036, "rating": 4.25, "time": "2026-11-05T19:25:07+00:00", "username": "MoskovskyShatyn", "venue_id": 13510969}
 {"beer_id": 6291054, "brewery": "Bever", "id": 1613228808, "rating": 2.75, "time": "2026-11-05T19:51:18+00:00", "username": "MoskovskyShatyn", "venue_id": 13510969}
+{"beer_id": 1188254, "brewery": "Beer Academy", "id": 1613326393, "rating": 3.0, "time": "2026-11-06T08:48:21+00:00", "username": "DeanisiaVega", "venue_id": 10274653}
+{"beer_id": 745709, "brewery": "Beer Academy", "id": 1613326434, "rating": 3.0, "time": "2026-11-06T08:50:10+00:00", "username": "DeanisiaVega", "venue_id": 10274653}
+{"beer_id": 745711, "brewery": "Beer Academy", "id": 1613326453, "rating": 3.0, "time": "2026-11-06T08:50:58+00:00", "username": "DeanisiaVega", "venue_id": 10274653}
+{"beer_id": 326032, "brewery": "O'Hara's Brewery", "id": 1613360635, "rating": 4.0, "time": "2026-11-06T15:50:33+00:00", "username": "kireinayuki", "venue_id": 13510969}
+{"beer_id": 6673729, "brewery": "Brewlok Brewery", "id": 1613370877, "rating": 4.0, "time": "2026-11-06T16:29:27+00:00", "username": "kireinayuki", "venue_id": 13510969}
+{"beer_id": 5817007, "brewery": "Dahook", "id": 1613441145, "rating": null, "time": "2026-11-06T19:16:58+00:00", "username": "MoskovskyShatyn", "venue_id": 14268335}
+{"beer_id": 5817013, "brewery": "Dahook", "id": 1613441488, "rating": 4.0, "time": "2026-11-06T19:17:39+00:00", "username": "MoskovskyShatyn", "venue_id": 14268335}
