@@ -8175,17 +8175,17 @@
    "style": null
   },
   "u:326032": {
-   "abv": null,
-   "brewery": null,
-   "country": null,
+   "abv": 7.5,
+   "brewery": "O'Hara's Brewery",
+   "country": "Ireland",
    "first_seen_city": "2026-11-07T06:49:02+00:00",
-   "ibu": null,
-   "logo": null,
+   "ibu": 80,
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-326032_7c3f5_sm.jpeg",
    "n_key": "n:o hara s o hara s double ipa",
-   "name": null,
-   "rating": null,
-   "rating_at": null,
-   "style": null
+   "name": "O'Hara's Double IPA",
+   "rating": 3.548,
+   "rating_at": "2026-11-07T14:20:47+00:00",
+   "style": "IPA - Imperial / Double"
   },
   "u:3263126": {
    "abv": null,
@@ -8682,17 +8682,17 @@
    "style": "Lager - Pale"
   },
   "u:3946610": {
-   "abv": null,
-   "brewery": null,
-   "country": null,
+   "abv": 5.0,
+   "brewery": "Zagovor Brewery",
+   "country": "Russia",
    "first_seen_city": "2026-11-07T06:49:02+00:00",
-   "ibu": null,
-   "logo": null,
+   "ibu": 5,
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-3946610_49e36_sm.jpeg",
    "n_key": "n:zagovor surf in a big city",
-   "name": null,
-   "rating": null,
-   "rating_at": null,
-   "style": null
+   "name": "Surf In A Big City",
+   "rating": 4.12574,
+   "rating_at": "2026-11-07T14:20:47+00:00",
+   "style": "Sour - Fruited"
   },
   "u:3954": {
    "abv": 6.2,
@@ -11295,17 +11295,17 @@
    "style": "Pale Ale - Other"
   },
   "u:6673729": {
-   "abv": null,
-   "brewery": null,
-   "country": null,
+   "abv": 6.9,
+   "brewery": "Brewlok Brewery",
+   "country": "Russia",
    "first_seen_city": "2026-11-07T06:49:02+00:00",
    "ibu": null,
-   "logo": null,
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-6673729_1f0af_sm.jpeg",
    "n_key": "n:brewlok partyhop simcoe",
-   "name": null,
-   "rating": null,
-   "rating_at": null,
-   "style": null
+   "name": "PartyHop: Simcoe",
+   "rating": 3.75583,
+   "rating_at": "2026-11-07T14:20:47+00:00",
+   "style": "IPA - Imperial / Double"
   },
   "u:6683": {
    "abv": 6.7,
@@ -19561,7 +19561,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -19594,7 +19594,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -20068,7 +20068,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-23T07:29:17+00:00",
     "star": true
    },
@@ -20602,7 +20602,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-07T07:01:59+00:00",
     "star": true
    },
@@ -21653,7 +21653,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21787,7 +21787,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -21877,7 +21877,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22044,7 +22044,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22257,7 +22257,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22347,7 +22347,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22437,7 +22437,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -22527,7 +22527,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -23418,7 +23418,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -24754,7 +24754,7 @@
      "volume_ml": 300
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -25686,7 +25686,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -26226,7 +26226,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -27721,7 +27721,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -27789,7 +27789,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -28082,7 +28082,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28116,7 +28116,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28150,7 +28150,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28184,7 +28184,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28218,7 +28218,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28252,7 +28252,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28286,7 +28286,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28320,7 +28320,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28354,7 +28354,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-31T14:23:14+00:00",
     "star": true
    },
@@ -28388,7 +28388,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28422,7 +28422,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28491,7 +28491,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28525,7 +28525,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28559,7 +28559,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28593,7 +28593,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -28627,7 +28627,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -30939,13 +30939,18 @@
     "first_seen": "2026-11-07T06:49:02+00:00",
     "in_stock": null,
     "info": {
+     "abv": 7.5,
      "brewery": "O'Hara's Brewery",
      "checkin_at": "2026-11-06T15:50:33+00:00",
+     "country": "Ireland",
+     "ibu": 80,
      "kind": "checkin",
      "logo": "https://assets.untappd.com/site/beer_logos/beer-326032_7c3f5_sm.jpeg",
      "name": "O'Hara's Double IPA",
+     "rating": 3.548,
      "serving": "Can",
      "source": "untappd_checkins",
+     "style": "IPA - Imperial / Double",
      "title": "O'Hara's Brewery O'Hara's Double IPA",
      "url": "https://untappd.com/b/o-hara-s-brewery-o-hara-s-double-ipa/326032"
     },
@@ -32008,14 +32013,17 @@
     "first_seen": "2026-11-07T06:49:02+00:00",
     "in_stock": null,
     "info": {
+     "abv": 6.9,
      "brewery": "Brewlok Brewery",
      "checkin_at": "2026-11-06T16:29:27+00:00",
      "country": "Russia",
      "kind": "checkin",
      "logo": "https://assets.untappd.com/site/beer_logos/beer-6673729_1f0af_sm.jpeg",
      "name": "PartyHop: Simcoe",
+     "rating": 3.75583,
      "serving": "Can",
      "source": "untappd_checkins",
+     "style": "IPA - Imperial / Double",
      "title": "Brewlok Brewery PartyHop: Simcoe",
      "url": "https://untappd.com/b/brewlok-brewery-partyhop-simcoe/6673729"
     },
@@ -33686,12 +33694,17 @@
     "first_seen": "2026-11-07T06:49:02+00:00",
     "in_stock": null,
     "info": {
+     "abv": 5.0,
      "brewery": "Zagovor Brewery",
      "checkin_at": "2026-11-06T16:50:05+00:00",
      "country": "Russia",
+     "ibu": 5,
      "kind": "checkin",
+     "logo": "https://assets.untappd.com/site/beer_logos/beer-3946610_49e36_sm.jpeg",
      "name": "Surf In A Big City",
+     "rating": 4.12574,
      "source": "untappd_checkins",
+     "style": "Sour - Fruited",
      "title": "Zagovor Brewery Surf In A Big City",
      "url": "https://untappd.com/b/zagovor-brewery-surf-in-a-big-city/3946610"
     },
@@ -36770,7 +36783,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36814,7 +36827,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36858,7 +36871,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36908,7 +36921,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36958,7 +36971,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -36985,7 +36998,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/23787(1)/thumb_23787(1).jpg?v=11794021842",
+     "logo": "https://static.parma.am/cache/product/23787(1)/thumb_23787(1).jpg?v=11794048243",
      "name": "Alexandrapol light",
      "price_amd": 550,
      "servings": [
@@ -37008,7 +37021,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37052,7 +37065,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37096,7 +37109,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37140,7 +37153,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37173,7 +37186,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/40176(2)/thumb_40176(2).jpg?v=11794021842",
+     "logo": "https://static.parma.am/cache/product/40176(2)/thumb_40176(2).jpg?v=11794048243",
      "name": "Ararat light",
      "price_amd": 460,
      "servings": [
@@ -37201,7 +37214,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37221,7 +37234,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/13579/thumb_13579.jpg?v=11794019096",
+     "logo": "https://static.parma.am/cache/product/13579/thumb_13579.jpg?v=11794059291",
      "name": "Asahi Super Dry light",
      "price_amd": 690,
      "shop_item_id": "13579",
@@ -37232,7 +37245,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37259,7 +37272,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/87152/thumb_87152.jpg?v=11794023524",
+     "logo": "https://static.parma.am/cache/product/87152/thumb_87152.jpg?v=11794051726",
      "name": "Baltika Myaghkoye №7 light",
      "price_amd": 730,
      "servings": [
@@ -37282,7 +37295,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37314,7 +37327,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37335,7 +37348,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/28839/thumb_28839.jpg?v=11794017071",
+     "logo": "https://static.parma.am/cache/product/28839/thumb_28839.jpg?v=11794047777",
      "name": "Baltika №1 light",
      "price_amd": 620,
      "shop_item_id": "28839",
@@ -37346,7 +37359,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37402,7 +37415,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37452,7 +37465,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37473,7 +37486,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/21063(1)/thumb_21063(1).jpg?v=11794021845",
+     "logo": "https://static.parma.am/cache/product/21063(1)/thumb_21063(1).jpg?v=11794059163",
      "name": "Baltika №9 light",
      "price_amd": 720,
      "shop_item_id": "21063",
@@ -37484,7 +37497,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37505,7 +37518,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/07150(1)/thumb_07150(1).jpg?v=11794021845",
+     "logo": "https://static.parma.am/cache/product/07150(1)/thumb_07150(1).jpg?v=11794059163",
      "name": "Baltika №9 strong",
      "price_amd": 730,
      "shop_item_id": "7150",
@@ -37516,7 +37529,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37536,7 +37549,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/22179/thumb_22179.jpg?v=11794019686",
+     "logo": "https://static.parma.am/cache/product/22179/thumb_22179.jpg?v=11794051493",
      "name": "Benediktiner light",
      "price_amd": 1130,
      "shop_item_id": "22179",
@@ -37547,7 +37560,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37567,7 +37580,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/97910/thumb_97910.jpg?v=11794023768",
+     "logo": "https://static.parma.am/cache/product/97910/thumb_97910.jpg?v=11794051849",
      "name": "Benediktiner Weissbier light",
      "price_amd": 790,
      "shop_item_id": "97910",
@@ -37578,7 +37591,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37599,7 +37612,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/17691/thumb_17691.jpg?v=11794020657",
+     "logo": "https://static.parma.am/cache/product/17691/thumb_17691.jpg?v=11794048257",
      "name": "Birra Moretti light",
      "price_amd": 1090,
      "shop_item_id": "17691",
@@ -37610,7 +37623,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37630,7 +37643,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/22177/thumb_22177.jpg?v=11794019686",
+     "logo": "https://static.parma.am/cache/product/22177/thumb_22177.jpg?v=11794051493",
      "name": "Bitburger Iron Maiden light",
      "price_amd": 1150,
      "shop_item_id": "22177",
@@ -37641,7 +37654,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37726,7 +37739,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37770,7 +37783,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37814,7 +37827,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37835,7 +37848,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/16214/thumb_16214.png?v=11794013457",
+     "logo": "https://static.parma.am/cache/product/16214/thumb_16214.png?v=11794059405",
      "name": "Brander Bier Lager light",
      "price_amd": 570,
      "shop_item_id": "16214",
@@ -37846,7 +37859,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37867,7 +37880,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/16210/thumb_16210.png?v=11794013457",
+     "logo": "https://static.parma.am/cache/product/16210/thumb_16210.png?v=11794059405",
      "name": "Brander Bier Strong light",
      "price_amd": 570,
      "shop_item_id": "16210",
@@ -37878,7 +37891,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37911,7 +37924,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/67211(1)/thumb_67211(1).jpg?v=11794023171",
+     "logo": "https://static.parma.am/cache/product/67211(1)/thumb_67211(1).jpg?v=11794048133",
      "name": "Bud",
      "price_amd": 690,
      "servings": [
@@ -37934,7 +37947,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -37973,7 +37986,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/11291/thumb_11291.jpg?v=11794016809",
+     "logo": "https://static.parma.am/cache/product/11291/thumb_11291.jpg?v=11794048013",
      "name": "Budweiser light",
      "price_amd": 670,
      "servings": [
@@ -37996,7 +38009,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38017,7 +38030,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/07140/thumb_07140.jpg?v=11794026044",
+     "logo": "https://static.parma.am/cache/product/07140/thumb_07140.jpg?v=11794048246",
      "name": "Carlsberg light",
      "price_amd": 720,
      "shop_item_id": "7140",
@@ -38028,7 +38041,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38051,7 +38064,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/26951/thumb_26951.jpg?v=11794013695",
+     "logo": "https://static.parma.am/cache/product/26951/thumb_26951.jpg?v=11794048494",
      "name": "drink Carribay Cuba Libre",
      "price_amd": 870,
      "shop_item_id": "26951",
@@ -38062,7 +38075,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38106,7 +38119,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38150,7 +38163,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38194,7 +38207,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38238,7 +38251,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38258,7 +38271,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/98699/thumb_98699.jpg?v=11794017129",
+     "logo": "https://static.parma.am/cache/product/98699/thumb_98699.jpg?v=11794051852",
      "name": "Chimay Triple Cinq Cents Peres Trappistes light",
      "price_amd": 4750,
      "shop_item_id": "98699",
@@ -38269,7 +38282,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38313,7 +38326,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38357,7 +38370,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38378,7 +38391,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/28721/thumb_28721.jpg?v=11794017071",
+     "logo": "https://static.parma.am/cache/product/28721/thumb_28721.jpg?v=11794047776",
      "name": "Corona Cero light",
      "price_amd": 890,
      "shop_item_id": "28721",
@@ -38389,7 +38402,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38416,7 +38429,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/17023(1)/thumb_17023(1).jpg?v=11794023163",
+     "logo": "https://static.parma.am/cache/product/17023(1)/thumb_17023(1).jpg?v=11794051961",
      "name": "Corona Extra light",
      "price_amd": 820,
      "shop_item_id": "17023",
@@ -38427,7 +38440,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38471,7 +38484,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38515,7 +38528,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38559,7 +38572,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38603,7 +38616,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38647,7 +38660,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38691,7 +38704,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38735,7 +38748,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38779,7 +38792,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38823,7 +38836,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38867,7 +38880,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38911,7 +38924,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38955,7 +38968,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -38999,7 +39012,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39043,7 +39056,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39065,7 +39078,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/98704/thumb_98704.jpg?v=11794017099",
+     "logo": "https://static.parma.am/cache/product/98704/thumb_98704.jpg?v=11794051852",
      "name": "Delirium Red dark",
      "price_amd": 2290,
      "shop_item_id": "98704",
@@ -39076,7 +39089,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39096,7 +39109,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/98703/thumb_98703.jpg?v=11794017099",
+     "logo": "https://static.parma.am/cache/product/98703/thumb_98703.jpg?v=11794051852",
      "name": "Delirium Tremens light",
      "price_amd": 2190,
      "shop_item_id": "98703",
@@ -39107,7 +39120,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39128,7 +39141,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/99896/thumb_99896.jpg?v=11794014163",
+     "logo": "https://static.parma.am/cache/product/99896/thumb_99896.jpg?v=11794051483",
      "name": "Dragon light",
      "price_amd": 620,
      "shop_item_id": "99896",
@@ -39139,7 +39152,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39159,7 +39172,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/00191/thumb_00191.jpg?v=11794017129",
+     "logo": "https://static.parma.am/cache/product/00191/thumb_00191.jpg?v=11794051484",
      "name": "Duvel Cashmere light",
      "price_amd": 1770,
      "shop_item_id": "191",
@@ -39170,7 +39183,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39214,7 +39227,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39258,7 +39271,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39285,7 +39298,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/07887/thumb_07887.jpg?v=11794021842",
+     "logo": "https://static.parma.am/cache/product/07887/thumb_07887.jpg?v=11794048243",
      "name": "Erebuni light",
      "price_amd": 440,
      "servings": [
@@ -39308,7 +39321,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39352,7 +39365,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39396,7 +39409,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39440,7 +39453,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39484,7 +39497,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39543,7 +39556,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/29175/thumb_29175.jpg?v=11794019689",
+     "logo": "https://static.parma.am/cache/product/29175/thumb_29175.jpg?v=11794047779",
      "name": "Estrella Damm light",
      "price_amd": 520,
      "servings": [
@@ -39571,7 +39584,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39615,7 +39628,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39659,7 +39672,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39721,7 +39734,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39764,7 +39777,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39814,7 +39827,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39837,7 +39850,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/26950/thumb_26950.jpg?v=11794013695",
+     "logo": "https://static.parma.am/cache/product/26950/thumb_26950.jpg?v=11794048494",
      "name": "drink Glanmorris Cola",
      "price_amd": 870,
      "shop_item_id": "26950",
@@ -39848,7 +39861,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39869,7 +39882,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/21145/thumb_21145.jpg?v=11794017039",
+     "logo": "https://static.parma.am/cache/product/21145/thumb_21145.jpg?v=11794051374",
      "name": "Grolsch Premium Pilsner light",
      "price_amd": 790,
      "shop_item_id": "21145",
@@ -39880,7 +39893,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39900,7 +39913,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/97402(1)/thumb_97402(1).jpg?v=11794020534",
+     "logo": "https://static.parma.am/cache/product/97402(1)/thumb_97402(1).jpg?v=11794048252",
      "name": "Guinness Foreign Extra Stout dark",
      "price_amd": 1230,
      "shop_item_id": "97402",
@@ -39911,7 +39924,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39955,7 +39968,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -39976,7 +39989,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/78112(2)/thumb_78112(2).jpg?v=11794026771",
+     "logo": "https://static.parma.am/cache/product/78112(2)/thumb_78112(2).jpg?v=11794051848",
      "name": "Gyumri Extra light",
      "price_amd": 610,
      "shop_item_id": "78112",
@@ -39987,7 +40000,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40026,7 +40039,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/13342(1)/thumb_13342(1).jpg?v=11794019448",
+     "logo": "https://static.parma.am/cache/product/13342(1)/thumb_13342(1).jpg?v=11794051729",
      "name": "Gyumri Gold light",
      "price_amd": 360,
      "servings": [
@@ -40059,7 +40072,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40080,7 +40093,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/15170/thumb_15170.jpg?v=11794020890",
+     "logo": "https://static.parma.am/cache/product/15170/thumb_15170.jpg?v=11794059288",
      "name": "Gyumri Premium light",
      "price_amd": 450,
      "shop_item_id": "15170",
@@ -40091,7 +40104,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40135,7 +40148,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40179,7 +40192,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40247,7 +40260,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40267,7 +40280,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/98010/thumb_98010.jpg?v=11794023770",
+     "logo": "https://static.parma.am/cache/product/98010/thumb_98010.jpg?v=11794051850",
      "name": "Hertog Jan Grand Prestige dark",
      "price_amd": 2500,
      "shop_item_id": "98010",
@@ -40278,7 +40291,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40304,7 +40317,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/43563(2)/thumb_43563(2).jpg?v=11794025683",
+     "logo": "https://static.parma.am/cache/product/43563(2)/thumb_43563(2).jpg?v=11794051963",
      "name": "Holsten Premium light",
      "price_amd": 720,
      "shop_item_id": "43563",
@@ -40315,14 +40328,14 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
    "n:kilikia 1952 light": {
     "event_at": null,
     "first_seen": "2026-09-24T10:17:40+00:00",
-    "in_stock": false,
+    "in_stock": true,
     "info": {
      "abv": 4.8,
      "brewery": "Yerevan Beer CJSC",
@@ -40330,13 +40343,13 @@
      "items": {
       "24751": {
        "container": null,
-       "in_stock": false,
+       "in_stock": true,
        "price_amd": 570,
        "volume_ml": 500
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/24751(1)/thumb_24751(1).jpg?v=11794026044",
+     "logo": "https://static.parma.am/cache/product/24751(1)/thumb_24751(1).jpg?v=11794048246",
      "name": "Kilikia 1952 light",
      "price_amd": 570,
      "shop_item_id": "24751",
@@ -40347,7 +40360,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40368,7 +40381,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/37217(2)/thumb_37217(2).jpg?v=11794021851",
+     "logo": "https://static.parma.am/cache/product/37217(2)/thumb_37217(2).jpg?v=11794048128",
      "name": "Kilikia Anniversary light",
      "price_amd": 540,
      "shop_item_id": "37217",
@@ -40379,7 +40392,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40424,7 +40437,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/77711/thumb_77711.jpg?v=11794026655",
+     "logo": "https://static.parma.am/cache/product/77711/thumb_77711.jpg?v=11794051858",
      "name": "Kilikia light",
      "price_amd": 350,
      "servings": [
@@ -40462,7 +40475,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40483,7 +40496,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/37216(2)/thumb_37216(2).jpg?v=11794026044",
+     "logo": "https://static.parma.am/cache/product/37216(2)/thumb_37216(2).jpg?v=11794048246",
      "name": "Kilikia Tonakan light",
      "price_amd": 540,
      "shop_item_id": "37216",
@@ -40494,7 +40507,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40527,7 +40540,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/58579(3)/thumb_58579(3).jpg?v=11794025208",
+     "logo": "https://static.parma.am/cache/product/58579(3)/thumb_58579(3).jpg?v=11794047766",
      "name": "Kotayk Gold light",
      "price_amd": 460,
      "servings": [
@@ -40555,7 +40568,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40588,7 +40601,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/07884(1)/thumb_07884(1).jpg?v=11794026043",
+     "logo": "https://static.parma.am/cache/product/07884(1)/thumb_07884(1).jpg?v=11794048245",
      "name": "Kotayk light",
      "price_amd": 460,
      "servings": [
@@ -40616,7 +40629,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40637,7 +40650,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/99679/thumb_99679.jpg?v=11794017097",
+     "logo": "https://static.parma.am/cache/product/99679/thumb_99679.jpg?v=11794051483",
      "name": "Kotayk Moskovyan light",
      "price_amd": 350,
      "shop_item_id": "99679",
@@ -40648,7 +40661,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40669,7 +40682,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/01794(1)/thumb_01794(1).jpg?v=11794026043",
+     "logo": "https://static.parma.am/cache/product/01794(1)/thumb_01794(1).jpg?v=11794048245",
      "name": "Kozel 500m",
      "price_amd": 580,
      "shop_item_id": "1794",
@@ -40679,7 +40692,7 @@
      "url": "https://parma.am/en/product/product?slug=beer-kozel-500m_1794"
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40700,7 +40713,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/01793(1)/thumb_01793(1).jpg?v=11794021847",
+     "logo": "https://static.parma.am/cache/product/01793(1)/thumb_01793(1).jpg?v=11794048245",
      "name": "Kozel light",
      "price_amd": 580,
      "shop_item_id": "1793",
@@ -40711,7 +40724,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40731,7 +40744,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/16108/thumb_16108.jpg?v=11794017286",
+     "logo": "https://static.parma.am/cache/product/16108/thumb_16108.jpg?v=11794059404",
      "name": "Krombacher dark",
      "price_amd": 840,
      "shop_item_id": "16108",
@@ -40742,7 +40755,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40786,7 +40799,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40859,7 +40872,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40921,7 +40934,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40941,7 +40954,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/23296/thumb_23296.jpg?v=11794017045",
+     "logo": "https://static.parma.am/cache/product/23296/thumb_23296.jpg?v=11794051496",
      "name": "Kronenbourg Blanc light",
      "price_amd": 790,
      "shop_item_id": "23296",
@@ -40952,7 +40965,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -40972,7 +40985,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/23294/thumb_23294.png?v=11794023900",
+     "logo": "https://static.parma.am/cache/product/23294/thumb_23294.png?v=11794059178",
      "name": "Kronenbourg Lager light",
      "price_amd": 530,
      "shop_item_id": "23294",
@@ -40983,7 +40996,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41010,7 +41023,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/03481(1)/thumb_03481(1).jpg?v=11794023162",
+     "logo": "https://static.parma.am/cache/product/03481(1)/thumb_03481(1).jpg?v=11794048121",
      "name": "Krusovice light",
      "price_amd": 680,
      "shop_item_id": "3481",
@@ -41021,7 +41034,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41065,7 +41078,7 @@
      "volume_ml": 750
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41109,7 +41122,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41153,7 +41166,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41197,7 +41210,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41241,7 +41254,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41285,7 +41298,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41329,7 +41342,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41373,7 +41386,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41423,7 +41436,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41484,7 +41497,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41505,7 +41518,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/18683/thumb_18683.jpg?v=11794022451",
+     "logo": "https://static.parma.am/cache/product/18683/thumb_18683.jpg?v=11794048374",
      "name": "Modelo Especial light",
      "price_amd": 860,
      "shop_item_id": "18683",
@@ -41516,7 +41529,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41537,7 +41550,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/15441/thumb_15441.jpg?v=11794020175",
+     "logo": "https://static.parma.am/cache/product/15441/thumb_15441.jpg?v=11794059288",
      "name": "Motor light",
      "price_amd": 650,
      "shop_item_id": "15441",
@@ -41548,7 +41561,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41575,7 +41588,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/53147(1)/thumb_53147(1).jpg?v=11794022924",
+     "logo": "https://static.parma.am/cache/product/53147(1)/thumb_53147(1).jpg?v=11794051968",
      "name": "Natakhtari light",
      "price_amd": 1130,
      "shop_item_id": "53147",
@@ -41586,7 +41599,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41607,7 +41620,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/97403(1)/thumb_97403(1).jpg?v=11794020534",
+     "logo": "https://static.parma.am/cache/product/97403(1)/thumb_97403(1).jpg?v=11794048252",
      "name": "Newcastle Brown Ale semi-dark",
      "price_amd": 1270,
      "shop_item_id": "97403",
@@ -41618,7 +41631,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41639,7 +41652,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/94023/thumb_94023.jpg?v=11794015969",
+     "logo": "https://static.parma.am/cache/product/94023/thumb_94023.jpg?v=11794048376",
      "name": "Old Prague dark",
      "price_amd": 920,
      "shop_item_id": "94023",
@@ -41650,7 +41663,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41677,7 +41690,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/94022/thumb_94022.jpg?v=11794015969",
+     "logo": "https://static.parma.am/cache/product/94022/thumb_94022.jpg?v=11794048376",
      "name": "Old Prague light",
      "price_amd": 920,
      "shop_item_id": "94022",
@@ -41688,7 +41701,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41750,7 +41763,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41800,7 +41813,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41821,7 +41834,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/01801/thumb_01801.jpg?v=11794017135",
+     "logo": "https://static.parma.am/cache/product/01801/thumb_01801.jpg?v=11794048362",
      "name": "Peroni Nastro Azzurro light",
      "price_amd": 690,
      "shop_item_id": "1801",
@@ -41832,7 +41845,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41858,7 +41871,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/01802(1)/thumb_01802(1).jpg?v=11794022685",
+     "logo": "https://static.parma.am/cache/product/01802(1)/thumb_01802(1).jpg?v=11794051845",
      "name": "Pilsner Urquell light",
      "price_amd": 790,
      "servings": [
@@ -41881,7 +41894,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41901,7 +41914,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/16209(1)/thumb_16209(1).jpg?v=11794013447",
+     "logo": "https://static.parma.am/cache/product/16209(1)/thumb_16209(1).jpg?v=11794059404",
      "name": "Platina Latina light",
      "price_amd": 570,
      "shop_item_id": "16209",
@@ -41912,7 +41925,7 @@
      "volume_ml": 400
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41956,7 +41969,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -41976,7 +41989,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/17545/thumb_17545.jpg?v=11794016691",
+     "logo": "https://static.parma.am/cache/product/17545/thumb_17545.jpg?v=11794048256",
      "name": "Sherwood Strawberry Margarita light",
      "price_amd": 920,
      "shop_item_id": "17545",
@@ -41987,7 +42000,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42031,7 +42044,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42075,7 +42088,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42108,7 +42121,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/27938(1)/thumb_27938(1).jpg?v=11794021002",
+     "logo": "https://static.parma.am/cache/product/27938(1)/thumb_27938(1).jpg?v=11794050336",
      "name": "Stella Artois light",
      "price_amd": 680,
      "servings": [
@@ -42136,7 +42149,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42180,7 +42193,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42224,7 +42237,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42268,7 +42281,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42288,7 +42301,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/00195/thumb_00195.jpg?v=11794014170",
+     "logo": "https://static.parma.am/cache/product/00195/thumb_00195.jpg?v=11794051488",
      "name": "Vedett Coriander light",
      "price_amd": 960,
      "shop_item_id": "195",
@@ -42299,7 +42312,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42319,7 +42332,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/18583/thumb_18583.jpg?v=11794020649",
+     "logo": "https://static.parma.am/cache/product/18583/thumb_18583.jpg?v=11794048373",
      "name": "Vedett Ipa light",
      "price_amd": 990,
      "shop_item_id": "18583",
@@ -42330,7 +42343,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42350,7 +42363,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/18582/thumb_18582.jpg?v=11794020649",
+     "logo": "https://static.parma.am/cache/product/18582/thumb_18582.jpg?v=11794048373",
      "name": "Vedett Pilsner light",
      "price_amd": 990,
      "shop_item_id": "18582",
@@ -42361,7 +42374,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42388,7 +42401,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/21593/thumb_21593.jpg?v=11794017404",
+     "logo": "https://static.parma.am/cache/product/21593/thumb_21593.jpg?v=11794051377",
      "name": "Vimpel Lager light",
      "price_amd": 650,
      "servings": [
@@ -42411,7 +42424,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42438,7 +42451,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/21596/thumb_21596.jpg?v=11794017120",
+     "logo": "https://static.parma.am/cache/product/21596/thumb_21596.jpg?v=11794051376",
      "name": "Vimpel Pilsner light",
      "price_amd": 650,
      "servings": [
@@ -42461,7 +42474,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42505,7 +42518,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42525,7 +42538,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/17541/thumb_17541.jpg?v=11794016691",
+     "logo": "https://static.parma.am/cache/product/17541/thumb_17541.jpg?v=11794048256",
      "name": "Volfas Engelman Baltic Porter dark",
      "price_amd": 970,
      "shop_item_id": "17541",
@@ -42536,7 +42549,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42580,7 +42593,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42624,7 +42637,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42668,7 +42681,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42730,7 +42743,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42774,7 +42787,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42854,7 +42867,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42898,7 +42911,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42942,7 +42955,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -42986,7 +42999,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43030,7 +43043,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43074,7 +43087,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43118,7 +43131,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43162,7 +43175,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43206,7 +43219,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43250,7 +43263,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43294,7 +43307,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43338,7 +43351,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43382,7 +43395,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43413,7 +43426,7 @@
      "volume_ml": 480
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43444,7 +43457,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43471,7 +43484,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/03908/thumb_03908.jpg?v=11794019815",
+     "logo": "https://static.parma.am/cache/product/03908/thumb_03908.jpg?v=11794051604",
      "name": "Zhiguli Barnoe Export light",
      "price_amd": 620,
      "shop_item_id": "3908",
@@ -43482,7 +43495,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43503,7 +43516,7 @@
       }
      },
      "kind": "shop",
-     "logo": "https://static.parma.am/cache/product/58648(2)/thumb_58648(2).jpg?v=11794022210",
+     "logo": "https://static.parma.am/cache/product/58648(2)/thumb_58648(2).jpg?v=11794047764",
      "name": "Zhiguli Barnoe light",
      "price_amd": 650,
      "shop_item_id": "58648",
@@ -43514,7 +43527,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43558,7 +43571,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43602,7 +43615,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43646,7 +43659,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -43877,7 +43890,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -43921,7 +43934,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -43965,7 +43978,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44009,7 +44022,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44053,7 +44066,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -44097,7 +44110,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44149,7 +44162,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44193,7 +44206,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44237,7 +44250,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44281,7 +44294,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44344,7 +44357,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44378,7 +44391,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -44422,7 +44435,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44466,7 +44479,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44510,7 +44523,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44543,7 +44556,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44605,7 +44618,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44639,7 +44652,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44673,7 +44686,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44699,7 +44712,7 @@
      "match_weak": false,
      "name": "Bavaria",
      "price_amd": 690,
-     "rating": 2.87622,
+     "rating": 2.87631,
      "shop_item_id": "135500",
      "shop_url": "https://www.sas.am/en/catalog/importnoe_pivo/135500/",
      "source": "sas",
@@ -44710,14 +44723,14 @@
      "u_overlay": {
       "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-16010_3d9dd_sm.jpeg",
-      "rating": 2.87622,
+      "rating": 2.87631,
       "style": "Pilsner - Other"
      },
      "url": "https://untappd.com/beer/16010",
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44735,7 +44748,7 @@
      "match_weak": false,
      "name": "Bavaria Premium",
      "price_amd": 670,
-     "rating": 2.87622,
+     "rating": 2.87631,
      "shop_item_id": "135501",
      "shop_url": "https://www.sas.am/en/catalog/importnoe_pivo/135501/",
      "source": "sas",
@@ -44746,7 +44759,7 @@
      "u_overlay": {
       "abv": 5.0,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-16010_3d9dd_sm.jpeg",
-      "rating": 2.87622,
+      "rating": 2.87631,
       "style": "Pilsner - Other"
      },
      "url": "https://untappd.com/beer/16010",
@@ -44833,7 +44846,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -44877,7 +44890,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -44921,7 +44934,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -44965,7 +44978,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45033,7 +45046,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45084,7 +45097,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45154,7 +45167,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45205,7 +45218,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45238,7 +45251,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45306,7 +45319,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45350,7 +45363,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45394,7 +45407,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45427,7 +45440,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45467,7 +45480,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45511,7 +45524,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45555,7 +45568,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45599,7 +45612,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45643,7 +45656,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45687,7 +45700,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45731,7 +45744,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -45775,7 +45788,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45819,7 +45832,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45863,7 +45876,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-11-07T06:53:37+00:00",
     "star": false
    },
@@ -45906,7 +45919,7 @@
      "url": "https://untappd.com/beer/1518441",
      "volume_ml": 330
     },
-    "last_in_result": true,
+    "last_in_result": false,
     "last_seen": "2026-11-07T06:49:02+00:00",
     "notified_at": "baseline",
     "star": false
@@ -45951,7 +45964,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -45995,7 +46008,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -46039,7 +46052,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -46082,7 +46095,7 @@
      "url": "https://untappd.com/beer/1554084",
      "volume_ml": 330
     },
-    "last_in_result": true,
+    "last_in_result": false,
     "last_seen": "2026-11-07T06:49:02+00:00",
     "notified_at": "baseline",
     "star": false
@@ -46135,7 +46148,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46169,7 +46182,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46213,7 +46226,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46257,7 +46270,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-09T07:03:20+00:00",
     "star": true
    },
@@ -46301,7 +46314,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-07T07:01:59+00:00",
     "star": true
    },
@@ -46442,7 +46455,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46511,7 +46524,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46561,7 +46574,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46604,7 +46617,7 @@
      "volume_ml": 200
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46648,7 +46661,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46710,7 +46723,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -46754,7 +46767,7 @@
      "volume_ml": 2000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46798,7 +46811,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -46842,7 +46855,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -46886,7 +46899,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -46948,7 +46961,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47017,7 +47030,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47061,7 +47074,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47105,7 +47118,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47149,7 +47162,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47193,7 +47206,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -47237,7 +47250,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47281,7 +47294,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47325,7 +47338,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -47359,7 +47372,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47393,7 +47406,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47456,7 +47469,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47490,7 +47503,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47535,7 +47548,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47568,7 +47581,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47601,7 +47614,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47645,7 +47658,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47678,8 +47691,8 @@
      "name": "Hofbrau Munchen",
      "price_amd": 1570,
      "rating": 3.55131,
-     "shop_item_id": "135599",
-     "shop_url": "https://www.sas.am/en/catalog/importnoe_pivo/135599/",
+     "shop_item_id": "135596",
+     "shop_url": "https://www.sas.am/en/catalog/importnoe_pivo/135596/",
      "source": "sas",
      "style": "Lager - Helles",
      "title": "Beer \"Hofbrau Munchen\" 0.5l",
@@ -47695,7 +47708,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47739,7 +47752,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -47783,7 +47796,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47817,7 +47830,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47851,7 +47864,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47896,7 +47909,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -47929,7 +47942,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -47952,7 +47965,7 @@
       },
       "135837": {
        "container": null,
-       "in_stock": true,
+       "in_stock": false,
        "price_amd": 450,
        "volume_ml": 330
       },
@@ -48015,7 +48028,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48049,7 +48062,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48083,7 +48096,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48117,7 +48130,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48180,7 +48193,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48214,7 +48227,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48272,7 +48285,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48324,7 +48337,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48408,7 +48421,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48452,7 +48465,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48496,7 +48509,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -48540,7 +48553,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48602,7 +48615,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48636,7 +48649,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -48686,7 +48699,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -48730,7 +48743,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-06T07:03:23+00:00",
     "star": true
    },
@@ -48792,7 +48805,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-06T07:03:23+00:00",
     "star": true
    },
@@ -48824,7 +48837,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-11-04T06:46:05+00:00",
     "star": true
    },
@@ -48887,7 +48900,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49003,7 +49016,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -49047,7 +49060,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49091,7 +49104,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -49135,7 +49148,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49179,7 +49192,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49229,7 +49242,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -49273,7 +49286,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -49317,7 +49330,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49361,7 +49374,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49405,7 +49418,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49439,7 +49452,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49473,7 +49486,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49543,7 +49556,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49605,7 +49618,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49645,7 +49658,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49671,12 +49684,6 @@
        "in_stock": true,
        "price_amd": 690,
        "volume_ml": 330
-      },
-      "135714": {
-       "container": null,
-       "in_stock": true,
-       "price_amd": 750,
-       "volume_ml": 500
       }
      },
      "kind": "shop",
@@ -49693,11 +49700,6 @@
        "container": null,
        "price_amd": 810,
        "volume_ml": 440
-      },
-      {
-       "container": null,
-       "price_amd": 750,
-       "volume_ml": 500
       }
      ],
      "shop_item_id": "135713",
@@ -49708,7 +49710,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49741,7 +49743,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49775,7 +49777,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49821,7 +49823,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49883,7 +49885,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -49927,7 +49929,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -49978,7 +49980,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50029,7 +50031,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50073,7 +50075,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50117,7 +50119,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50161,7 +50163,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -50205,7 +50207,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -50249,7 +50251,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50293,7 +50295,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50361,7 +50363,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -50405,7 +50407,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50449,7 +50451,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": false
    },
@@ -50493,7 +50495,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50537,7 +50539,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50581,7 +50583,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50625,7 +50627,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50664,7 +50666,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50698,7 +50700,7 @@
      "volume_ml": 310
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -50844,7 +50846,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50888,7 +50890,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -50938,7 +50940,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51006,7 +51008,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51050,7 +51052,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51094,7 +51096,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51125,7 +51127,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51175,7 +51177,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51206,7 +51208,7 @@
      "volume_ml": 1500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51249,7 +51251,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51292,7 +51294,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51335,7 +51337,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51367,7 +51369,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -51411,7 +51413,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51454,7 +51456,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51486,7 +51488,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51518,7 +51520,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51581,7 +51583,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51613,7 +51615,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51676,7 +51678,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51708,7 +51710,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51740,7 +51742,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51772,7 +51774,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51835,7 +51837,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51867,7 +51869,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51899,7 +51901,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51931,7 +51933,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -51962,7 +51964,7 @@
      "url": "https://yerevan-city.am/shop/product-details/128680",
      "volume_ml": 450
     },
-    "last_in_result": true,
+    "last_in_result": false,
     "last_seen": "2026-11-07T06:49:02+00:00",
     "notified_at": "baseline",
     "star": true
@@ -52007,7 +52009,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52051,7 +52053,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -52095,7 +52097,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52139,7 +52141,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -52183,7 +52185,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-09-25T10:20:56+00:00",
     "star": true
    },
@@ -52227,7 +52229,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52289,7 +52291,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52321,7 +52323,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52371,7 +52373,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52421,7 +52423,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52471,7 +52473,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52503,7 +52505,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52535,7 +52537,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52579,7 +52581,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52622,7 +52624,7 @@
      "volume_ml": 1200
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52666,7 +52668,7 @@
      "volume_ml": 470
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52698,7 +52700,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52730,7 +52732,7 @@
      "volume_ml": 355
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52762,7 +52764,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52806,7 +52808,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52850,7 +52852,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52894,7 +52896,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -52938,7 +52940,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-01T10:09:37+00:00",
     "star": true
    },
@@ -52982,7 +52984,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53026,7 +53028,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53070,7 +53072,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53114,7 +53116,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53164,7 +53166,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53196,7 +53198,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53228,7 +53230,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53289,7 +53291,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53338,7 +53340,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53364,7 +53366,7 @@
      "match_weak": false,
      "name": "Duvel Blond",
      "price_amd": 1460,
-     "rating": 3.70988,
+     "rating": 3.70942,
      "shop_item_id": "73930",
      "shop_url": "https://yerevan-city.am/shop/product-details/73930",
      "source": "yerevan_city",
@@ -53375,14 +53377,14 @@
      "u_overlay": {
       "abv": 8.5,
       "logo": "https://assets.untappd.com/site/beer_logos/beer-6868_ea292_sm.jpeg",
-      "rating": 3.70988,
+      "rating": 3.70942,
       "style": "Belgian Strong Golden Ale"
      },
      "url": "https://untappd.com/beer/6868",
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53426,7 +53428,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53476,7 +53478,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53526,7 +53528,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53570,7 +53572,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53632,7 +53634,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53676,7 +53678,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53720,7 +53722,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53764,7 +53766,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53808,7 +53810,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53852,7 +53854,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53913,7 +53915,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53945,7 +53947,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -53995,7 +53997,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54027,7 +54029,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54059,7 +54061,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54121,7 +54123,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54165,7 +54167,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54215,7 +54217,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54265,7 +54267,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54297,7 +54299,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54341,7 +54343,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54385,7 +54387,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54458,7 +54460,7 @@
      "volume_ml": 310
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54501,7 +54503,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54545,7 +54547,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54589,7 +54591,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54633,7 +54635,7 @@
      "volume_ml": 440
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54664,7 +54666,7 @@
      "volume_ml": 2500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54725,7 +54727,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54757,7 +54759,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54789,7 +54791,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54850,7 +54852,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54882,7 +54884,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54913,7 +54915,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -54963,7 +54965,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55013,7 +55015,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55063,7 +55065,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55113,7 +55115,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55145,7 +55147,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55195,7 +55197,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55227,7 +55229,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -55259,7 +55261,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55315,7 +55317,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55388,7 +55390,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55450,7 +55452,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55482,7 +55484,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55570,7 +55572,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55602,7 +55604,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "suppressed",
     "star": true
    },
@@ -55646,7 +55648,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55726,7 +55728,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55758,7 +55760,7 @@
      "volume_ml": 250
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55802,7 +55804,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55846,7 +55848,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55878,7 +55880,7 @@
      "volume_ml": 480
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55910,7 +55912,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55960,7 +55962,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -55992,7 +55994,7 @@
      "volume_ml": 430
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56041,7 +56043,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56073,7 +56075,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56116,7 +56118,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56229,7 +56231,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56291,7 +56293,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56353,7 +56355,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56397,7 +56399,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56459,7 +56461,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56521,7 +56523,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56600,7 +56602,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56643,7 +56645,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56686,7 +56688,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56730,7 +56732,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56773,7 +56775,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56805,7 +56807,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56849,7 +56851,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56881,7 +56883,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56913,7 +56915,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -56977,7 +56979,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57027,7 +57029,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57071,7 +57073,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57149,7 +57151,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "2026-10-08T07:01:26+00:00",
     "star": true
    },
@@ -57181,7 +57183,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57225,7 +57227,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57287,7 +57289,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57319,7 +57321,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57363,7 +57365,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57407,7 +57409,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57451,7 +57453,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57495,7 +57497,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57539,7 +57541,7 @@
      "volume_ml": 568
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57583,7 +57585,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57627,7 +57629,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57659,7 +57661,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57721,7 +57723,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57783,7 +57785,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57827,7 +57829,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57871,7 +57873,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57915,7 +57917,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -57959,7 +57961,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58003,7 +58005,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58047,7 +58049,7 @@
      "volume_ml": 1000
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58091,7 +58093,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58141,7 +58143,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58173,7 +58175,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58205,7 +58207,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58237,7 +58239,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58269,7 +58271,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58301,7 +58303,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58333,7 +58335,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58365,7 +58367,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58396,7 +58398,7 @@
      "url": "https://yerevan-city.am/shop/product-details/94218"
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58427,7 +58429,7 @@
      "url": "https://yerevan-city.am/shop/product-details/94217"
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58458,7 +58460,7 @@
      "url": "https://yerevan-city.am/shop/product-details/96903"
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58502,7 +58504,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58546,7 +58548,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58590,7 +58592,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58634,7 +58636,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58678,7 +58680,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58710,7 +58712,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58741,7 +58743,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58773,7 +58775,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58805,7 +58807,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58837,7 +58839,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58869,7 +58871,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58901,7 +58903,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58933,7 +58935,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58965,7 +58967,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -58997,7 +58999,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59029,7 +59031,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59085,7 +59087,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59117,7 +59119,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59149,7 +59151,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59181,7 +59183,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59213,7 +59215,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59245,7 +59247,7 @@
      "volume_ml": 450
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59277,7 +59279,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59309,7 +59311,7 @@
      "volume_ml": 330
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59341,7 +59343,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59373,7 +59375,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59405,7 +59407,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    },
@@ -59437,7 +59439,7 @@
      "volume_ml": 500
     },
     "last_in_result": true,
-    "last_seen": "2026-11-07T06:49:02+00:00",
+    "last_seen": "2026-11-07T14:20:47+00:00",
     "notified_at": "baseline",
     "star": true
    }
@@ -61324,15 +61326,15 @@
    "weak": false
   },
   "n:bavaria": {
-   "abv": null,
+   "abv": 5.0,
    "brewery": null,
-   "checked_at": null,
-   "logo": null,
+   "checked_at": "2026-11-07T14:20:47+00:00",
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-16010_3d9dd_sm.jpeg",
    "matched_at": "2026-10-07T14:37:03+00:00",
    "name": null,
-   "rating": null,
+   "rating": 2.87631,
    "search_v": null,
-   "style": null,
+   "style": "Pilsner - Other",
    "suggest_brewery": null,
    "suggest_id": null,
    "suggest_name": null,
@@ -61342,15 +61344,15 @@
    "weak": false
   },
   "n:bavaria premium": {
-   "abv": null,
+   "abv": 5.0,
    "brewery": null,
-   "checked_at": null,
-   "logo": null,
+   "checked_at": "2026-11-07T14:20:47+00:00",
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-16010_3d9dd_sm.jpeg",
    "matched_at": "2026-10-07T14:37:03+00:00",
    "name": null,
-   "rating": null,
+   "rating": 2.87631,
    "search_v": null,
-   "style": null,
+   "style": "Pilsner - Other",
    "suggest_brewery": null,
    "suggest_id": null,
    "suggest_name": null,
@@ -61760,7 +61762,7 @@
    "brewery": null,
    "checked_at": null,
    "logo": null,
-   "matched_at": "2026-11-07T06:49:02+00:00",
+   "matched_at": "2026-11-07T14:20:47+00:00",
    "name": null,
    "rating": null,
    "search_v": null,
@@ -61778,7 +61780,7 @@
    "brewery": null,
    "checked_at": null,
    "logo": null,
-   "matched_at": "2026-11-07T06:49:02+00:00",
+   "matched_at": "2026-11-07T14:20:47+00:00",
    "name": null,
    "rating": null,
    "search_v": null,
@@ -63232,15 +63234,15 @@
    "weak": false
   },
   "n:duvel blond g b": {
-   "abv": null,
+   "abv": 8.5,
    "brewery": "Duvel Moortgat",
-   "checked_at": null,
-   "logo": null,
+   "checked_at": "2026-11-07T14:20:47+00:00",
+   "logo": "https://assets.untappd.com/site/beer_logos/beer-6868_ea292_sm.jpeg",
    "matched_at": "2026-10-09T14:40:56+00:00",
    "name": "Duvel",
-   "rating": null,
+   "rating": 3.70942,
    "search_v": null,
-   "style": null,
+   "style": "Belgian Strong Golden Ale",
    "suggest_brewery": null,
    "suggest_id": null,
    "suggest_name": null,
@@ -68155,7 +68157,7 @@
    "last_count": 217,
    "last_error": null,
    "last_full": "2026-11-06T20:28:41+00:00",
-   "last_ok": "2026-11-07T06:49:02+00:00",
+   "last_ok": "2026-11-07T14:20:47+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -68170,8 +68172,8 @@
    "last_checkin_id": null,
    "last_count": 16,
    "last_error": null,
-   "last_full": "2026-11-07T06:49:02+00:00",
-   "last_ok": "2026-11-07T06:49:02+00:00",
+   "last_full": "2026-11-07T14:20:47+00:00",
+   "last_ok": "2026-11-07T14:20:47+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -68202,8 +68204,8 @@
    "last_checkin_id": null,
    "last_count": 0,
    "last_error": null,
-   "last_full": "2026-11-07T06:49:02+00:00",
-   "last_ok": "2026-11-07T06:49:02+00:00",
+   "last_full": "2026-11-07T14:20:47+00:00",
+   "last_ok": "2026-11-07T14:20:47+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -68218,8 +68220,8 @@
    "last_checkin_id": null,
    "last_count": 166,
    "last_error": null,
-   "last_full": "2026-11-07T06:49:02+00:00",
-   "last_ok": "2026-11-07T06:49:02+00:00",
+   "last_full": "2026-11-07T14:20:47+00:00",
+   "last_ok": "2026-11-07T14:20:47+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -68232,10 +68234,10 @@
    "checkin_overflow": false,
    "fail_streak": 0,
    "last_checkin_id": null,
-   "last_count": 144,
+   "last_count": 142,
    "last_error": null,
-   "last_full": "2026-11-07T06:49:02+00:00",
-   "last_ok": "2026-11-07T06:49:02+00:00",
+   "last_full": "2026-11-07T14:20:47+00:00",
+   "last_ok": "2026-11-07T14:20:47+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -68715,10 +68717,10 @@
    "checkin_overflow": false,
    "fail_streak": 0,
    "last_checkin_id": null,
-   "last_count": 200,
+   "last_count": 199,
    "last_error": null,
-   "last_full": "2026-11-07T06:49:02+00:00",
-   "last_ok": "2026-11-07T06:49:02+00:00",
+   "last_full": "2026-11-07T14:20:47+00:00",
+   "last_ok": "2026-11-07T14:20:47+00:00",
    "last_trip_keys": [],
    "max_beer_id": 0,
    "menu_updated_at": null,
@@ -68733,8 +68735,8 @@
   "brewery_list_cursor": 0,
   "last_attempt": "2026-11-07T06:49:02+00:00",
   "pages_date": "2026-11-07",
-  "pages_today": 26,
-  "topup_date": "2026-11-06"
+  "pages_today": 32,
+  "topup_date": "2026-11-07"
  },
  "venues": {
   "10274653": {
