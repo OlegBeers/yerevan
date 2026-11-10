@@ -14219,10 +14219,10 @@
  "digest": {
   "last_message_id": 342,
   "last_replied": false,
-  "last_sent_at": "2026-11-07T06:53:37+00:00",
-  "last_sent_date": "2026-11-07",
+  "last_sent_at": "2026-11-10T06:49:05+00:00",
+  "last_sent_date": "2026-11-10",
   "last_to_admin": false,
-  "sent_count": 40
+  "sent_count": 41
  },
  "discovery": {
   "last_report_date": "2026-11-09",
@@ -32737,7 +32737,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": false
    },
    "u:1928861": {
@@ -33657,7 +33657,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": true
    },
    "u:3507579": {
@@ -34141,7 +34141,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": false
    },
    "u:4486": {
@@ -34168,7 +34168,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": false
    },
    "u:4637119": {
@@ -35812,7 +35812,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": true
    },
    "u:6569311": {
@@ -35892,7 +35892,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": false
    },
    "u:6648126": {
@@ -36892,7 +36892,7 @@
     },
     "last_in_result": true,
     "last_seen": "2026-11-10T06:44:56+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": true
    }
   },
@@ -56384,7 +56384,7 @@
     },
     "last_in_result": false,
     "last_seen": "2026-11-09T23:28:25+00:00",
-    "notified_at": null,
+    "notified_at": "2026-11-10T06:49:05+00:00",
     "star": true
    },
    "n:paderborner export light": {
